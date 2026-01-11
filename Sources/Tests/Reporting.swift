@@ -12,14 +12,7 @@
 public import Binary_Primitives
 public import Formatting_Primitives
 public import Time_Primitives
-
-#if canImport(Darwin)
-    import Darwin
-#elseif canImport(Glibc)
-    import Glibc
-#elseif os(Windows)
-    import CRT
-#endif
+public import Console
 
 extension Tests {
     /// Print a performance measurement summary
@@ -77,40 +70,39 @@ extension Tests {
     }
 }
 
-// MARK: - ANSI Color Support
+// MARK: - Console Styling Support
 
 extension Tests {
-    /// ANSI color codes for terminal output
-    internal enum ANSIColor: String {
-        case reset = "\u{001B}[0m"
-        case red = "\u{001B}[31m"
-        case green = "\u{001B}[32m"
-        case yellow = "\u{001B}[33m"
-        case blue = "\u{001B}[34m"
-        case bold = "\u{001B}[1m"
-        case dim = "\u{001B}[2m"
+    /// Console capability detection (cached).
+    internal static let consoleCapability = Console.Capability.detect()
 
-        /// Check if terminal supports ANSI colors
-        static var isSupported: Bool {
-            #if os(Linux) || os(macOS)
-                guard let termPtr = getenv("TERM") else {
-                    return false
-                }
-                let term = String(cString: termPtr)
-                return term != "dumb" && !term.isEmpty
-            #else
-                return false
-            #endif
+    /// Predefined styles for test output.
+    internal enum OutputStyle {
+        case red
+        case green
+        case yellow
+        case blue
+        case bold
+        case dim
+
+        var style: Console.Style {
+            switch self {
+            case .red: return .error
+            case .green: return .success
+            case .yellow: return .warning
+            case .blue: return .info
+            case .bold: return .bold
+            case .dim: return .dim
+            }
         }
 
-        /// Wrap text in color if supported
-        static func colored(_ text: String, color: ANSIColor) -> String {
-            guard isSupported else { return text }
-            return color.rawValue + text + ANSIColor.reset.rawValue
+        /// Apply style to text using detected capability.
+        static func styled(_ text: String, _ style: OutputStyle) -> String {
+            style.style.apply(to: text, capability: consoleCapability)
         }
     }
 
-    /// Center text within a given width
+    /// Center text within a given width.
     internal static func centerText(_ text: String, width: Int) -> String {
         let padding = width - text.count
         guard padding > 0 else { return text }
@@ -168,14 +160,14 @@ public struct PerformanceComparison: Sendable {
 
         let nameColored =
             isRegression
-            ? Tests.ANSIColor.colored(name, color: .red)
-            : Tests.ANSIColor.colored(name, color: .green)
+            ? Tests.OutputStyle.styled(name, .red)
+            : Tests.OutputStyle.styled(name, .green)
 
         let changeText = "\(changeSymbol) \(abs(change).formatted(.percent.precision(1)))"
         let changeColored =
             isRegression
-            ? Tests.ANSIColor.colored(changeText, color: .red)
-            : Tests.ANSIColor.colored(changeText, color: .green)
+            ? Tests.OutputStyle.styled(changeText, .red)
+            : Tests.OutputStyle.styled(changeText, .green)
 
         return """
             \(changeEmoji) \(nameColored)
@@ -208,7 +200,7 @@ extension Tests {
 
         let summaryText =
             "Summary: \(improvements) improvements, \(neutral) neutral, \(regressions) regressions"
-        let summaryColored = ANSIColor.colored(summaryText, color: .bold)
+        let summaryColored = OutputStyle.styled(summaryText, .bold)
         print(summaryColored)
         print("╚══════════════════════════════════════════════════════════╝\n")
     }

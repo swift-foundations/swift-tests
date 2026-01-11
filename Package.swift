@@ -22,6 +22,7 @@ let package = Package(
         .package(path: "../../swift-primitives/swift-clock-primitives"),
         .package(path: "../../swift-primitives/swift-formatting-primitives"),
         .package(path: "../swift-memory"),
+        .package(path: "../swift-console"),
     ],
     targets: [
         // Core Tests target - standalone
@@ -35,6 +36,7 @@ let package = Package(
                 .product(name: "Clock Primitives", package: "swift-clock-primitives"),
                 .product(name: "Formatting Primitives", package: "swift-formatting-primitives"),
                 .product(name: "Memory", package: "swift-memory"),
+                .product(name: "Console", package: "swift-console"),
             ],
             path: "Sources/Tests"
         ),
