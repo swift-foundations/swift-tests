@@ -1,0 +1,127 @@
+//
+//  Test.Plan.swift
+//  swift-tests
+//
+//  Test execution plan.
+//
+
+public import Test_Primitives
+
+extension Test {
+    /// An execution plan for running tests.
+    ///
+    /// A `Plan` contains a collection of test entries to be executed by a
+    /// ``Test/Runner``. Plans are built using ``Test/Plan/Registry`` and
+    /// are immutable once created.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// var registry = Test.Plan.Registry()
+    /// registry.add(
+    ///     id: testID,
+    ///     traits: [.timeLimit(.seconds(30))],
+    ///     body: { /* test code */ }
+    /// )
+    /// let plan = registry.finalize()
+    /// ```
+    public struct Plan: Sendable {
+        /// The entries in this plan.
+        public let entries: [Entry]
+
+        /// Creates a plan with the given entries.
+        ///
+        /// - Parameter entries: The test entries to include.
+        internal init(entries: [Entry]) {
+            self.entries = entries
+        }
+
+        /// Whether this plan has no entries.
+        public var isEmpty: Bool {
+            entries.isEmpty
+        }
+
+        /// The number of entries in this plan.
+        public var count: Int {
+            entries.count
+        }
+    }
+}
+
+// MARK: - Entry
+
+extension Test.Plan {
+    /// A single entry in an execution plan.
+    public struct Entry: Sendable {
+        /// The test identifier.
+        public let id: Test.ID
+
+        /// Traits applied to this test.
+        public let traits: [Test.Trait]
+
+        /// The test body to execute.
+        public let body: Test.Body
+
+        /// Creates a plan entry.
+        ///
+        /// - Parameters:
+        ///   - id: The test identifier.
+        ///   - traits: Traits applied to this test.
+        ///   - body: The test body.
+        public init(
+            id: Test.ID,
+            traits: [Test.Trait],
+            body: Test.Body
+        ) {
+            self.id = id
+            self.traits = traits
+            self.body = body
+        }
+    }
+}
+
+// MARK: - Filtering
+
+extension Test.Plan {
+    /// Returns a new plan containing only entries matching the predicate.
+    ///
+    /// - Parameter isIncluded: A closure that returns true for entries to include.
+    /// - Returns: A filtered plan.
+    public func filter(_ isIncluded: (Entry) -> Bool) -> Self {
+        Self(entries: entries.filter(isIncluded))
+    }
+
+    /// Returns a new plan containing only entries with the given tags.
+    ///
+    /// - Parameter tags: The tags to filter by.
+    /// - Returns: A plan containing only matching entries.
+    public func filter(tags: Set<String>) -> Self {
+        filter { entry in
+            entry.traits.contains { trait in
+                if case .tag(let name) = trait.kind {
+                    return tags.contains(name)
+                }
+                return false
+            }
+        }
+    }
+
+    /// Returns a new plan containing only entries in the given module.
+    ///
+    /// - Parameter module: The module name to filter by.
+    /// - Returns: A plan containing only matching entries.
+    public func filter(module: String) -> Self {
+        filter { $0.id.module == module }
+    }
+}
+
+// MARK: - Sorting
+
+extension Test.Plan {
+    /// Returns a new plan with entries sorted by their IDs.
+    ///
+    /// - Returns: A sorted plan.
+    public func sorted() -> Self {
+        Self(entries: entries.sorted { $0.id < $1.id })
+    }
+}
