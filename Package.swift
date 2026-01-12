@@ -23,6 +23,9 @@ let package = Package(
         .package(path: "../../swift-primitives/swift-formatting-primitives"),
         .package(path: "../swift-memory"),
         .package(path: "../swift-console"),
+        .package(path: "../swift-file-system"),
+        .package(path: "../swift-paths"),
+        .package(path: "../swift-json"),
     ],
     targets: [
         // Core Tests target - standalone
@@ -37,6 +40,9 @@ let package = Package(
                 .product(name: "Formatting Primitives", package: "swift-formatting-primitives"),
                 .product(name: "Memory", package: "swift-memory"),
                 .product(name: "Console", package: "swift-console"),
+                .product(name: "File System", package: "swift-file-system"),
+                .product(name: "Paths", package: "swift-paths"),
+                .product(name: "JSON", package: "swift-json"),
             ],
             path: "Sources/Tests"
         ),
