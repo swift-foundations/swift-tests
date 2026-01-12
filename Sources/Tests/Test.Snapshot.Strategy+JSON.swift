@@ -6,7 +6,7 @@
 //
 
 public import Test_Primitives
-import JSON
+public import JSON
 
 // MARK: - JSON Strategy
 
@@ -57,9 +57,9 @@ extension Test.Snapshot.Strategy where Value: JSON.Serializable, Format == Strin
     /// }
     /// ```
     public static var json: Self {
-        Strategy(
+        Test.Snapshot.Strategy(
             pathExtension: "json",
-            diffing: .lines,
+            diffing: Test.Snapshot.Diffing.lines,
             snapshot: { value in
                 value.jsonString(pretty: true, sortKeys: true)
             }
@@ -73,9 +73,9 @@ extension Test.Snapshot.Strategy where Value: JSON.Serializable, Format == Strin
     ///   - sortKeys: Whether to sort keys alphabetically. Default: `true`.
     /// - Returns: A JSON snapshot strategy with the specified options.
     public static func json(pretty: Bool = true, sortKeys: Bool = true) -> Self {
-        Strategy(
+        Test.Snapshot.Strategy(
             pathExtension: "json",
-            diffing: .lines,
+            diffing: Test.Snapshot.Diffing.lines,
             snapshot: { value in
                 value.jsonString(pretty: pretty, sortKeys: sortKeys)
             }
@@ -92,9 +92,9 @@ extension Test.Snapshot.Strategy where Value == JSON, Format == String {
     ///
     /// File extension: `.json`
     public static var json: Self {
-        Strategy(
+        Test.Snapshot.Strategy(
             pathExtension: "json",
-            diffing: .lines,
+            diffing: Test.Snapshot.Diffing.lines,
             snapshot: { json in
                 json.serialize(pretty: true, sortKeys: true)
             }
@@ -108,9 +108,9 @@ extension Test.Snapshot.Strategy where Value == JSON, Format == String {
     ///   - sortKeys: Whether to sort keys alphabetically.
     /// - Returns: A JSON snapshot strategy with the specified options.
     public static func json(pretty: Bool = true, sortKeys: Bool = true) -> Self {
-        Strategy(
+        Test.Snapshot.Strategy(
             pathExtension: "json",
-            diffing: .lines,
+            diffing: Test.Snapshot.Diffing.lines,
             snapshot: { json in
                 json.serialize(pretty: pretty, sortKeys: sortKeys)
             }

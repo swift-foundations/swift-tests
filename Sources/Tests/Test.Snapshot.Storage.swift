@@ -6,7 +6,7 @@
 //
 
 public import Test_Primitives
-import File_System
+public import File_System
 
 extension Test.Snapshot {
     /// Handles snapshot file I/O.
@@ -138,7 +138,7 @@ extension Test.Snapshot.Storage {
     public static func write(
         bytes: [UInt8],
         to path: File.Path
-    ) throws(StorageError) {
+    ) throws(Test.Snapshot.StorageError) {
         // Ensure parent directory exists
         if let parent = path.parent {
             try ensureDirectory(at: parent)
@@ -148,7 +148,7 @@ extension Test.Snapshot.Storage {
         do {
             try File(path).write.atomic(bytes)
         } catch {
-            throw .writeFailed(
+            throw Test.Snapshot.StorageError.writeFailed(
                 path: String(path),
                 underlying: String(describing: error)
             )
@@ -159,7 +159,7 @@ extension Test.Snapshot.Storage {
     ///
     /// - Parameter path: The directory path.
     /// - Throws: `StorageError` on failure.
-    public static func ensureDirectory(at path: File.Path) throws(StorageError) {
+    public static func ensureDirectory(at path: File.Path) throws(Test.Snapshot.StorageError) {
         let dir = File.Directory(path)
 
         // If already exists, we're done
@@ -171,7 +171,7 @@ extension Test.Snapshot.Storage {
         do {
             try dir.create.recursive()
         } catch {
-            throw .directoryCreationFailed(
+            throw Test.Snapshot.StorageError.directoryCreationFailed(
                 path: String(path),
                 underlying: String(describing: error)
             )

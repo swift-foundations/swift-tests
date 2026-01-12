@@ -6,7 +6,7 @@
 //
 
 public import Test_Primitives
-import File_System
+public import File_System
 
 extension Test.Snapshot {
     /// Runtime configuration for snapshot testing.

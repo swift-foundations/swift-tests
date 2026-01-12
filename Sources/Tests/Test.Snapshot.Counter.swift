@@ -22,15 +22,18 @@ extension Test.Snapshot {
     ///
     /// The counter is keyed by the combination of test file path and function name,
     /// ensuring unique numbering per test.
-    final class Counter: @unchecked Sendable {
+    public final class Counter: @unchecked Sendable {
         private var counts: [String: Int] = [:]
         private let lock = Mutex(())
+
+        /// Creates a new counter.
+        public init() {}
 
         /// Gets the next counter value for a key.
         ///
         /// - Parameter key: Unique key (typically `<filePath>/<function>`).
         /// - Returns: The next sequential number (1, 2, 3, ...).
-        func next(for key: String) -> Int {
+        public func next(for key: String) -> Int {
             lock.withLock { _ in
                 counts[key, default: 0] += 1
                 return counts[key]!
@@ -40,8 +43,8 @@ extension Test.Snapshot {
         /// Resets all counters.
         ///
         /// Call between test runs to ensure fresh numbering.
-        func reset() {
-            lock.withLock { _ in
+        public func reset() {
+            _ = lock.withLock { _ in
                 counts.removeAll()
             }
         }
@@ -49,8 +52,8 @@ extension Test.Snapshot {
         /// Resets the counter for a specific key.
         ///
         /// - Parameter key: The key to reset.
-        func reset(for key: String) {
-            lock.withLock { _ in
+        public func reset(for key: String) {
+            _ = lock.withLock { _ in
                 counts.removeValue(forKey: key)
             }
         }
@@ -60,7 +63,7 @@ extension Test.Snapshot {
     ///
     /// Each test execution should set up its own counter via ``withCounter(_:operation:)``.
     @TaskLocal
-    static var counter = Counter()
+    public static var counter = Counter()
 }
 
 // MARK: - Counter Key Generation
@@ -72,7 +75,7 @@ extension Test.Snapshot.Counter {
     ///   - filePath: The test file path.
     ///   - function: The test function name.
     /// - Returns: A unique key for this test.
-    static func key(filePath: String, function: String) -> String {
+    public static func key(filePath: String, function: String) -> String {
         "\(filePath)/\(function)"
     }
 }

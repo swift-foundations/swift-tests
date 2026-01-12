@@ -8,7 +8,7 @@
 public import Test_Primitives
 public import Identity_Primitives
 import Synchronization
-import File_System
+public import File_System
 
 // MARK: - Synchronous Assertion
 
