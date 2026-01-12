@@ -10,7 +10,7 @@ public import Identity_Primitives
 import Synchronization
 public import File_System
 
-// MARK: - Synchronous Assertion
+// MARK: - assertSnapshot (Synchronous)
 
 /// Asserts that a value matches its snapshot.
 ///
@@ -23,7 +23,7 @@ public import File_System
 /// @Test
 /// func testUserJSON() {
 ///     let user = User(name: "Alice", age: 30)
-///     expectSnapshot(of: user.description, as: .lines)
+///     assertSnapshot(of: user.description, as: .lines)
 /// }
 /// ```
 ///
@@ -38,7 +38,7 @@ public import File_System
 ///   - value: The value to snapshot.
 ///   - strategy: How to convert and compare the value.
 ///   - name: Optional snapshot name (auto-numbered if nil).
-///   - recording: Recording mode (uses configuration default if nil).
+///   - record: Recording mode override (uses configuration default if nil).
 ///   - fileID: Source file ID (captured automatically).
 ///   - filePath: Source path (captured automatically).
 ///   - line: Source line (captured automatically).
@@ -46,17 +46,226 @@ public import File_System
 ///   - function: Test function name (captured automatically).
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func expectSnapshot<Value, Format>(
-    of value: Value,
+public func assertSnapshot<Value: Sendable, Format: Sendable>(
+    of value: @autoclosure () throws -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: String? = nil,
-    recording: Test.Snapshot.Recording? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
     fileID: String = #fileID,
     filePath: String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: String = #function
 ) -> Test.Expectation {
+    do {
+        let capturedValue = try value()
+
+        // Check for sync snapshot support
+        guard let syncSnapshot = strategy.syncSnapshot else {
+            return makeFailingExpectation(
+                message: "Strategy does not support synchronous capture. Use async assertSnapshot.",
+                fileID: fileID,
+                filePath: filePath,
+                line: line,
+                column: column
+            )
+        }
+
+        let failure = _verifySnapshot(
+            of: capturedValue,
+            syncSnapshot: syncSnapshot,
+            strategy: strategy,
+            named: name,
+            record: recording,
+            filePath: filePath,
+            function: function
+        )
+
+        if let failure {
+            return makeFailingExpectation(
+                message: failure,
+                fileID: fileID,
+                filePath: filePath,
+                line: line,
+                column: column
+            )
+        }
+
+        return makePassingExpectation(
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+    } catch {
+        return makeFailingExpectation(
+            message: "Failed to capture value: \(error)",
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+    }
+}
+
+// MARK: - assertSnapshot (Asynchronous)
+
+/// Asserts that a value matches its snapshot (async variant).
+///
+/// Supports strategies with async snapshot capture.
+///
+/// - Parameters:
+///   - value: The value to snapshot.
+///   - strategy: How to convert and compare the value.
+///   - name: Optional snapshot name.
+///   - record: Recording mode override.
+///   - fileID: Source file ID.
+///   - filePath: Source path.
+///   - line: Source line.
+///   - column: Source column.
+///   - function: Test function name.
+/// - Returns: The snapshot expectation result.
+@discardableResult
+public func assertSnapshot<Value: Sendable, Format: Sendable>(
+    of value: @autoclosure () throws -> Value,
+    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: String? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
+    fileID: String = #fileID,
+    filePath: String = #filePath,
+    line: Int = #line,
+    column: Int = #column,
+    function: String = #function
+) async -> Test.Expectation {
+    do {
+        let capturedValue = try value()
+
+        let failure = await _verifySnapshot(
+            of: capturedValue,
+            strategy: strategy,
+            named: name,
+            record: recording,
+            filePath: filePath,
+            function: function
+        )
+
+        if let failure {
+            return makeFailingExpectation(
+                message: failure,
+                fileID: fileID,
+                filePath: filePath,
+                line: line,
+                column: column
+            )
+        }
+
+        return makePassingExpectation(
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+    } catch {
+        return makeFailingExpectation(
+            message: "Failed to capture value: \(error)",
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+    }
+}
+
+// MARK: - verifySnapshot
+
+/// Verifies that a value matches its snapshot, returning the failure message if any.
+///
+/// Unlike ``assertSnapshot(of:as:named:record:fileID:filePath:line:column:function:)``,
+/// this function returns the failure message instead of recording a test failure.
+/// Useful when you want to handle snapshot failures programmatically.
+///
+/// - Parameters:
+///   - value: The value to snapshot.
+///   - strategy: How to convert and compare the value.
+///   - name: Optional snapshot name.
+///   - record: Recording mode override.
+///   - filePath: Source path.
+///   - function: Test function name.
+/// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
+public func verifySnapshot<Value: Sendable, Format: Sendable>(
+    of value: @autoclosure () throws -> Value,
+    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: String? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
+    filePath: String = #filePath,
+    function: String = #function
+) -> String? {
+    do {
+        let capturedValue = try value()
+
+        guard let syncSnapshot = strategy.syncSnapshot else {
+            return "Strategy does not support synchronous capture. Use async verifySnapshot."
+        }
+
+        return _verifySnapshot(
+            of: capturedValue,
+            syncSnapshot: syncSnapshot,
+            strategy: strategy,
+            named: name,
+            record: recording,
+            filePath: filePath,
+            function: function
+        )
+    } catch {
+        return "Failed to capture value: \(error)"
+    }
+}
+
+/// Verifies that a value matches its snapshot (async variant).
+///
+/// - Parameters:
+///   - value: The value to snapshot.
+///   - strategy: How to convert and compare the value.
+///   - name: Optional snapshot name.
+///   - record: Recording mode override.
+///   - filePath: Source path.
+///   - function: Test function name.
+/// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
+public func verifySnapshot<Value: Sendable, Format: Sendable>(
+    of value: @autoclosure () throws -> Value,
+    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: String? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
+    filePath: String = #filePath,
+    function: String = #function
+) async -> String? {
+    do {
+        let capturedValue = try value()
+        return await _verifySnapshot(
+            of: capturedValue,
+            strategy: strategy,
+            named: name,
+            record: recording,
+            filePath: filePath,
+            function: function
+        )
+    } catch {
+        return "Failed to capture value: \(error)"
+    }
+}
+
+// MARK: - Internal Implementation
+
+/// Internal sync verification.
+private func _verifySnapshot<Value: Sendable, Format: Sendable>(
+    of value: Value,
+    syncSnapshot: @Sendable (Value) -> Format,
+    strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: String?,
+    record recording: Test.Snapshot.Recording?,
+    filePath: String,
+    function: String
+) -> String? {
     // Resolve recording mode
     let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
 
@@ -70,21 +279,11 @@ public func expectSnapshot<Value, Format>(
         function: function,
         name: name,
         counter: name == nil ? counter : 0,
-        pathExtension: strategy.pathExtension
+        pathExtension: strategy.pathExtension ?? ""
     )
 
-    // Capture the snapshot
-    guard let snapshot = strategy.snapshot else {
-        return makeFailingExpectation(
-            message: "Strategy does not support synchronous capture. Use async expectSnapshot.",
-            fileID: fileID,
-            filePath: filePath,
-            line: line,
-            column: column
-        )
-    }
-
-    let format = snapshot(value)
+    // Capture the snapshot synchronously
+    let format = syncSnapshot(value)
     let actualBytes = strategy.diffing.toBytes(format)
 
     // Perform snapshot comparison/recording
@@ -96,46 +295,18 @@ public func expectSnapshot<Value, Format>(
         mode: mode
     )
 
-    // Convert result to expectation
-    return makeExpectation(
-        result: result,
-        snapshotPath: snapshotPath,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-    )
+    return resultToFailureMessage(result)
 }
 
-// MARK: - Asynchronous Assertion
-
-/// Asserts that a value matches its snapshot (async variant).
-///
-/// Supports strategies with async snapshot capture.
-///
-/// - Parameters:
-///   - value: The value to snapshot.
-///   - strategy: How to convert and compare the value.
-///   - name: Optional snapshot name.
-///   - recording: Recording mode.
-///   - fileID: Source file ID.
-///   - filePath: Source path.
-///   - line: Source line.
-///   - column: Source column.
-///   - function: Test function name.
-/// - Returns: The snapshot expectation result.
-@discardableResult
-public func expectSnapshot<Value, Format>(
+/// Internal async verification.
+private func _verifySnapshot<Value: Sendable, Format: Sendable>(
     of value: Value,
-    as strategy: Test.Snapshot.Strategy<Value, Format>,
-    named name: String? = nil,
-    recording: Test.Snapshot.Recording? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
-    line: Int = #line,
-    column: Int = #column,
-    function: String = #function
-) async -> Test.Expectation {
+    strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: String?,
+    record recording: Test.Snapshot.Recording?,
+    filePath: String,
+    function: String
+) async -> String? {
     // Resolve recording mode
     let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
 
@@ -149,10 +320,10 @@ public func expectSnapshot<Value, Format>(
         function: function,
         name: name,
         counter: name == nil ? counter : 0,
-        pathExtension: strategy.pathExtension
+        pathExtension: strategy.pathExtension ?? ""
     )
 
-    // Capture the snapshot (async)
+    // Capture the snapshot asynchronously
     let format = await strategy.capture(value)
     let actualBytes = strategy.diffing.toBytes(format)
 
@@ -165,21 +336,13 @@ public func expectSnapshot<Value, Format>(
         mode: mode
     )
 
-    // Convert result to expectation
-    return makeExpectation(
-        result: result,
-        snapshotPath: snapshotPath,
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-    )
+    return resultToFailureMessage(result)
 }
 
 // MARK: - Core Logic
 
 /// Performs the snapshot comparison/recording logic.
-private func performSnapshot<Format>(
+private func performSnapshot<Format: Sendable>(
     actualBytes: [UInt8],
     format: Format,
     strategy: Test.Snapshot.Strategy<some Any, Format>,
@@ -274,7 +437,7 @@ private func performSnapshot<Format>(
 }
 
 /// Compares actual snapshot against reference.
-private func compareSnapshot<Format>(
+private func compareSnapshot<Format: Sendable>(
     referenceBytes: [UInt8],
     actualBytes: [UInt8],
     format: Format,
@@ -303,12 +466,30 @@ private func compareSnapshot<Format>(
     return .matched
 }
 
+/// Converts a snapshot result to a failure message.
+private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> String? {
+    switch result {
+    case .matched:
+        return nil
+    case .recorded(let path):
+        // Recording is considered success in default mode
+        return nil
+    case .failed(let diff, let referencePath):
+        var message = "Snapshot does not match reference at: \(referencePath)\n"
+        message += diff.summary
+        if let unifiedDiff = diff.unifiedDiff {
+            message += "\n\n\(unifiedDiff)"
+        }
+        return message
+    case .missingReference(let path):
+        return "No reference snapshot found at: \(path)\nRun with recording mode '.missing' or '.all' to create the reference snapshot."
+    }
+}
+
 // MARK: - Expectation Creation
 
-/// Creates a Test.Expectation from a snapshot result.
-private func makeExpectation(
-    result: Test.Snapshot.Result,
-    snapshotPath: File.Path,
+/// Creates a passing expectation.
+private func makePassingExpectation(
     fileID: String,
     filePath: String,
     line: Int,
@@ -324,65 +505,17 @@ private func makeExpectation(
     let expressionID = Test.Expression.ID(nextSnapshotExpressionID())
     let expression = Test.Expression(
         id: expressionID,
-        sourceCode: "expectSnapshot(of: ..., as: ...)",
+        sourceCode: "assertSnapshot(of: ..., as: ...)",
         sourceLocation: location
     )
 
     let expectationID = Test.Expectation.ID(nextSnapshotExpectationID())
 
-    switch result {
-    case .matched:
-        return Test.Expectation(
-            id: expectationID,
-            expression: expression,
-            isPassing: true
-        )
-
-    case .recorded(let path):
-        // Recording is considered passing (new snapshot created)
-        return Test.Expectation(
-            id: expectationID,
-            expression: expression,
-            isPassing: true,
-            failure: nil
-        )
-
-    case .failed(let diff, let referencePath):
-        let failure = Test.Expectation.Failure(
-            message: "Snapshot does not match reference",
-            expected: .init(
-                label: "reference",
-                stringValue: referencePath,
-                typeDescription: "Snapshot",
-                isNil: false
-            ),
-            actual: .init(
-                label: "actual",
-                stringValue: "(computed)",
-                typeDescription: "Snapshot",
-                isNil: false
-            ),
-            difference: diff.unifiedDiff
-        )
-        return Test.Expectation(
-            id: expectationID,
-            expression: expression,
-            isPassing: false,
-            failure: failure
-        )
-
-    case .missingReference(let path):
-        let failure = Test.Expectation.Failure(
-            message: "No reference snapshot found at: \(path)",
-            comment: "Run with recording mode '.missing' or '.all' to create the reference snapshot."
-        )
-        return Test.Expectation(
-            id: expectationID,
-            expression: expression,
-            isPassing: false,
-            failure: failure
-        )
-    }
+    return Test.Expectation(
+        id: expectationID,
+        expression: expression,
+        isPassing: true
+    )
 }
 
 /// Creates a failing expectation with a message.
@@ -403,7 +536,7 @@ private func makeFailingExpectation(
     let expressionID = Test.Expression.ID(nextSnapshotExpressionID())
     let expression = Test.Expression(
         id: expressionID,
-        sourceCode: "expectSnapshot(of: ..., as: ...)",
+        sourceCode: "assertSnapshot(of: ..., as: ...)",
         sourceLocation: location
     )
 

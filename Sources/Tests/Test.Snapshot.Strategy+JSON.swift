@@ -10,7 +10,7 @@ public import JSON
 
 // MARK: - JSON Strategy
 
-extension Test.Snapshot.Strategy where Value: JSON.Serializable, Format == String {
+extension Test.Snapshot.Strategy where Value: JSON.Serializable & Sendable, Format == String {
     /// JSON snapshot strategy with sorted keys and pretty printing.
     ///
     /// Serializes values conforming to `JSON.Serializable` with deterministic output:
@@ -44,7 +44,7 @@ extension Test.Snapshot.Strategy where Value: JSON.Serializable, Format == Strin
     /// @Test
     /// func testUserSnapshot() {
     ///     let user = User(name: "Alice", age: 30)
-    ///     expectSnapshot(of: user, as: .json)
+    ///     assertSnapshot(of: user, as: .json)
     /// }
     /// ```
     ///
