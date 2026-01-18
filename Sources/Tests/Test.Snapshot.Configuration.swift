@@ -7,6 +7,7 @@
 
 public import Test_Primitives
 public import File_System
+internal import Kernel
 
 extension Test.Snapshot {
     /// Runtime configuration for snapshot testing.
@@ -86,26 +87,13 @@ extension Test.Snapshot.Configuration {
         }
 
         // 3. Environment variable
-        if let env = getEnvironment("SWIFT_SNAPSHOT_RECORD"),
+        if let env = Kernel.Environment.get("SWIFT_SNAPSHOT_RECORD"),
            let mode = Test.Snapshot.Recording(rawValue: env) {
             return mode
         }
 
         // 4. Default
         return .missing
-    }
-
-    /// Gets an environment variable value.
-    private static func getEnvironment(_ name: String) -> String? {
-        #if canImport(Darwin) || canImport(Glibc) || canImport(Musl)
-        guard let ptr = getenv(name) else { return nil }
-        return String(cString: ptr)
-        #elseif os(Windows)
-        // Windows environment variable lookup would go here
-        return nil
-        #else
-        return nil
-        #endif
     }
 }
 
@@ -144,13 +132,3 @@ extension Test.Snapshot {
         }
     }
 }
-
-// MARK: - C interop
-
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#elseif canImport(Musl)
-import Musl
-#endif
