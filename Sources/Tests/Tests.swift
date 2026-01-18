@@ -12,6 +12,7 @@
 public import Binary_Primitives
 public import Formatting_Primitives
 public import Memory
+public import Dependency_Primitives
 
 /// Namespace for performance testing utilities integrated with Swift Testing.
 ///

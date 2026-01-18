@@ -7,6 +7,7 @@
 
 public import Test_Primitives
 public import File_System
+public import Dependency_Primitives
 internal import Kernel
 
 extension Test.Snapshot {
@@ -56,9 +57,18 @@ extension Test.Snapshot {
             Configuration()
         }
 
-        /// Task-local storage for current configuration.
-        @TaskLocal
-        public static var current: Configuration?
+        /// Dependency key for snapshot configuration.
+        ///
+        /// Provides optional configuration for each scope.
+        public enum Key: Dependency.Key {
+            public static var liveValue: Configuration? { nil }
+            public static var testValue: Configuration? { nil }
+        }
+
+        /// Current configuration for this scope.
+        public static var current: Configuration? {
+            Dependency.Scope.current[Key.self]
+        }
     }
 }
 
@@ -112,7 +122,7 @@ extension Test.Snapshot {
         _ configuration: Configuration,
         operation: () throws -> T
     ) rethrows -> T {
-        try Configuration.$current.withValue(configuration) {
+        try Dependency.Scope.with({ $0[Configuration.Key.self] = configuration }) {
             try operation()
         }
     }
@@ -127,7 +137,7 @@ extension Test.Snapshot {
         _ configuration: Configuration,
         operation: () async throws -> T
     ) async rethrows -> T {
-        try await Configuration.$current.withValue(configuration) {
+        try await Dependency.Scope.with({ $0[Configuration.Key.self] = configuration }) {
             try await operation()
         }
     }

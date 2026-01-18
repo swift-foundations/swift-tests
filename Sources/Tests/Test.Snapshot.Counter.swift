@@ -6,6 +6,7 @@
 //
 
 public import Test_Primitives
+public import Dependency_Primitives
 import Synchronization
 
 extension Test.Snapshot {
@@ -59,11 +60,20 @@ extension Test.Snapshot {
         }
     }
 
-    /// Task-local counter for snapshot numbering.
+    /// Dependency key for snapshot counter.
+    ///
+    /// Provides a default counter for each scope.
+    public enum CounterKey: Dependency.Key {
+        public static var liveValue: Counter { Counter() }
+        public static var testValue: Counter { Counter() }
+    }
+
+    /// Current counter for snapshot numbering.
     ///
     /// Each test execution should set up its own counter via ``withCounter(_:operation:)``.
-    @TaskLocal
-    public static var counter = Counter()
+    public static var counter: Counter {
+        Dependency.Scope.current[CounterKey.self]
+    }
 }
 
 // MARK: - Counter Key Generation
@@ -100,7 +110,7 @@ extension Test.Snapshot {
         _ counter: Counter = Counter(),
         operation: () throws -> T
     ) rethrows -> T {
-        try $counter.withValue(counter) {
+        try Dependency.Scope.with({ $0[CounterKey.self] = counter }) {
             try operation()
         }
     }
@@ -115,7 +125,7 @@ extension Test.Snapshot {
         _ counter: Counter = Counter(),
         operation: () async throws -> T
     ) async rethrows -> T {
-        try await $counter.withValue(counter) {
+        try await Dependency.Scope.with({ $0[CounterKey.self] = counter }) {
             try await operation()
         }
     }
