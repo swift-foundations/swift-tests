@@ -9,6 +9,7 @@ public import Test_Primitives
 public import File_System
 public import Dependency_Primitives
 internal import Kernel
+internal import Strings
 
 extension Test.Snapshot {
     /// Runtime configuration for snapshot testing.
@@ -98,7 +99,7 @@ extension Test.Snapshot.Configuration {
 
         // 3. Environment variable
         if let env = Kernel.Environment.get("SWIFT_SNAPSHOT_RECORD"),
-           let mode = Test.Snapshot.Recording(rawValue: env) {
+           let mode = Test.Snapshot.Recording(rawValue: Swift.String(env)) {
             return mode
         }
 

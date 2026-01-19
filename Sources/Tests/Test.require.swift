@@ -40,8 +40,8 @@ public import Test_Primitives
 public func require(
     _ condition: Bool,
     _ comment: Test.Text? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
 ) throws(RequirementFailed) {
@@ -74,8 +74,8 @@ public func require(
 public func require<T>(
     _ optional: T?,
     _ comment: Test.Text? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
 ) throws(RequirementFailed) -> T {
@@ -111,8 +111,8 @@ public func require<T: Equatable>(
     _ lhs: T,
     equals rhs: T,
     _ comment: Test.Text? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
 ) throws(RequirementFailed) {
@@ -165,7 +165,7 @@ public struct RequirementFailed: Error, Sendable {
 // MARK: - CustomStringConvertible
 
 extension RequirementFailed: CustomStringConvertible {
-    public var description: String {
+    public var description: Swift.String {
         "\(message.plainText) at \(sourceLocation)"
     }
 }

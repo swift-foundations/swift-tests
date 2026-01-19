@@ -94,16 +94,16 @@ extension Tests {
     /// including actual vs expected values and contextual information for debugging.
     public enum Error: Swift.Error, CustomStringConvertible {
         /// Performance threshold was exceeded in a trait-based test.
-        case thresholdExceeded(test: String, metric: Metric, expected: Duration, actual: Duration)
+        case thresholdExceeded(test: Swift.String, metric: Metric, expected: Duration, actual: Duration)
 
         /// Memory allocation limit was exceeded during test execution.
-        case allocationLimitExceeded(test: String, limit: Int, actual: Int)
+        case allocationLimitExceeded(test: Swift.String, limit: Int, actual: Int)
 
         /// Memory leak was detected during test execution.
-        case memoryLeakDetected(test: String, netAllocations: Int, netBytes: Int)
+        case memoryLeakDetected(test: Swift.String, netAllocations: Int, netBytes: Int)
 
         /// Peak memory limit was exceeded during test execution.
-        case peakMemoryExceeded(test: String, limit: Int, actual: Int)
+        case peakMemoryExceeded(test: Swift.String, limit: Int, actual: Int)
 
         /// Performance expectation assertion failed.
         case performanceExpectationFailed(metric: Metric, threshold: Duration, actual: Duration)
@@ -117,7 +117,7 @@ extension Tests {
             tolerance: Double
         )
 
-        public var description: String {
+        public var description: Swift.String {
             switch self {
             case .thresholdExceeded(let test, let metric, let expected, let actual):
                 return """
@@ -174,7 +174,7 @@ extension Tests {
             }
         }
 
-        private func formatBytes(_ bytes: Int) -> String {
+        private func formatBytes(_ bytes: Int) -> Swift.String {
             bytes.formatted(.bytes)
         }
     }

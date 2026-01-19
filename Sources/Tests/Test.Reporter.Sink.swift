@@ -71,7 +71,7 @@ extension Test.Reporter {
     /// final class JSONFileSink: Test.Reporter.SinkImplementation, @unchecked Sendable {
     ///     private let fileHandle: FileHandle
     ///
-    ///     init(path: String) throws {
+    ///     init(path: Swift.String) throws {
     ///         self.fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
     ///     }
     ///

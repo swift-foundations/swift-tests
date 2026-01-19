@@ -13,7 +13,7 @@ public import Time_Primitives
 
 extension Test.Benchmark {
     /// Metric to use for performance threshold comparison.
-    public enum Metric: String, Sendable, Codable {
+    public enum Metric: Swift.String, Sendable, Codable {
         case min
         case max
         case median

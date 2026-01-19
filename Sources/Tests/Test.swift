@@ -11,7 +11,7 @@
 
 extension Tests {
     /// Performance metrics that can be asserted against
-    public enum Metric: String, Sendable {
+    public enum Metric: Swift.String, Sendable {
         case min
         case max
         case median

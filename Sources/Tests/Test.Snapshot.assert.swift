@@ -49,13 +49,13 @@ public import File_System
 public func assertSnapshot<Value: Sendable, Format: Sendable>(
     of value: @autoclosure () throws -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
-    named name: String? = nil,
+    named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
-    function: String = #function
+    function: Swift.String = #function
 ) -> Test.Expectation {
     do {
         let capturedValue = try value()
@@ -129,13 +129,13 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 public func assertSnapshot<Value: Sendable, Format: Sendable>(
     of value: @autoclosure () throws -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
-    named name: String? = nil,
+    named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
-    function: String = #function
+    function: Swift.String = #function
 ) async -> Test.Expectation {
     do {
         let capturedValue = try value()
@@ -195,11 +195,11 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 public func verifySnapshot<Value: Sendable, Format: Sendable>(
     of value: @autoclosure () throws -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
-    named name: String? = nil,
+    named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
-    filePath: String = #filePath,
-    function: String = #function
-) -> String? {
+    filePath: Swift.String = #filePath,
+    function: Swift.String = #function
+) -> Swift.String? {
     do {
         let capturedValue = try value()
 
@@ -234,10 +234,10 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
 public func verifySnapshot<Value: Sendable, Format: Sendable>(
     of value: @autoclosure () throws -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
-    named name: String? = nil,
+    named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
-    filePath: String = #filePath,
-    function: String = #function
+    filePath: Swift.String = #filePath,
+    function: Swift.String = #function
 ) async -> String? {
     do {
         let capturedValue = try value()
@@ -261,11 +261,11 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
     of value: Value,
     syncSnapshot: @Sendable (Value) -> Format,
     strategy: Test.Snapshot.Strategy<Value, Format>,
-    named name: String?,
+    named name: Swift.String?,
     record recording: Test.Snapshot.Recording?,
-    filePath: String,
-    function: String
-) -> String? {
+    filePath: Swift.String,
+    function: Swift.String
+) -> Swift.String? {
     // Resolve recording mode
     let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
 
@@ -302,10 +302,10 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
 private func _verifySnapshot<Value: Sendable, Format: Sendable>(
     of value: Value,
     strategy: Test.Snapshot.Strategy<Value, Format>,
-    named name: String?,
+    named name: Swift.String?,
     record recording: Test.Snapshot.Recording?,
-    filePath: String,
-    function: String
+    filePath: Swift.String,
+    function: Swift.String
 ) async -> String? {
     // Resolve recording mode
     let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
@@ -442,7 +442,7 @@ private func compareSnapshot<Format: Sendable>(
     actualBytes: [UInt8],
     format: Format,
     strategy: Test.Snapshot.Strategy<some Any, Format>,
-    path: String
+    path: Swift.String
 ) -> Test.Snapshot.Result {
     // Quick byte comparison first
     if referenceBytes == actualBytes {
@@ -467,7 +467,7 @@ private func compareSnapshot<Format: Sendable>(
 }
 
 /// Converts a snapshot result to a failure message.
-private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> String? {
+private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> Swift.String? {
     switch result {
     case .matched:
         return nil
@@ -490,8 +490,8 @@ private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> String? {
 
 /// Creates a passing expectation.
 private func makePassingExpectation(
-    fileID: String,
-    filePath: String,
+    fileID: Swift.String,
+    filePath: Swift.String,
     line: Int,
     column: Int
 ) -> Test.Expectation {
@@ -520,9 +520,9 @@ private func makePassingExpectation(
 
 /// Creates a failing expectation with a message.
 private func makeFailingExpectation(
-    message: String,
-    fileID: String,
-    filePath: String,
+    message: Swift.String,
+    fileID: Swift.String,
+    filePath: Swift.String,
     line: Int,
     column: Int
 ) -> Test.Expectation {

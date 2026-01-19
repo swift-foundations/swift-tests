@@ -41,8 +41,8 @@ import Synchronization
 public func expect(
     _ condition: Bool,
     _ comment: Test.Text? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
 ) -> Test.Expectation {
@@ -98,8 +98,8 @@ public func expect<T: Equatable>(
     _ lhs: T,
     equals rhs: T,
     _ comment: Test.Text? = nil,
-    fileID: String = #fileID,
-    filePath: String = #filePath,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
 ) -> Test.Expectation {

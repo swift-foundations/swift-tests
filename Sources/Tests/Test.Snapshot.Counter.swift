@@ -34,7 +34,7 @@ extension Test.Snapshot {
         ///
         /// - Parameter key: Unique key (typically `<filePath>/<function>`).
         /// - Returns: The next sequential number (1, 2, 3, ...).
-        public func next(for key: String) -> Int {
+        public func next(for key: Swift.String) -> Int {
             lock.withLock { _ in
                 counts[key, default: 0] += 1
                 return counts[key]!
@@ -53,7 +53,7 @@ extension Test.Snapshot {
         /// Resets the counter for a specific key.
         ///
         /// - Parameter key: The key to reset.
-        public func reset(for key: String) {
+        public func reset(for key: Swift.String) {
             _ = lock.withLock { _ in
                 counts.removeValue(forKey: key)
             }
@@ -85,7 +85,7 @@ extension Test.Snapshot.Counter {
     ///   - filePath: The test file path.
     ///   - function: The test function name.
     /// - Returns: A unique key for this test.
-    public static func key(filePath: String, function: String) -> String {
+    public static func key(filePath: Swift.String, function: Swift.String) -> Swift.String {
         "\(filePath)/\(function)"
     }
 }

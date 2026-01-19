@@ -47,7 +47,7 @@ extension Test {
         ///
         /// This is a fallback for when compile-time collection is not available.
         @inlinable
-        public static func register(_ name: String) {
+        public static func register(_ name: Swift.String) {
             _factoryNames.withLock { names in
                 names.append(name)
             }

@@ -23,7 +23,7 @@ extension Test.Snapshot.Strategy where Value: JSON.Serializable & Sendable, Form
     ///
     /// ```swift
     /// struct User: JSON.Serializable {
-    ///     let name: String
+    ///     let name: Swift.String
     ///     let age: Int
     ///
     ///     static func serialize(_ value: User) -> JSON {

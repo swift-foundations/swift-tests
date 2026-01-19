@@ -103,8 +103,8 @@ extension Test {
                     // Record the error as an issue
                     let issue = Test.Issue(
                         kind: .errorCaught(
-                            type: String(describing: type(of: error)),
-                            description: Test.Text(String(describing: error))
+                            type: Swift.String(describing: type(of: error)),
+                            description: Test.Text(Swift.String(describing: error))
                         ),
                         sourceLocation: entry.id.sourceLocation
                     )
@@ -160,7 +160,7 @@ extension Test {
             // Extract trait configurations
             var timeLimit: Duration?
             var timedConfig: TimedConfig?
-            var exclusionGroup: String?
+            var exclusionGroup: Swift.String?
 
             for trait in entry.traits {
                 switch trait.kind {
@@ -221,7 +221,7 @@ extension Test {
 
         /// Runs an operation with timed measurement.
         private func runTimed(
-            name: String,
+            name: Swift.String,
             config: TimedConfig,
             operation: @Sendable () async throws -> Void
         ) async throws {
@@ -374,9 +374,9 @@ extension Test.Runner {
     /// Error thrown when a performance threshold is exceeded.
     public struct PerformanceThresholdExceeded: Error, Sendable {
         /// The test name.
-        public let test: String
+        public let test: Swift.String
         /// The metric that exceeded.
-        public let metric: String
+        public let metric: Swift.String
         /// The expected threshold.
         public let expected: Duration
         /// The actual measured value.
@@ -393,17 +393,17 @@ extension Test.Runner {
         var warmup: Int = 0
         var printResults: Bool = true
         var threshold: Duration?
-        var metric: String = "median"
+        var metric: Swift.String = "median"
 
         /// Decodes configuration from a trait string.
-        static func decode(from string: String) -> TimedConfig? {
+        static func decode(from string: Swift.String) -> TimedConfig? {
             var config = TimedConfig()
 
             for part in string.split(separator: ";") {
                 let keyValue = part.split(separator: "=", maxSplits: 1)
                 guard keyValue.count == 2 else { continue }
-                let key = String(keyValue[0])
-                let value = String(keyValue[1])
+                let key = Swift.String(keyValue[0])
+                let value = Swift.String(keyValue[1])
 
                 switch key {
                 case "i":
@@ -464,7 +464,7 @@ public actor ExclusionController {
     /// - Returns: The result of the operation.
     /// - Throws: Rethrows any error from the operation.
     public func withExclusiveAccess<T: Sendable>(
-        group: String,
+        group: Swift.String,
         _ operation: @Sendable () async throws -> T
     ) async rethrows -> T {
         // Wait until we can acquire the lock for this group
@@ -488,7 +488,7 @@ public actor ExclusionController {
     }
 
     /// Releases the lock for a group and resumes one waiter.
-    private func release(group: String) {
+    private func release(group: Swift.String) {
         runningGroups.remove(group)
 
         // Resume one waiter for this group

@@ -66,7 +66,7 @@ extension Test.Trait {
     /// - Parameter group: A string identifier for the exclusion group.
     ///   Use a fully-qualified name (e.g., "ModuleName.TypeName") to avoid collisions.
     /// - Returns: An exclusive trait for the specified group.
-    public static func exclusive(group: String) -> Self {
+    public static func exclusive(group: Swift.String) -> Self {
         .custom(exclusiveTraitName, value: group)
     }
 }
@@ -77,7 +77,7 @@ extension Test.Trait {
     /// Extracts the exclusion group from a trait, if present.
     ///
     /// - Returns: The exclusion group if this is an exclusive trait, nil otherwise.
-    public var exclusionGroup: String? {
+    public var exclusionGroup: Swift.String? {
         guard case .custom(let name, let value) = kind,
               name == Self.exclusiveTraitName else {
             return nil
@@ -90,7 +90,7 @@ extension Collection where Element == Test.Trait {
     /// Finds the exclusion group from a collection of traits.
     ///
     /// - Returns: The exclusion group if present.
-    public var exclusionGroup: String? {
+    public var exclusionGroup: Swift.String? {
         for trait in self {
             if let group = trait.exclusionGroup {
                 return group

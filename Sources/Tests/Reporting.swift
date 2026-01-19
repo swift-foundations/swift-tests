@@ -23,7 +23,7 @@ extension Tests {
     /// Tests.printPerformance("Operation Name", measurement)
     /// ```
     public static func printPerformance(
-        _ name: String,
+        _ name: Swift.String,
         _ measurement: Tests.Measurement,
         allocations: [Int]? = nil,
         peakMemory: Int? = nil
@@ -65,7 +65,7 @@ extension Tests {
         print(output)
     }
 
-    private static func formatBytes(_ bytes: Int) -> String {
+    private static func formatBytes(_ bytes: Int) -> Swift.String {
         bytes.formatted(.bytes)
     }
 }
@@ -97,33 +97,33 @@ extension Tests {
         }
 
         /// Apply style to text using detected capability.
-        static func styled(_ text: String, _ style: OutputStyle) -> String {
+        static func styled(_ text: Swift.String, _ style: OutputStyle) -> Swift.String {
             style.style.apply(to: text, capability: consoleCapability)
         }
     }
 
     /// Center text within a given width.
-    internal static func centerText(_ text: String, width: Int) -> String {
+    internal static func centerText(_ text: Swift.String, width: Int) -> Swift.String {
         let padding = width - text.count
         guard padding > 0 else { return text }
 
         let leftPad = padding / 2
         let rightPad = padding - leftPad
 
-        return String(repeating: " ", count: leftPad) + text
-            + String(repeating: " ", count: rightPad)
+        return Swift.String(repeating: " ", count: leftPad) + text
+            + Swift.String(repeating: " ", count: rightPad)
     }
 }
 
 /// Performance comparison report
 public struct PerformanceComparison: Sendable {
-    public let name: String
+    public let name: Swift.String
     public let current: Tests.Measurement
     public let baseline: Tests.Measurement
     public let metric: Tests.Metric
 
     public init(
-        name: String,
+        name: Swift.String,
         current: Tests.Measurement,
         baseline: Tests.Measurement,
         metric: Tests.Metric = .median
@@ -154,7 +154,7 @@ public struct PerformanceComparison: Sendable {
         change < 0
     }
 
-    public func formatted() -> String {
+    public func formatted() -> Swift.String {
         let changeSymbol = isRegression ? "↑" : "↓"
         let changeEmoji = isRegression ? "🔴" : "🟢"
 

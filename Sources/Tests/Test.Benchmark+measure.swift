@@ -47,7 +47,7 @@ extension Test.Benchmark {
     public static func measure<E: Swift.Error>(
         iterations: Int = 10,
         warmup: Int = 0,
-        name: String? = nil,
+        name: Swift.String? = nil,
         threshold: Duration? = nil,
         metric: Metric = .median,
         _ body: () throws(E) -> Void
@@ -95,7 +95,7 @@ extension Test.Benchmark {
     public static func measure<E: Swift.Error>(
         iterations: Int = 10,
         warmup: Int = 0,
-        name: String? = nil,
+        name: Swift.String? = nil,
         threshold: Duration? = nil,
         metric: Metric = .median,
         _ body: () async throws(E) -> Void
@@ -140,7 +140,7 @@ extension Test.Benchmark {
 
     /// Prints a performance measurement summary.
     @usableFromInline
-    static func printPerformance(_ name: String, _ measurement: Measurement) {
+    static func printPerformance(_ name: Swift.String, _ measurement: Measurement) {
         print("""
             ⏱️ \(name)
                Iterations: \(measurement.durations.count)

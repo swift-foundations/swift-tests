@@ -64,14 +64,14 @@ extension Test.Benchmark.Configuration {
     }
 
     /// Decodes configuration from a trait string.
-    public static func decode(from string: String) -> Configuration? {
+    public static func decode(from string: Swift.String) -> Configuration? {
         var config = Configuration()
 
         for part in string.split(separator: ";") {
             let keyValue = part.split(separator: "=", maxSplits: 1)
             guard keyValue.count == 2 else { continue }
-            let key = String(keyValue[0])
-            let value = String(keyValue[1])
+            let key = Swift.String(keyValue[0])
+            let value = Swift.String(keyValue[1])
 
             switch key {
             case "i":

@@ -38,11 +38,11 @@ extension Test.Snapshot.Storage {
     ///   - pathExtension: File extension for the snapshot.
     /// - Returns: The computed snapshot file path.
     public static func path(
-        testFilePath: String,
-        function: String,
-        name: String?,
+        testFilePath: Swift.String,
+        function: Swift.String,
+        name: Swift.String?,
         counter: Int,
-        pathExtension: String
+        pathExtension: Swift.String
     ) -> File.Path {
         // Parse test file path to get directory and filename
         let testPath: File.Path = File.Path(stringLiteral: testFilePath)
@@ -53,11 +53,11 @@ extension Test.Snapshot.Storage {
         let snapshotDir = testDir / "__Snapshots__" / testFileName
 
         // Build filename: <function>.<counter|name>.<ext>
-        let identifier: String
+        let identifier: Swift.String
         if let name = name {
             identifier = sanitizePathComponent(name)
         } else {
-            identifier = String(counter)
+            identifier = Swift.String(counter)
         }
 
         // Clean function name (remove parentheses and parameters)
@@ -70,7 +70,7 @@ extension Test.Snapshot.Storage {
     /// Sanitizes a string for use as a path component.
     ///
     /// Replaces non-alphanumeric characters with hyphens.
-    private static func sanitizePathComponent(_ string: String) -> String {
+    private static func sanitizePathComponent(_ string: Swift.String) -> Swift.String {
         var result = ""
         result.reserveCapacity(string.count)
         for char in string {
@@ -89,9 +89,9 @@ extension Test.Snapshot.Storage {
     /// Cleans a function name for use in filenames.
     ///
     /// Removes parentheses and parameters: `testFoo(bar:)` → `testFoo`
-    private static func sanitizeFunctionName(_ function: String) -> String {
+    private static func sanitizeFunctionName(_ function: Swift.String) -> Swift.String {
         if let parenIndex = function.firstIndex(of: "(") {
-            return String(function[..<parenIndex])
+            return Swift.String(function[..<parenIndex])
         }
         return function
     }
@@ -149,8 +149,8 @@ extension Test.Snapshot.Storage {
             try File(path).write.atomic(bytes)
         } catch {
             throw Test.Snapshot.StorageError.writeFailed(
-                path: String(path),
-                underlying: String(describing: error)
+                path: Swift.String(path),
+                underlying: Swift.String(describing: error)
             )
         }
     }
@@ -172,8 +172,8 @@ extension Test.Snapshot.Storage {
             try dir.create.recursive()
         } catch {
             throw Test.Snapshot.StorageError.directoryCreationFailed(
-                path: String(path),
-                underlying: String(describing: error)
+                path: Swift.String(path),
+                underlying: Swift.String(describing: error)
             )
         }
     }
@@ -185,18 +185,18 @@ extension Test.Snapshot {
     /// Errors that can occur during snapshot storage operations.
     public enum StorageError: Error, Sendable {
         /// Failed to read a snapshot file.
-        case readFailed(path: String, underlying: String)
+        case readFailed(path: Swift.String, underlying: Swift.String)
 
         /// Failed to write a snapshot file.
-        case writeFailed(path: String, underlying: String)
+        case writeFailed(path: Swift.String, underlying: Swift.String)
 
         /// Failed to create the snapshot directory.
-        case directoryCreationFailed(path: String, underlying: String)
+        case directoryCreationFailed(path: Swift.String, underlying: Swift.String)
     }
 }
 
 extension Test.Snapshot.StorageError: CustomStringConvertible {
-    public var description: String {
+    public var description: Swift.String {
         switch self {
         case .readFailed(let path, let underlying):
             return "Failed to read snapshot at '\(path)': \(underlying)"

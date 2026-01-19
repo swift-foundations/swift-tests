@@ -15,9 +15,9 @@ extension Test.Benchmark {
     /// Errors thrown during performance testing operations.
     public enum Error: Swift.Error, CustomStringConvertible {
         /// Performance threshold was exceeded.
-        case thresholdExceeded(test: String, metric: Metric, expected: Duration, actual: Duration)
+        case thresholdExceeded(test: Swift.String, metric: Metric, expected: Duration, actual: Duration)
 
-        public var description: String {
+        public var description: Swift.String {
             switch self {
             case .thresholdExceeded(let test, let metric, let expected, let actual):
                 return """

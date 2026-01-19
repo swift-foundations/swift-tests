@@ -27,7 +27,7 @@ extension Test {
         public let body: Test.Body
 
         /// Optional suite ID if this test belongs to a suite.
-        public let suiteID: String?
+        public let suiteID: Swift.String?
 
         /// Creates a test registration.
         ///
@@ -40,7 +40,7 @@ extension Test {
             id: Test.ID,
             traits: [Test.Trait],
             body: Test.Body,
-            suiteID: String? = nil
+            suiteID: Swift.String? = nil
         ) {
             self.id = id
             self.traits = traits

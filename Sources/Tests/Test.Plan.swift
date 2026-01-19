@@ -110,7 +110,7 @@ extension Test.Plan {
     ///
     /// - Parameter module: The module name to filter by.
     /// - Returns: A plan containing only matching entries.
-    public func filter(module: String) -> Self {
+    public func filter(module: Swift.String) -> Self {
         filter { $0.id.module == module }
     }
 }
