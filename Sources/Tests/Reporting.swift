@@ -9,10 +9,10 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Binary_Primitives
-public import Formatting_Primitives
-public import Time_Primitives
-public import Console
+import Binary_Primitives
+import Formatting_Primitives
+import Time_Primitives
+import Console
 
 extension Tests {
     /// Print a performance measurement summary
@@ -31,13 +31,13 @@ extension Tests {
         var output = """
             ⏱️ \(name)
                Iterations: \(measurement.durations.count)
-               Min:        \(formatDuration(measurement.min))
-               Median:     \(formatDuration(measurement.median))
-               Mean:       \(formatDuration(measurement.mean))
-               p95:        \(formatDuration(measurement.p95))
-               p99:        \(formatDuration(measurement.p99))
-               Max:        \(formatDuration(measurement.max))
-               StdDev:     \(formatDuration(measurement.standardDeviation))
+               Min:        \(measurement.min.formatted())
+               Median:     \(measurement.median.formatted())
+               Mean:       \(measurement.mean.formatted())
+               p95:        \(measurement.p95.formatted())
+               p99:        \(measurement.p99.formatted())
+               Max:        \(measurement.max.formatted())
+               StdDev:     \(measurement.standardDeviation.formatted())
             """
 
         if let allocations = allocations, !allocations.isEmpty {
@@ -48,26 +48,23 @@ extension Tests {
             output += """
 
                    Allocations:
-                     Min:      \(formatBytes(minAlloc))
-                     Median:   \(formatBytes(allocations.sorted()[allocations.count / 2]))
-                     Max:      \(formatBytes(maxAlloc))
-                     Avg:      \(formatBytes(avgAlloc))
+                     Min:      \(minAlloc.formatted(.bytes))
+                     Median:   \(allocations.sorted()[allocations.count / 2].formatted(.bytes))
+                     Max:      \(maxAlloc.formatted(.bytes))
+                     Avg:      \(avgAlloc.formatted(.bytes))
                 """
         }
 
         if let peak = peakMemory {
             output += """
 
-                   Peak Memory: \(formatBytes(peak))
+                   Peak Memory: \(peak.formatted(.bytes))
                 """
         }
 
         print(output)
     }
 
-    private static func formatBytes(_ bytes: Int) -> Swift.String {
-        bytes.formatted(.bytes)
-    }
 }
 
 // MARK: - Console Styling Support
@@ -115,72 +112,9 @@ extension Tests {
     }
 }
 
-/// Performance comparison report
-public struct PerformanceComparison: Sendable {
-    public let name: Swift.String
-    public let current: Tests.Measurement
-    public let baseline: Tests.Measurement
-    public let metric: Tests.Metric
-
-    public init(
-        name: Swift.String,
-        current: Tests.Measurement,
-        baseline: Tests.Measurement,
-        metric: Tests.Metric = .median
-    ) {
-        self.name = name
-        self.current = current
-        self.baseline = baseline
-        self.metric = metric
-    }
-
-    public var currentValue: Duration {
-        metric.extract(from: current)
-    }
-
-    public var baselineValue: Duration {
-        metric.extract(from: baseline)
-    }
-
-    public var change: Double {
-        (currentValue.inSeconds - baselineValue.inSeconds) / baselineValue.inSeconds
-    }
-
-    public var isRegression: Bool {
-        change > 0
-    }
-
-    public var isImprovement: Bool {
-        change < 0
-    }
-
-    public func formatted() -> Swift.String {
-        let changeSymbol = isRegression ? "↑" : "↓"
-        let changeEmoji = isRegression ? "🔴" : "🟢"
-
-        let nameColored =
-            isRegression
-            ? Tests.OutputStyle.styled(name, .red)
-            : Tests.OutputStyle.styled(name, .green)
-
-        let changeText = "\(changeSymbol) \(abs(change).formatted(.percent.precision(1)))"
-        let changeColored =
-            isRegression
-            ? Tests.OutputStyle.styled(changeText, .red)
-            : Tests.OutputStyle.styled(changeText, .green)
-
-        return """
-            \(changeEmoji) \(nameColored)
-                Baseline: \(Tests.formatDuration(baselineValue))
-                Current:  \(Tests.formatDuration(currentValue))
-                Change:   \(changeColored)
-            """
-    }
-}
-
 extension Tests {
     /// Print comparison report for multiple benchmarks
-    public static func printComparisonReport(_ comparisons: [PerformanceComparison]) {
+    public static func printComparisonReport(_ comparisons: [Tests.Comparison]) {
         let boxWidth = 58
         let title = "PERFORMANCE COMPARISON REPORT"
         let centeredTitle = centerText(title, width: boxWidth)
@@ -203,76 +137,5 @@ extension Tests {
         let summaryColored = OutputStyle.styled(summaryText, .bold)
         print(summaryColored)
         print("╚══════════════════════════════════════════════════════════╝\n")
-    }
-}
-
-/// Performance benchmark suite
-public struct PerformanceSuite {
-    /// Name of the performance suite for reporting.
-    public let name: String
-    private var benchmarks: [(name: String, measurement: Tests.Measurement)] = []
-
-    /// Creates a new performance suite with the given name.
-    public init(name: String) {
-        self.name = name
-    }
-
-    /// Run and measure a synchronous benchmark operation.
-    public mutating func benchmark<T>(
-        _ name: String,
-        warmup: Int = 0,
-        iterations: Int = 10,
-        operation: () -> T
-    ) -> T {
-        let (result, measurement) = Tests.measure(
-            warmup: warmup,
-            iterations: iterations,
-            operation: operation
-        )
-        benchmarks.append((name, measurement))
-        return result
-    }
-
-    /// Run and measure an asynchronous benchmark operation.
-    public mutating func benchmark<T>(
-        _ name: String,
-        warmup: Int = 0,
-        iterations: Int = 10,
-        operation: () async throws -> T
-    ) async rethrows -> T {
-        let (result, measurement) = try await Tests.measure(
-            warmup: warmup,
-            iterations: iterations,
-            operation: operation
-        )
-        benchmarks.append((name, measurement))
-        return result
-    }
-
-    /// Print a formatted report of all benchmarks in the suite.
-    public func printReport(metric: Tests.Metric = .median) {
-        let boxWidth = 58
-        let centeredTitle = Tests.centerText(name, width: boxWidth)
-
-        print("\n╔══════════════════════════════════════════════════════════╗")
-        print("║\(centeredTitle)║")
-        print("╚══════════════════════════════════════════════════════════╝\n")
-
-        let maxNameLength = benchmarks.map { $0.name.count }.max() ?? 0
-
-        for (name, measurement) in benchmarks {
-            let value = metric.extract(from: measurement)
-            let paddedName = padRight(name, toLength: maxNameLength)
-            print("  \(paddedName)  \(Tests.formatDuration(value))")
-        }
-
-        print("\n╚══════════════════════════════════════════════════════════╝\n")
-    }
-
-    private func padRight(_ string: String, toLength length: Int) -> String {
-        if string.count >= length {
-            return string
-        }
-        return string + String(repeating: " ", count: length - string.count)
     }
 }

@@ -50,8 +50,8 @@ extension Test.Benchmark {
 
 extension Test.Benchmark.Configuration {
     /// Encodes the configuration to a string for trait storage.
-    public func encode() -> String {
-        var parts: [String] = []
+    public func encode() -> Swift.String {
+        var parts: [Swift.String] = []
         parts.append("i=\(iterations)")
         parts.append("w=\(warmup)")
         parts.append("p=\(printResults)")
@@ -64,8 +64,8 @@ extension Test.Benchmark.Configuration {
     }
 
     /// Decodes configuration from a trait string.
-    public static func decode(from string: Swift.String) -> Configuration? {
-        var config = Configuration()
+    public static func decode(from string: Swift.String) -> Self? {
+        var config = Self()
 
         for part in string.split(separator: ";") {
             let keyValue = part.split(separator: "=", maxSplits: 1)

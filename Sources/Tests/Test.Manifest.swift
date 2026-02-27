@@ -35,18 +35,16 @@ extension Test {
     /// by collecting all @Test macro expansions.
     public enum Manifest {
         /// Thread-safe storage for factory names.
-        private static let _factoryNames = Mutex<[String]>([])
+        private static let _factoryNames = Mutex<[Swift.String]>([])
 
         /// Gets the current list of factory names.
-        @inlinable
-        public static func getFactoryNames() -> [String] {
+        public static func getFactoryNames() -> [Swift.String] {
             _factoryNames.withLock { $0 }
         }
 
         /// Registers a factory name at runtime.
         ///
         /// This is a fallback for when compile-time collection is not available.
-        @inlinable
         public static func register(_ name: Swift.String) {
             _factoryNames.withLock { names in
                 names.append(name)
@@ -54,8 +52,7 @@ extension Test {
         }
 
         /// Registers multiple factory names at runtime.
-        @inlinable
-        public static func register(_ names: [String]) {
+        public static func register(_ names: [Swift.String]) {
             _factoryNames.withLock { existing in
                 existing.append(contentsOf: names)
             }

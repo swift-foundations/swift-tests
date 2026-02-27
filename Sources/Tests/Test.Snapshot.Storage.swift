@@ -109,7 +109,9 @@ extension Test.Snapshot.Storage {
         guard file.stat.exists else { return nil }
 
         do {
-            return try file.read.full()
+            return try file.read.full { span in
+                span.withUnsafeBufferPointer { Array($0) }
+            }
         } catch {
             return nil
         }
@@ -134,11 +136,11 @@ extension Test.Snapshot.Storage {
     /// - Parameters:
     ///   - bytes: The snapshot content.
     ///   - path: The destination path.
-    /// - Throws: `StorageError` on failure.
+    /// - Throws: `Storage.Error` on failure.
     public static func write(
         bytes: [UInt8],
         to path: File.Path
-    ) throws(Test.Snapshot.StorageError) {
+    ) throws(Test.Snapshot.Storage.Error) {
         // Ensure parent directory exists
         if let parent = path.parent {
             try ensureDirectory(at: parent)
@@ -146,9 +148,9 @@ extension Test.Snapshot.Storage {
 
         // Write atomically
         do {
-            try File(path).write.atomic(bytes)
+            try File(path).write.atomic(contentsOf: bytes)
         } catch {
-            throw Test.Snapshot.StorageError.writeFailed(
+            throw Test.Snapshot.Storage.Error.writeFailed(
                 path: Swift.String(path),
                 underlying: Swift.String(describing: error)
             )
@@ -158,8 +160,8 @@ extension Test.Snapshot.Storage {
     /// Ensures a directory exists, creating it if needed.
     ///
     /// - Parameter path: The directory path.
-    /// - Throws: `StorageError` on failure.
-    public static func ensureDirectory(at path: File.Path) throws(Test.Snapshot.StorageError) {
+    /// - Throws: `Storage.Error` on failure.
+    public static func ensureDirectory(at path: File.Path) throws(Test.Snapshot.Storage.Error) {
         let dir = File.Directory(path)
 
         // If already exists, we're done
@@ -171,7 +173,7 @@ extension Test.Snapshot.Storage {
         do {
             try dir.create.recursive()
         } catch {
-            throw Test.Snapshot.StorageError.directoryCreationFailed(
+            throw Test.Snapshot.Storage.Error.directoryCreationFailed(
                 path: Swift.String(path),
                 underlying: Swift.String(describing: error)
             )
@@ -181,9 +183,9 @@ extension Test.Snapshot.Storage {
 
 // MARK: - Errors
 
-extension Test.Snapshot {
+extension Test.Snapshot.Storage {
     /// Errors that can occur during snapshot storage operations.
-    public enum StorageError: Error, Sendable {
+    public enum Error: Swift.Error, Sendable {
         /// Failed to read a snapshot file.
         case readFailed(path: Swift.String, underlying: Swift.String)
 
@@ -195,7 +197,7 @@ extension Test.Snapshot {
     }
 }
 
-extension Test.Snapshot.StorageError: CustomStringConvertible {
+extension Test.Snapshot.Storage.Error: CustomStringConvertible {
     public var description: Swift.String {
         switch self {
         case .readFailed(let path, let underlying):
@@ -207,3 +209,6 @@ extension Test.Snapshot.StorageError: CustomStringConvertible {
         }
     }
 }
+
+@available(*, deprecated, renamed: "Test.Snapshot.Storage.Error")
+public typealias StorageError = Test.Snapshot.Storage.Error

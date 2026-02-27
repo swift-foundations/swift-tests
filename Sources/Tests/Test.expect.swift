@@ -6,7 +6,7 @@
 //
 
 public import Test_Primitives
-public import Identity_Primitives
+import Identity_Primitives
 import Synchronization
 
 // MARK: - Expect Functions
@@ -53,14 +53,14 @@ public func expect(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(nextExpressionID())
+    let expressionID = Test.Expression.ID(__unchecked: (), nextExpressionID())
     let expression = Test.Expression(
         id: expressionID,
         sourceCode: "\(condition)",
         sourceLocation: location
     )
 
-    let expectationID = Test.Expectation.ID(nextExpectationID())
+    let expectationID = Test.Expectation.ID(__unchecked: (), nextExpectationID())
 
     if condition {
         return Test.Expectation(
@@ -110,7 +110,7 @@ public func expect<T: Equatable>(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(nextExpressionID())
+    let expressionID = Test.Expression.ID(__unchecked: (), nextExpressionID())
     let expression = Test.Expression(
         id: expressionID,
         sourceCode: "lhs == rhs",
@@ -121,7 +121,7 @@ public func expect<T: Equatable>(
         ]
     )
 
-    let expectationID = Test.Expectation.ID(nextExpectationID())
+    let expectationID = Test.Expectation.ID(__unchecked: (), nextExpectationID())
     let isPassing = lhs == rhs
 
     if isPassing {

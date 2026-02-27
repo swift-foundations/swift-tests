@@ -63,10 +63,10 @@ extension Test.Plan {
         ///   - id: The test identifier.
         ///   - traits: Traits to apply to this test.
         ///   - body: The synchronous test body.
-        public mutating func add(
+        public mutating func add<E: Swift.Error>(
             id: Test.ID,
             traits: [Test.Trait] = [],
-            body: @escaping @Sendable () throws -> Void
+            body: @escaping @Sendable () throws(E) -> Void
         ) {
             add(id: id, traits: traits, body: .sync(body))
         }
@@ -77,10 +77,10 @@ extension Test.Plan {
         ///   - id: The test identifier.
         ///   - traits: Traits to apply to this test.
         ///   - body: The asynchronous test body.
-        public mutating func add(
+        public mutating func add<E: Swift.Error>(
             id: Test.ID,
             traits: [Test.Trait] = [],
-            body: @escaping @Sendable () async throws -> Void
+            body: @escaping @Sendable () async throws(E) -> Void
         ) {
             add(id: id, traits: traits, body: .async(body))
         }

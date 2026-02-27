@@ -46,8 +46,8 @@ public import File_System
 ///   - function: Test function name (captured automatically).
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertSnapshot<Value: Sendable, Format: Sendable>(
-    of value: @autoclosure () throws -> Value,
+public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+    of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
@@ -126,8 +126,8 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 ///   - function: Test function name.
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertSnapshot<Value: Sendable, Format: Sendable>(
-    of value: @autoclosure () throws -> Value,
+public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+    of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
@@ -192,8 +192,8 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
-public func verifySnapshot<Value: Sendable, Format: Sendable>(
-    of value: @autoclosure () throws -> Value,
+public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+    of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
@@ -231,14 +231,14 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
-public func verifySnapshot<Value: Sendable, Format: Sendable>(
-    of value: @autoclosure () throws -> Value,
+public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+    of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
     filePath: Swift.String = #filePath,
     function: Swift.String = #function
-) async -> String? {
+) async -> Swift.String? {
     do {
         let capturedValue = try value()
         return await _verifySnapshot(
@@ -306,7 +306,7 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
     record recording: Test.Snapshot.Recording?,
     filePath: Swift.String,
     function: Swift.String
-) async -> String? {
+) async -> Swift.String? {
     // Resolve recording mode
     let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
 
@@ -349,7 +349,7 @@ private func performSnapshot<Format: Sendable>(
     path: File.Path,
     mode: Test.Snapshot.Recording
 ) -> Test.Snapshot.Result {
-    let pathString = String(path)
+    let pathString = Swift.String("\(path)")
 
     // Check if reference exists
     let referenceBytes = Test.Snapshot.Storage.readReference(at: path)
@@ -502,14 +502,14 @@ private func makePassingExpectation(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(nextSnapshotExpressionID())
+    let expressionID = Test.Expression.ID(__unchecked: (), nextSnapshotExpressionID())
     let expression = Test.Expression(
         id: expressionID,
         sourceCode: "assertSnapshot(of: ..., as: ...)",
         sourceLocation: location
     )
 
-    let expectationID = Test.Expectation.ID(nextSnapshotExpectationID())
+    let expectationID = Test.Expectation.ID(__unchecked: (), nextSnapshotExpectationID())
 
     return Test.Expectation(
         id: expectationID,
@@ -533,14 +533,14 @@ private func makeFailingExpectation(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(nextSnapshotExpressionID())
+    let expressionID = Test.Expression.ID(__unchecked: (), nextSnapshotExpressionID())
     let expression = Test.Expression(
         id: expressionID,
         sourceCode: "assertSnapshot(of: ..., as: ...)",
         sourceLocation: location
     )
 
-    let expectationID = Test.Expectation.ID(nextSnapshotExpectationID())
+    let expectationID = Test.Expectation.ID(__unchecked: (), nextSnapshotExpectationID())
     let failure = Test.Expectation.Failure(message: Test.Text(message))
 
     return Test.Expectation(

@@ -10,6 +10,7 @@ public import File_System
 public import Dependency_Primitives
 internal import Kernel
 internal import Strings
+import Standard_Library_Extensions
 
 extension Test.Snapshot {
     /// Runtime configuration for snapshot testing.
@@ -98,7 +99,7 @@ extension Test.Snapshot.Configuration {
         }
 
         // 3. Environment variable
-        if let env = Kernel.Environment.get("SWIFT_SNAPSHOT_RECORD"),
+        if let env = unsafe Kernel.Environment.get("SWIFT_SNAPSHOT_RECORD"),
            let mode = Test.Snapshot.Recording(rawValue: Swift.String(env)) {
             return mode
         }
@@ -119,13 +120,11 @@ extension Test.Snapshot {
     ///   - configuration: The configuration to use.
     ///   - operation: The operation to run.
     /// - Returns: The operation's result.
-    public static func withConfiguration<T>(
+    public static func withConfiguration<T, E: Swift.Error>(
         _ configuration: Configuration,
-        operation: () throws -> T
-    ) rethrows -> T {
-        try Dependency.Scope.with({ $0[Configuration.Key.self] = configuration }) {
-            try operation()
-        }
+        operation: () throws(E) -> T
+    ) throws(E) -> T {
+        try Dependency.Scope.with({ $0[Configuration.Key.self] = configuration }, operation: operation)
     }
 
     /// Runs an async operation with the given configuration.
@@ -134,12 +133,10 @@ extension Test.Snapshot {
     ///   - configuration: The configuration to use.
     ///   - operation: The async operation to run.
     /// - Returns: The operation's result.
-    public static func withConfiguration<T>(
+    public static func withConfiguration<T, E: Swift.Error>(
         _ configuration: Configuration,
-        operation: () async throws -> T
-    ) async rethrows -> T {
-        try await Dependency.Scope.with({ $0[Configuration.Key.self] = configuration }) {
-            try await operation()
-        }
+        operation: () async throws(E) -> T
+    ) async throws(E) -> T {
+        try await Dependency.Scope.with({ $0[Configuration.Key.self] = configuration }, operation: operation)
     }
 }

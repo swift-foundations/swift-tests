@@ -9,14 +9,14 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Reference_Primitives
+public import Ownership_Primitives
 
 extension Test {
-    /// Typealias to Reference.Box for API compatibility.
+    /// Typealias to Ownership.Shared for API compatibility.
     ///
     /// Used by @Test macro expansion to box registrations for transfer
     /// via C-compatible function signatures.
     ///
-    /// - SeeAlso: `Reference.Box` from swift-reference-primitives
-    public typealias Box<T: Sendable> = Reference.Box<T>
+    /// - SeeAlso: `Ownership.Shared` from swift-ownership-primitives
+    public typealias Box<T: Sendable> = Ownership.Shared<T>
 }

@@ -36,7 +36,7 @@ public import Test_Primitives
 ///   - filePath: The file path (captured automatically).
 ///   - line: The line number (captured automatically).
 ///   - column: The column number (captured automatically).
-/// - Throws: `RequirementFailed` if the condition is false.
+/// - Throws: `Test.Requirement.Failed` if the condition is false.
 public func require(
     _ condition: Bool,
     _ comment: Test.Text? = nil,
@@ -44,7 +44,7 @@ public func require(
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
-) throws(RequirementFailed) {
+) throws(Test.Requirement.Failed) {
     let location = Test.Source.Location(
         fileID: fileID,
         filePath: filePath,
@@ -53,7 +53,7 @@ public func require(
     )
 
     if !condition {
-        throw RequirementFailed(
+        throw Test.Requirement.Failed(
             message: comment ?? "Requirement failed",
             sourceLocation: location
         )
@@ -70,7 +70,7 @@ public func require(
 ///   - line: The line number.
 ///   - column: The column number.
 /// - Returns: The unwrapped value.
-/// - Throws: `RequirementFailed` if the optional is nil.
+/// - Throws: `Test.Requirement.Failed` if the optional is nil.
 public func require<T>(
     _ optional: T?,
     _ comment: Test.Text? = nil,
@@ -78,7 +78,7 @@ public func require<T>(
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
-) throws(RequirementFailed) -> T {
+) throws(Test.Requirement.Failed) -> T {
     let location = Test.Source.Location(
         fileID: fileID,
         filePath: filePath,
@@ -87,7 +87,7 @@ public func require<T>(
     )
 
     guard let value = optional else {
-        throw RequirementFailed(
+        throw Test.Requirement.Failed(
             message: comment ?? "Required value was nil",
             sourceLocation: location
         )
@@ -106,7 +106,7 @@ public func require<T>(
 ///   - filePath: The file path.
 ///   - line: The line number.
 ///   - column: The column number.
-/// - Throws: `RequirementFailed` if values are not equal.
+/// - Throws: `Test.Requirement.Failed` if values are not equal.
 public func require<T: Equatable>(
     _ lhs: T,
     equals rhs: T,
@@ -115,7 +115,7 @@ public func require<T: Equatable>(
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column
-) throws(RequirementFailed) {
+) throws(Test.Requirement.Failed) {
     let location = Test.Source.Location(
         fileID: fileID,
         filePath: filePath,
@@ -131,41 +131,14 @@ public func require<T: Equatable>(
             .init(String(describing: lhs), style: .value),
         ])
 
-        throw RequirementFailed(
+        throw Test.Requirement.Failed(
             message: message,
             sourceLocation: location
         )
     }
 }
 
-// MARK: - RequirementFailed Error
+// MARK: - Deprecated Alias
 
-/// Error thrown when a requirement fails.
-///
-/// This error type uses typed throws for precise error handling.
-/// It contains information about what failed and where.
-public struct RequirementFailed: Error, Sendable {
-    /// A message describing the failure.
-    public let message: Test.Text
-
-    /// The source location where the requirement failed.
-    public let sourceLocation: Test.Source.Location
-
-    /// Creates a requirement failure.
-    ///
-    /// - Parameters:
-    ///   - message: The failure message.
-    ///   - sourceLocation: Where the failure occurred.
-    public init(message: Test.Text, sourceLocation: Test.Source.Location) {
-        self.message = message
-        self.sourceLocation = sourceLocation
-    }
-}
-
-// MARK: - CustomStringConvertible
-
-extension RequirementFailed: CustomStringConvertible {
-    public var description: Swift.String {
-        "\(message.plainText) at \(sourceLocation)"
-    }
-}
+@available(*, deprecated, renamed: "Test.Requirement.Failed")
+public typealias RequirementFailed = Test.Requirement.Failed

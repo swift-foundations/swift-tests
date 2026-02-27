@@ -6,7 +6,8 @@
 //
 
 public import Test_Primitives
-public import Dependency_Primitives
+import Dependency_Primitives
+import Standard_Library_Extensions
 
 extension Test {
     /// Executes test plans and reports results.
@@ -59,7 +60,7 @@ extension Test {
         ///   - concurrency: The concurrency mode.
         /// - Returns: The run result.
         public func run(_ plan: Plan, concurrency: Concurrency) async -> Result {
-            var sink = reporter.makeSink()
+            let sink = reporter.makeSink()
 
             let startTime = ContinuousClock.now
 
@@ -156,10 +157,10 @@ extension Test {
         }
 
         /// Runs an entry with trait handling.
-        private func runWithTraits(_ entry: Plan.Entry) async throws {
+        private func runWithTraits(_ entry: Plan.Entry) async throws(Error) {
             // Extract trait configurations
             var timeLimit: Duration?
-            var timedConfig: TimedConfig?
+            var timedConfig: Test.Benchmark.Configuration?
             var exclusionGroup: Swift.String?
 
             for trait in entry.traits {
@@ -168,7 +169,7 @@ extension Test {
                     timeLimit = limit
                 case .custom(let name, let value):
                     if name == "__timed__", let value {
-                        timedConfig = TimedConfig.decode(from: value)
+                        timedConfig = Test.Benchmark.Configuration.decode(from: value)
                     } else if name == "__exclusive__" {
                         exclusionGroup = value ?? "__global__"
                     }
@@ -179,16 +180,18 @@ extension Test {
 
             // Build the execution chain
             // Wrap in test context so dependencies resolve to testValue
-            let baseOperation: @Sendable () async throws -> Void = {
-                try await Dependency.Scope.with({ $0.isTestContext = true }) {
-                    try await entry.body.run()
+            let baseOperation: @Sendable () async throws(Error) -> Void = { () async throws(Error) in
+                do throws(Test.Body.Error) {
+                    try await Dependency.Scope.with({ $0.isTestContext = true }, operation: entry.body.run)
+                } catch {
+                    throw Error.bodyFailed(error)
                 }
             }
 
             // Wrap with timed measurement if configured
-            let timedOperation: @Sendable () async throws -> Void
+            let timedOperation: @Sendable () async throws(Error) -> Void
             if let config = timedConfig {
-                timedOperation = { [testName = entry.id.name] in
+                timedOperation = { [testName = entry.id.name] () async throws(Error) in
                     try await self.runTimed(
                         name: testName,
                         config: config,
@@ -200,9 +203,9 @@ extension Test {
             }
 
             // Wrap with time limit if configured
-            let timeLimitedOperation: @Sendable () async throws -> Void
+            let timeLimitedOperation: @Sendable () async throws(Error) -> Void
             if let timeLimit {
-                timeLimitedOperation = {
+                timeLimitedOperation = { () async throws(Error) in
                     try await self.withTimeout(timeLimit, operation: timedOperation)
                 }
             } else {
@@ -211,9 +214,9 @@ extension Test {
 
             // Wrap with exclusion if configured
             if let group = exclusionGroup {
-                try await ExclusionController.shared.withExclusiveAccess(group: group) {
+                try await Test.Exclusion.Controller.shared.withExclusiveAccess(group: group, { () async throws(Error) in
                     try await timeLimitedOperation()
-                }
+                })
             } else {
                 try await timeLimitedOperation()
             }
@@ -222,9 +225,9 @@ extension Test {
         /// Runs an operation with timed measurement.
         private func runTimed(
             name: Swift.String,
-            config: TimedConfig,
-            operation: @Sendable () async throws -> Void
-        ) async throws {
+            config: Test.Benchmark.Configuration,
+            operation: @Sendable () async throws(Error) -> Void
+        ) async throws(Error) {
             // Warmup iterations
             for _ in 0..<config.warmup {
                 try await operation()
@@ -240,49 +243,18 @@ extension Test {
                 durations.append(ContinuousClock.now - start)
             }
 
+            let measurement = Test.Benchmark.Measurement(durations: durations)
+
             // Print results if configured
             if config.printResults {
-                let sorted = durations.sorted()
-                let min = sorted.first ?? .zero
-                let max = sorted.last ?? .zero
-                let median = sorted.isEmpty ? .zero : sorted[sorted.count / 2]
-                let mean = durations.isEmpty ? .zero : durations.reduce(.zero, +) / durations.count
-                let p95 = sorted.isEmpty ? .zero : sorted[Int(Double(sorted.count) * 0.95)]
-                let p99 = sorted.isEmpty ? .zero : sorted[Int(Double(sorted.count) * 0.99)]
-
-                print("""
-                    ⏱️ \(name)
-                       Iterations: \(durations.count)
-                       Min:        \(min)
-                       Median:     \(median)
-                       Mean:       \(mean)
-                       p95:        \(p95)
-                       p99:        \(p99)
-                       Max:        \(max)
-                    """)
+                Test.Benchmark.printPerformance(name, measurement)
             }
 
             // Check threshold if configured
             if let threshold = config.threshold {
-                let sorted = durations.sorted()
-                let metricValue: Duration
-                switch config.metric {
-                case "min":
-                    metricValue = sorted.first ?? .zero
-                case "max":
-                    metricValue = sorted.last ?? .zero
-                case "mean":
-                    metricValue = durations.isEmpty ? .zero : durations.reduce(.zero, +) / durations.count
-                case "p95":
-                    metricValue = sorted.isEmpty ? .zero : sorted[Int(Double(sorted.count) * 0.95)]
-                case "p99":
-                    metricValue = sorted.isEmpty ? .zero : sorted[min(Int(Double(sorted.count) * 0.99), sorted.count - 1)]
-                default: // median
-                    metricValue = sorted.isEmpty ? .zero : sorted[sorted.count / 2]
-                }
-
+                let metricValue = config.metric.extract(from: measurement)
                 if metricValue > threshold {
-                    throw PerformanceThresholdExceeded(
+                    throw Error.performanceThresholdExceeded(
                         test: name,
                         metric: config.metric,
                         expected: threshold,
@@ -295,21 +267,27 @@ extension Test {
         /// Runs a closure with a timeout.
         private func withTimeout(
             _ timeout: Duration,
-            operation: @escaping @Sendable () async throws -> Void
-        ) async throws {
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                group.addTask {
-                    try await operation()
-                }
+            operation: @escaping @Sendable () async throws(Error) -> Void
+        ) async throws(Error) {
+            do {
+                try await withThrowingTaskGroup(of: Void.self) { group in
+                    group.addTask {
+                        try await operation()
+                    }
 
-                group.addTask {
-                    try await Task.sleep(for: timeout)
-                    throw TimeLimitExceeded(limit: timeout)
-                }
+                    group.addTask {
+                        try await Task.sleep(for: timeout)
+                        throw Error.timeLimitExceeded(limit: timeout)
+                    }
 
-                // Wait for first to complete
-                try await group.next()
-                group.cancelAll()
+                    // Wait for first to complete
+                    try await group.next()
+                    group.cancelAll()
+                }
+            } catch let error as Error {
+                throw error
+            } catch {
+                throw Error.timeLimitExceeded(limit: timeout)
             }
         }
     }
@@ -365,141 +343,22 @@ extension Test.Runner {
 // MARK: - Errors
 
 extension Test.Runner {
-    /// Error thrown when a test exceeds its time limit.
-    public struct TimeLimitExceeded: Error, Sendable {
-        /// The time limit that was exceeded.
-        public let limit: Duration
-    }
+    /// Errors thrown during test execution.
+    public enum Error: Swift.Error, Sendable {
+        /// Test exceeded its configured time limit.
+        case timeLimitExceeded(limit: Duration)
 
-    /// Error thrown when a performance threshold is exceeded.
-    public struct PerformanceThresholdExceeded: Error, Sendable {
-        /// The test name.
-        public let test: Swift.String
-        /// The metric that exceeded.
-        public let metric: Swift.String
-        /// The expected threshold.
-        public let expected: Duration
-        /// The actual measured value.
-        public let actual: Duration
-    }
-}
+        /// Performance metric exceeded the configured threshold.
+        case performanceThresholdExceeded(
+            test: Swift.String,
+            metric: Test.Benchmark.Metric,
+            expected: Duration,
+            actual: Duration
+        )
 
-// MARK: - Timed Configuration
-
-extension Test.Runner {
-    /// Configuration for timed test execution.
-    struct TimedConfig: Sendable {
-        var iterations: Int = 10
-        var warmup: Int = 0
-        var printResults: Bool = true
-        var threshold: Duration?
-        var metric: Swift.String = "median"
-
-        /// Decodes configuration from a trait string.
-        static func decode(from string: Swift.String) -> TimedConfig? {
-            var config = TimedConfig()
-
-            for part in string.split(separator: ";") {
-                let keyValue = part.split(separator: "=", maxSplits: 1)
-                guard keyValue.count == 2 else { continue }
-                let key = Swift.String(keyValue[0])
-                let value = Swift.String(keyValue[1])
-
-                switch key {
-                case "i":
-                    config.iterations = Int(value) ?? 10
-                case "w":
-                    config.warmup = Int(value) ?? 0
-                case "p":
-                    config.printResults = value == "true"
-                case "m":
-                    config.metric = value
-                case "t":
-                    let components = value.split(separator: ":")
-                    if components.count == 2,
-                       let seconds = Int64(components[0]),
-                       let attoseconds = Int64(components[1]) {
-                        config.threshold = Duration(
-                            secondsComponent: seconds,
-                            attosecondsComponent: attoseconds
-                        )
-                    }
-                default:
-                    break
-                }
-            }
-
-            return config
-        }
+        /// The test body threw an error.
+        case bodyFailed(Test.Body.Error)
     }
 }
 
-// MARK: - Exclusion Controller
 
-/// Actor that provides mutual exclusion for test execution.
-///
-/// Uses a keyed semaphore pattern: tests with the same group key
-/// are mutually exclusive.
-public actor ExclusionController {
-    /// Shared singleton instance.
-    public static let shared = ExclusionController()
-
-    /// Tracks which groups are currently running.
-    private var runningGroups: Set<String> = []
-
-    /// Continuations waiting for access, keyed by group.
-    private var waiters: [String: [CheckedContinuation<Void, Never>]] = [:]
-
-    /// Private init for singleton.
-    private init() {}
-
-    /// Executes an operation with exclusive access to the specified group.
-    ///
-    /// If another operation is currently running with the same group,
-    /// this will suspend until that operation completes.
-    ///
-    /// - Parameters:
-    ///   - group: The exclusion group.
-    ///   - operation: The operation to execute.
-    /// - Returns: The result of the operation.
-    /// - Throws: Rethrows any error from the operation.
-    public func withExclusiveAccess<T: Sendable>(
-        group: Swift.String,
-        _ operation: @Sendable () async throws -> T
-    ) async rethrows -> T {
-        // Wait until we can acquire the lock for this group
-        while runningGroups.contains(group) {
-            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                waiters[group, default: []].append(continuation)
-            }
-        }
-
-        // Acquire lock
-        runningGroups.insert(group)
-
-        do {
-            let result = try await operation()
-            release(group: group)
-            return result
-        } catch {
-            release(group: group)
-            throw error
-        }
-    }
-
-    /// Releases the lock for a group and resumes one waiter.
-    private func release(group: Swift.String) {
-        runningGroups.remove(group)
-
-        // Resume one waiter for this group
-        if var groupWaiters = waiters[group], !groupWaiters.isEmpty {
-            let next = groupWaiters.removeFirst()
-            if groupWaiters.isEmpty {
-                waiters.removeValue(forKey: group)
-            } else {
-                waiters[group] = groupWaiters
-            }
-            next.resume()
-        }
-    }
-}

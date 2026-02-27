@@ -172,8 +172,7 @@ extension Tests {
         for _ in 0..<iterations {
             let start = ContinuousClock.now
             lastResult = operation()
-            let end = ContinuousClock.now
-            durations.append(end - start)
+            durations.append(ContinuousClock.now - start)
         }
 
         return (lastResult!, Tests.Measurement(durations: durations))
@@ -181,11 +180,11 @@ extension Tests {
 
     /// Measure performance of an async operation
     @discardableResult
-    public static func measure<T>(
+    public static func measure<T, E: Swift.Error>(
         warmup: Int = 0,
         iterations: Int = 10,
-        operation: () async throws -> T
-    ) async rethrows -> (result: T, measurement: Tests.Measurement) {
+        operation: () async throws(E) -> T
+    ) async throws(E) -> (result: T, measurement: Tests.Measurement) {
         // Warmup
         for _ in 0..<warmup {
             _ = try await operation()
@@ -199,8 +198,7 @@ extension Tests {
         for _ in 0..<iterations {
             let start = ContinuousClock.now
             lastResult = try await operation()
-            let end = ContinuousClock.now
-            durations.append(end - start)
+            durations.append(ContinuousClock.now - start)
         }
 
         return (lastResult!, Tests.Measurement(durations: durations))
@@ -211,39 +209,17 @@ extension Tests {
     public static func time<T>(operation: () -> T) -> (result: T, duration: Duration) {
         let start = ContinuousClock.now
         let result = operation()
-        let end = ContinuousClock.now
-        return (result, end - start)
+        return (result, ContinuousClock.now - start)
     }
 
     /// Single-shot timing measurement for async operations
     @discardableResult
-    public static func time<T>(
-        operation: () async throws -> T
-    ) async rethrows -> (result: T, duration: Duration) {
+    public static func time<T, E: Swift.Error>(
+        operation: () async throws(E) -> T
+    ) async throws(E) -> (result: T, duration: Duration) {
         let start = ContinuousClock.now
         let result = try await operation()
-        let end = ContinuousClock.now
-        return (result, end - start)
+        return (result, ContinuousClock.now - start)
     }
 }
 
-// MARK: - Duration Formatting
-
-extension Tests {
-    /// Format a duration for performance display.
-    ///
-    /// Automatically selects appropriate unit (ns, µs, ms, s).
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// Tests.formatDuration(duration)                    // "1.5 ms"
-    /// Tests.formatDuration(duration, .milliseconds)     // "1500 ms"
-    /// ```
-    public static func formatDuration(
-        _ duration: Duration,
-        _ format: Time.Format = .duration
-    ) -> String {
-        duration.formatted(format)
-    }
-}

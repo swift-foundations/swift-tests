@@ -122,39 +122,39 @@ extension Tests {
             case .thresholdExceeded(let test, let metric, let expected, let actual):
                 return """
                     Performance threshold exceeded in '\(test)':
-                    Expected \(metric): < \(Tests.formatDuration(expected))
-                    Actual \(metric): \(Tests.formatDuration(actual))
+                    Expected \(metric): < \(expected.formatted())
+                    Actual \(metric): \(actual.formatted())
                     """
 
             case .allocationLimitExceeded(let test, let limit, let actual):
                 return """
                     Memory allocation limit exceeded in '\(test)':
-                    Limit: \(formatBytes(limit))
-                    Actual: \(formatBytes(actual))
-                    Exceeded by: \(formatBytes(actual - limit))
+                    Limit: \(limit.formatted(.bytes))
+                    Actual: \(actual.formatted(.bytes))
+                    Exceeded by: \((actual - limit).formatted(.bytes))
                     """
 
             case .memoryLeakDetected(let test, let netAllocations, let netBytes):
                 return """
                     Memory leak detected in '\(test)':
                     Net allocations: \(netAllocations)
-                    Net bytes: \(formatBytes(netBytes))
+                    Net bytes: \(netBytes.formatted(.bytes))
                     """
 
             case .peakMemoryExceeded(let test, let limit, let actual):
                 return """
                     Peak memory limit exceeded in '\(test)':
-                    Limit: \(formatBytes(limit))
-                    Actual peak: \(formatBytes(actual))
-                    Exceeded by: \(formatBytes(actual - limit))
+                    Limit: \(limit.formatted(.bytes))
+                    Actual peak: \(actual.formatted(.bytes))
+                    Exceeded by: \((actual - limit).formatted(.bytes))
                     """
 
             case .performanceExpectationFailed(let metric, let threshold, let actual):
                 return """
                     Performance expectation failed:
-                    Expected \(metric) < \(Tests.formatDuration(threshold))
-                    Actual: \(Tests.formatDuration(actual))
-                    Exceeded by: \(Tests.formatDuration(actual - threshold))
+                    Expected \(metric) < \(threshold.formatted())
+                    Actual: \(actual.formatted())
+                    Exceeded by: \((actual - threshold).formatted())
                     """
 
             case .regressionDetected(
@@ -166,16 +166,12 @@ extension Tests {
             ):
                 return """
                     Performance regression detected:
-                    Baseline \(metric): \(Tests.formatDuration(baseline))
-                    Current \(metric): \(Tests.formatDuration(current))
+                    Baseline \(metric): \(baseline.formatted())
+                    Current \(metric): \(current.formatted())
                     Regression: \(regression.formatted(.percent.precision(1)))
                     Tolerance: \(tolerance.formatted(.percent.precision(1)))
                     """
             }
-        }
-
-        private func formatBytes(_ bytes: Int) -> Swift.String {
-            bytes.formatted(.bytes)
         }
     }
 }

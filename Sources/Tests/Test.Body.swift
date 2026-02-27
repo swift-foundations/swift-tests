@@ -33,22 +33,44 @@ extension Test {
 
         /// Creates a synchronous test body.
         ///
+        /// Wraps the user closure, converting any thrown error to ``Error``.
+        ///
         /// - Parameter body: The synchronous closure to execute.
         /// - Returns: A test body wrapping the closure.
-        public static func sync(
-            _ body: @escaping @Sendable () throws -> Void
+        public static func sync<E: Swift.Error>(
+            _ body: @escaping @Sendable () throws(E) -> Void
         ) -> Body {
-            Body(kind: .sync(body))
+            Body(kind: .sync({ () throws(Error) in
+                do {
+                    try body()
+                } catch {
+                    throw Error.caught(
+                        type: Swift.String(describing: type(of: error)),
+                        description: Swift.String(describing: error)
+                    )
+                }
+            }))
         }
 
         /// Creates an asynchronous test body.
         ///
+        /// Wraps the user closure, converting any thrown error to ``Error``.
+        ///
         /// - Parameter body: The asynchronous closure to execute.
         /// - Returns: A test body wrapping the closure.
-        public static func `async`(
-            _ body: @escaping @Sendable () async throws -> Void
+        public static func `async`<E: Swift.Error>(
+            _ body: @escaping @Sendable () async throws(E) -> Void
         ) -> Body {
-            Body(kind: .async(body))
+            Body(kind: .async({ () async throws(Error) in
+                do {
+                    try await body()
+                } catch {
+                    throw Error.caught(
+                        type: Swift.String(describing: type(of: error)),
+                        description: Swift.String(describing: error)
+                    )
+                }
+            }))
         }
 
         private init(kind: Kind) {
@@ -60,8 +82,8 @@ extension Test {
         /// For synchronous bodies, this executes immediately.
         /// For asynchronous bodies, this suspends until completion.
         ///
-        /// - Throws: Any error thrown by the test body.
-        public func run() async throws {
+        /// - Throws: ``Error`` wrapping any error thrown by the test body.
+        public func run() async throws(Error) {
             switch kind {
             case .sync(let body):
                 try body()
@@ -89,7 +111,17 @@ extension Test {
 extension Test.Body {
     /// The kind of test body.
     private enum Kind: Sendable {
-        case sync(@Sendable () throws -> Void)
-        case `async`(@Sendable () async throws -> Void)
+        case sync(@Sendable () throws(Test.Body.Error) -> Void)
+        case `async`(@Sendable () async throws(Test.Body.Error) -> Void)
+    }
+}
+
+// MARK: - Error
+
+extension Test.Body {
+    /// Error wrapping any error thrown by user test code.
+    public enum Error: Swift.Error, Sendable {
+        /// A user test error was caught and wrapped.
+        case caught(type: Swift.String, description: Swift.String)
     }
 }

@@ -106,13 +106,11 @@ extension Test.Snapshot {
     ///   - counter: The counter to use (defaults to a new counter).
     ///   - operation: The operation to run.
     /// - Returns: The operation's result.
-    public static func withCounter<T>(
+    public static func withCounter<T, E: Swift.Error>(
         _ counter: Counter = Counter(),
-        operation: () throws -> T
-    ) rethrows -> T {
-        try Dependency.Scope.with({ $0[CounterKey.self] = counter }) {
-            try operation()
-        }
+        operation: () throws(E) -> T
+    ) throws(E) -> T {
+        try Dependency.Scope.with({ $0[CounterKey.self] = counter }, operation: operation)
     }
 
     /// Runs an async operation with a fresh counter.
@@ -121,12 +119,10 @@ extension Test.Snapshot {
     ///   - counter: The counter to use.
     ///   - operation: The async operation to run.
     /// - Returns: The operation's result.
-    public static func withCounter<T>(
+    public static func withCounter<T, E: Swift.Error>(
         _ counter: Counter = Counter(),
-        operation: () async throws -> T
-    ) async rethrows -> T {
-        try await Dependency.Scope.with({ $0[CounterKey.self] = counter }) {
-            try await operation()
-        }
+        operation: () async throws(E) -> T
+    ) async throws(E) -> T {
+        try await Dependency.Scope.with({ $0[CounterKey.self] = counter }, operation: operation)
     }
 }

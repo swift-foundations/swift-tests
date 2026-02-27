@@ -97,13 +97,12 @@ extension Test.Benchmark.Measurement {
     @inlinable
     public var standardDeviation: Duration {
         guard durations.count > 1 else { return .zero }
-        let meanNanoseconds = Double(mean.components.attoseconds) / 1_000_000_000
+        let meanSeconds = mean.inSeconds
         let variance =
             durations.reduce(0.0) { acc, duration in
-                let durationNanoseconds = Double(duration.components.attoseconds) / 1_000_000_000
-                let diff = durationNanoseconds - meanNanoseconds
+                let diff = duration.inSeconds - meanSeconds
                 return acc + (diff * diff)
             } / Double(durations.count - 1)
-        return .nanoseconds(Int64(variance.squareRoot()))
+        return .seconds(variance.squareRoot())
     }
 }

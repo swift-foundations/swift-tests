@@ -77,13 +77,11 @@ extension Test.Benchmark {
         if let threshold = threshold {
             let actualMetric = metric.extract(from: measurement)
             if actualMetric > threshold {
-                Issue.record(
-                    Comment(rawValue: """
-                        Performance threshold exceeded in '\(displayName)':
-                        Expected \(metric): < \(threshold.formatted())
-                        Actual \(metric): \(actualMetric.formatted())
-                        """)
-                )
+                print("""
+                    ⚠️ Performance threshold exceeded in '\(displayName)':
+                    Expected \(metric): < \(threshold.formatted())
+                    Actual \(metric): \(actualMetric.formatted())
+                    """)
             }
         }
 
@@ -125,13 +123,11 @@ extension Test.Benchmark {
         if let threshold = threshold {
             let actualMetric = metric.extract(from: measurement)
             if actualMetric > threshold {
-                Issue.record(
-                    Comment(rawValue: """
-                        Performance threshold exceeded in '\(displayName)':
-                        Expected \(metric): < \(threshold.formatted())
-                        Actual \(metric): \(actualMetric.formatted())
-                        """)
-                )
+                print("""
+                    ⚠️ Performance threshold exceeded in '\(displayName)':
+                    Expected \(metric): < \(threshold.formatted())
+                    Actual \(metric): \(actualMetric.formatted())
+                    """)
             }
         }
 

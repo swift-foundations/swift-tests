@@ -100,5 +100,5 @@ extension Collection where Element == Test.Trait {
     }
 }
 
-// Note: ExclusionController is defined in Test.Runner.swift
+// Note: Test.Exclusion.Controller is defined in Test.Exclusion.Controller.swift
 // and is used by the test runner to handle .exclusive() traits.

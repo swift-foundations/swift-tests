@@ -27,7 +27,7 @@ extension Tests {
         iterations: Int = 10,
         metric: Tests.Metric = .median,
         operation: () -> T
-    ) throws -> (result: T, measurement: Tests.Measurement) {
+    ) throws(Tests.Error) -> (result: T, measurement: Tests.Measurement) {
         let (result, measurement) = measure(
             warmup: warmup,
             iterations: iterations,
@@ -47,16 +47,19 @@ extension Tests {
         return (result, measurement)
     }
 
-    /// Assert that an async operation completes within a duration threshold
+    /// Assert that an async operation completes within a duration threshold.
+    ///
+    /// The operation must be non-throwing (symmetric with the sync overload).
+    /// If benchmarking a throwing operation, handle errors inside the closure.
     @discardableResult
     public static func expectPerformance<T>(
         lessThan threshold: Duration,
         warmup: Int = 0,
         iterations: Int = 10,
         metric: Tests.Metric = .median,
-        operation: () async throws -> T
-    ) async throws -> (result: T, measurement: Tests.Measurement) {
-        let (result, measurement) = try await measure(
+        operation: () async -> T
+    ) async throws(Tests.Error) -> (result: T, measurement: Tests.Measurement) {
+        let (result, measurement) = await measure(
             warmup: warmup,
             iterations: iterations,
             operation: operation
@@ -97,7 +100,7 @@ extension Tests {
         baseline: Tests.Measurement,
         tolerance: Double = 0.10,
         metric: Tests.Metric = .median
-    ) throws {
+    ) throws(Tests.Error) {
         let currentValue = metric.extract(from: current)
         let baselineValue = metric.extract(from: baseline)
 
