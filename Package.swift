@@ -14,6 +14,10 @@ let package = Package(
     products: [
         // Standalone testing library - no Apple Testing, no swift-syntax
         .library(name: "Tests", targets: ["Tests"]),
+        .library(
+            name: "Tests Test Support",
+            targets: ["Tests Test Support"]
+        ),
     ],
     dependencies: [
         .package(path: "../../swift-primitives/swift-test-primitives"),
@@ -56,10 +60,30 @@ let package = Package(
             ],
             path: "Sources/Tests"
         ),
+        .target(
+            name: "Tests Test Support",
+            dependencies: [
+                "Tests",
+                .product(
+                    name: "Test Primitives Test Support",
+                    package: "swift-test-primitives"
+                ),
+                .product(
+                    name: "Kernel Test Support",
+                    package: "swift-kernel"
+                ),
+                .product(
+                    name: "File System Test Support",
+                    package: "swift-file-system"
+                ),
+            ],
+            path: "Tests/Support"
+        ),
         .testTarget(
             name: "Tests Tests",
             dependencies: [
                 "Tests",
+                "Tests Test Support",
             ]
         ),
     ],

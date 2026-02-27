@@ -1,6 +1,5 @@
 import Testing
-import Tests
-import Test_Primitives
+import Tests_Test_Support
 
 @Suite("Test.Benchmark.Configuration")
 struct BenchmarkConfigurationTests {

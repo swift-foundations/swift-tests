@@ -1,6 +1,5 @@
 import Testing
-import Tests
-import Test_Primitives
+import Tests_Test_Support
 import Paths
 
 @Suite("Test.Snapshot.Storage")
@@ -21,7 +20,7 @@ extension SnapshotStorageTests.Unit {
             counter: 1,
             pathExtension: "json"
         )
-        #expect(String(path).contains("__Snapshots__"))
+        #expect(Swift.String(path).contains("__Snapshots__"))
     }
 
     @Test
@@ -33,7 +32,7 @@ extension SnapshotStorageTests.Unit {
             counter: 1,
             pathExtension: "json"
         )
-        #expect(String(path).contains("UserTests"))
+        #expect(Swift.String(path).contains("UserTests"))
     }
 
     @Test
@@ -45,7 +44,7 @@ extension SnapshotStorageTests.Unit {
             counter: 1,
             pathExtension: "txt"
         )
-        let pathString = String(path)
+        let pathString = Swift.String(path)
         #expect(pathString.contains("testFoo"))
         #expect(!pathString.contains("("))
     }
@@ -59,7 +58,7 @@ extension SnapshotStorageTests.Unit {
             counter: 3,
             pathExtension: "json"
         )
-        #expect(String(path).contains(".3."))
+        #expect(Swift.String(path).contains(".3."))
     }
 
     @Test
@@ -71,7 +70,7 @@ extension SnapshotStorageTests.Unit {
             counter: 1,
             pathExtension: "json"
         )
-        #expect(String(path).contains("custom-name"))
+        #expect(Swift.String(path).contains("custom-name"))
     }
 
     @Test
@@ -83,7 +82,7 @@ extension SnapshotStorageTests.Unit {
             counter: 1,
             pathExtension: "json"
         )
-        #expect(String(path).hasSuffix(".json"))
+        #expect(Swift.String(path).hasSuffix(".json"))
     }
 }
 
@@ -99,7 +98,7 @@ extension SnapshotStorageTests.EdgeCase {
             counter: 1,
             pathExtension: "txt"
         )
-        let pathString = String(path)
+        let pathString = Swift.String(path)
         // Spaces and slashes become hyphens, collapsed
         #expect(pathString.contains("hello-world-test"))
     }

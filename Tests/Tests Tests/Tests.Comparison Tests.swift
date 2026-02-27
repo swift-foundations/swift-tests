@@ -1,5 +1,5 @@
 import Testing
-import Tests
+import Tests_Test_Support
 
 extension Tests.Comparison {
     @Suite

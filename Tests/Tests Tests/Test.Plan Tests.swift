@@ -1,21 +1,10 @@
 import Testing
-import Tests
-import Test_Primitives
+import Tests_Test_Support
 
 @Suite("Test.Plan")
 struct TestPlanTests {
     @Suite struct Unit {}
     @Suite struct EdgeCase {}
-}
-
-// MARK: - Helpers
-
-private func makeLocation(line: Int = 1) -> Test_Primitives.Test.Source.Location {
-    .init(fileID: "TestModule/File.swift", line: line, column: 1)
-}
-
-private func makeID(_ name: String, module: String = "TestModule") -> Test_Primitives.Test.ID {
-    .init(module: module, name: name, sourceLocation: makeLocation())
 }
 
 // MARK: - Unit
@@ -32,9 +21,9 @@ extension TestPlanTests.Unit {
     @Test
     func `plan count matches added entries`() {
         var registry = Test_Primitives.Test.Plan.Registry()
-        registry.add(id: makeID("test1"), body: .sync {})
-        registry.add(id: makeID("test2"), body: .sync {})
-        registry.add(id: makeID("test3"), body: .sync {})
+        registry.add(id: .stub("test1"), body: .sync {})
+        registry.add(id: .stub("test2"), body: .sync {})
+        registry.add(id: .stub("test3"), body: .sync {})
         let plan = registry.finalize()
         #expect(plan.count == 3)
     }
@@ -42,9 +31,9 @@ extension TestPlanTests.Unit {
     @Test
     func `filter by predicate returns matching entries`() {
         var registry = Test_Primitives.Test.Plan.Registry()
-        registry.add(id: makeID("a", module: "ModuleA"), body: .sync {})
-        registry.add(id: makeID("b", module: "ModuleB"), body: .sync {})
-        registry.add(id: makeID("c", module: "ModuleA"), body: .sync {})
+        registry.add(id: .stub("a", module: "ModuleA"), body: .sync {})
+        registry.add(id: .stub("b", module: "ModuleB"), body: .sync {})
+        registry.add(id: .stub("c", module: "ModuleA"), body: .sync {})
         let plan = registry.finalize()
 
         let filtered = plan.filter { $0.id.module == "ModuleA" }
@@ -54,8 +43,8 @@ extension TestPlanTests.Unit {
     @Test
     func `filter by module returns correct entries`() {
         var registry = Test_Primitives.Test.Plan.Registry()
-        registry.add(id: makeID("a", module: "Alpha"), body: .sync {})
-        registry.add(id: makeID("b", module: "Beta"), body: .sync {})
+        registry.add(id: .stub("a", module: "Alpha"), body: .sync {})
+        registry.add(id: .stub("b", module: "Beta"), body: .sync {})
         let plan = registry.finalize()
 
         let filtered = plan.filter(module: "Alpha")
@@ -67,12 +56,12 @@ extension TestPlanTests.Unit {
     func `filter by tags returns tagged entries`() {
         var registry = Test_Primitives.Test.Plan.Registry()
         registry.add(
-            id: makeID("tagged"),
+            id: .stub("tagged"),
             traits: [.tag("smoke")],
             body: .sync {}
         )
         registry.add(
-            id: makeID("untagged"),
+            id: .stub("untagged"),
             traits: [],
             body: .sync {}
         )
@@ -85,9 +74,9 @@ extension TestPlanTests.Unit {
     @Test
     func `sorted orders entries by ID`() {
         var registry = Test_Primitives.Test.Plan.Registry()
-        registry.add(id: makeID("c"), body: .sync {})
-        registry.add(id: makeID("a"), body: .sync {})
-        registry.add(id: makeID("b"), body: .sync {})
+        registry.add(id: .stub("c"), body: .sync {})
+        registry.add(id: .stub("a"), body: .sync {})
+        registry.add(id: .stub("b"), body: .sync {})
         let plan = registry.finalize()
 
         let sorted = plan.sorted()
@@ -103,7 +92,7 @@ extension TestPlanTests.EdgeCase {
     @Test
     func `filter returns empty when nothing matches`() {
         var registry = Test_Primitives.Test.Plan.Registry()
-        registry.add(id: makeID("test", module: "A"), body: .sync {})
+        registry.add(id: .stub("test", module: "A"), body: .sync {})
         let plan = registry.finalize()
 
         let filtered = plan.filter(module: "NonExistent")

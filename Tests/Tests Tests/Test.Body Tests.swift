@@ -1,6 +1,5 @@
 import Testing
-import Tests
-import Test_Primitives
+import Tests_Test_Support
 
 @Suite("Test.Body")
 struct TestBodyTests {
@@ -47,8 +46,8 @@ extension TestBodyTests.Unit {
 
     @Test
     func `sync body catches thrown error`() async {
-        struct TestError: Error, CustomStringConvertible {
-            var description: String { "test failure" }
+        struct TestError: Swift.Error, Swift.CustomStringConvertible {
+            var description: Swift.String { "test failure" }
         }
 
         let body = Test_Primitives.Test.Body.sync { throw TestError() }
@@ -67,8 +66,8 @@ extension TestBodyTests.Unit {
 
     @Test
     func `async body catches thrown error`() async {
-        struct TestError: Error, CustomStringConvertible {
-            var description: String { "async failure" }
+        struct TestError: Swift.Error, Swift.CustomStringConvertible {
+            var description: Swift.String { "async failure" }
         }
 
         let body = Test_Primitives.Test.Body.async { throw TestError() }
@@ -91,9 +90,9 @@ extension TestBodyTests.Unit {
 extension TestBodyTests.EdgeCase {
     @Test
     func `caught error stores type and description`() async {
-        struct SpecificError: Error, CustomStringConvertible {
-            let detail: String
-            var description: String { "detail: \(detail)" }
+        struct SpecificError: Swift.Error, Swift.CustomStringConvertible {
+            let detail: Swift.String
+            var description: Swift.String { "detail: \(detail)" }
         }
 
         let body = Test_Primitives.Test.Body.sync { throw SpecificError(detail: "abc123") }

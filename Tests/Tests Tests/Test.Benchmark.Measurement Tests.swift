@@ -1,6 +1,5 @@
 import Testing
-import Tests
-import Test_Primitives
+import Tests_Test_Support
 import Time_Primitives
 
 @Suite("Test.Benchmark.Measurement")
@@ -22,8 +21,8 @@ extension BenchmarkMeasurementTests.Unit {
         // sorted: [5, 10, 20], median index = Int(3 * 0.5) = 1
         #expect(measurement.median == .milliseconds(10))
         // mean = (5 + 10 + 20) / 3 ≈ 11.67ms
-        let meanSeconds = measurement.mean.inSeconds
-        #expect(abs(meanSeconds - 0.01167) < 0.001)
+        #expect(measurement.mean > .milliseconds(11))
+        #expect(measurement.mean < .milliseconds(12))
     }
 
     @Test
