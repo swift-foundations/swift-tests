@@ -12,19 +12,17 @@ let package = Package(
         .visionOS(.v26),
     ],
     products: [
-        // Standalone testing library - no Apple Testing, no swift-syntax
+        .library(name: "Tests Core", targets: ["Tests Core"]),
+        .library(name: "Tests Benchmark", targets: ["Tests Benchmark"]),
+        .library(name: "Tests Snapshot", targets: ["Tests Snapshot"]),
+        .library(name: "Tests Performance", targets: ["Tests Performance"]),
         .library(name: "Tests", targets: ["Tests"]),
-        .library(
-            name: "Tests Test Support",
-            targets: ["Tests Test Support"]
-        ),
+        .library(name: "Tests Test Support", targets: ["Tests Test Support"]),
     ],
     dependencies: [
         .package(path: "../../swift-primitives/swift-test-primitives"),
-        .package(path: "../../swift-primitives/swift-async-primitives"),
         .package(path: "../../swift-primitives/swift-binary-primitives"),
         .package(path: "../../swift-primitives/swift-time-primitives"),
-        .package(path: "../../swift-primitives/swift-clock-primitives"),
         .package(path: "../../swift-primitives/swift-formatting-primitives"),
         .package(path: "../../swift-primitives/swift-dependency-primitives"),
         .package(path: "../../swift-primitives/swift-ownership-primitives"),
@@ -32,34 +30,75 @@ let package = Package(
         .package(path: "../swift-memory"),
         .package(path: "../swift-console"),
         .package(path: "../swift-file-system"),
-        .package(path: "../swift-paths"),
         .package(path: "../swift-json"),
         .package(path: "../swift-loader"),
     ],
     targets: [
-        // Core Tests target - standalone
-        // Contains: Runner, Plan, Reporter, expect/require APIs
+
+        // MARK: - Core
+
+        .target(
+            name: "Tests Core",
+            dependencies: [
+                .product(name: "Test Primitives", package: "swift-test-primitives"),
+                .product(name: "Ownership Primitives", package: "swift-ownership-primitives"),
+                .product(name: "Loader", package: "swift-loader"),
+            ]
+        ),
+
+        // MARK: - Benchmark
+
+        .target(
+            name: "Tests Benchmark",
+            dependencies: [
+                "Tests Core",
+                .product(name: "Time Primitives", package: "swift-time-primitives"),
+                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
+            ]
+        ),
+
+        // MARK: - Snapshot
+
+        .target(
+            name: "Tests Snapshot",
+            dependencies: [
+                "Tests Core",
+                .product(name: "File System", package: "swift-file-system"),
+                .product(name: "JSON", package: "swift-json"),
+                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
+                .product(name: "Kernel", package: "swift-kernel"),
+            ]
+        ),
+
+        // MARK: - Performance
+
+        .target(
+            name: "Tests Performance",
+            dependencies: [
+                "Tests Core",
+                .product(name: "Time Primitives", package: "swift-time-primitives"),
+                .product(name: "Console", package: "swift-console"),
+                .product(name: "Memory", package: "swift-memory"),
+                .product(name: "Binary Primitives", package: "swift-binary-primitives"),
+                .product(name: "Formatting Primitives", package: "swift-formatting-primitives"),
+                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
+            ]
+        ),
+
+        // MARK: - Umbrella
+
         .target(
             name: "Tests",
             dependencies: [
-                .product(name: "Test Primitives", package: "swift-test-primitives"),
-                .product(name: "Async Primitives", package: "swift-async-primitives"),
-                .product(name: "Binary Primitives", package: "swift-binary-primitives"),
-                .product(name: "Time Primitives", package: "swift-time-primitives"),
-                .product(name: "Clock Primitives", package: "swift-clock-primitives"),
-                .product(name: "Formatting Primitives", package: "swift-formatting-primitives"),
-                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
-                .product(name: "Ownership Primitives", package: "swift-ownership-primitives"),
-                .product(name: "Kernel", package: "swift-kernel"),
-                .product(name: "Memory", package: "swift-memory"),
-                .product(name: "Console", package: "swift-console"),
-                .product(name: "File System", package: "swift-file-system"),
-                .product(name: "Paths", package: "swift-paths"),
-                .product(name: "JSON", package: "swift-json"),
-                .product(name: "Loader", package: "swift-loader"),
-            ],
-            path: "Sources/Tests"
+                "Tests Core",
+                "Tests Benchmark",
+                "Tests Snapshot",
+                "Tests Performance",
+            ]
         ),
+
+        // MARK: - Test Support
+
         .target(
             name: "Tests Test Support",
             dependencies: [
@@ -79,6 +118,9 @@ let package = Package(
             ],
             path: "Tests/Support"
         ),
+
+        // MARK: - Tests
+
         .testTarget(
             name: "Tests Tests",
             dependencies: [

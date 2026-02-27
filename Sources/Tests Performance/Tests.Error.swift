@@ -14,61 +14,6 @@ public import Formatting_Primitives
 public import Memory
 public import Dependency_Primitives
 
-/// Namespace for performance testing utilities integrated with Swift Testing.
-///
-/// Tests provides comprehensive tools for measuring, analyzing, and
-/// enforcing performance requirements in your Swift tests.
-///
-/// ## Overview
-///
-/// Use Tests to:
-/// - Measure execution time with statistical analysis
-/// - Track memory allocations during test execution
-/// - Compare performance across runs to detect regressions
-/// - Enforce performance budgets with declarative traits
-/// - Generate formatted performance reports
-///
-/// ## Basic Usage
-///
-/// The simplest way to measure performance is with the `.timed()` trait:
-///
-/// ```swift
-/// import Testing
-/// import Tests
-///
-/// @Test(.timed())
-/// func arraySum() {
-///     let numbers = Array(1...10_000)
-///     _ = numbers.reduce(0, +)
-/// }
-/// ```
-///
-/// For manual measurement without traits:
-///
-/// ```swift
-/// @Test
-/// func manualMeasurement() {
-///     let (result, measurement) = Tests.measure {
-///         expensiveOperation()
-///     }
-///
-///     Tests.printPerformance("operation", measurement)
-///     #expect(measurement.median < .milliseconds(10))
-/// }
-/// ```
-///
-/// ## Performance Budgets
-///
-/// Enforce maximum execution time to prevent performance regressions:
-///
-/// ```swift
-/// @Test(.timed(threshold: .milliseconds(5)))
-/// func mustBeFast() {
-///     criticalOperation()
-/// }
-/// ```
-public enum Tests {}
-
 // MARK: - Type Aliases for Allocation Tracking
 
 extension Tests {
