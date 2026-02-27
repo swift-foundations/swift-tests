@@ -56,6 +56,12 @@ let package = Package(
             ],
             path: "Sources/Tests"
         ),
+        .testTarget(
+            name: "Tests Tests",
+            dependencies: [
+                "Tests",
+            ]
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
