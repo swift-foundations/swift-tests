@@ -94,7 +94,7 @@ extension Test.Trait {
     }
 }
 
-extension Collection where Element == Test.Trait {
+extension Swift.Collection where Element == Test.Trait {
     /// Finds timed configuration from a collection of traits.
     ///
     /// - Returns: The timed configuration if present.

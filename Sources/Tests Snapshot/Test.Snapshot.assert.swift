@@ -495,7 +495,7 @@ private func makePassingExpectation(
     line: Int,
     column: Int
 ) -> Test.Expectation {
-    let location = Test.Source.Location(
+    let location = Source.Location(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -526,7 +526,7 @@ private func makeFailingExpectation(
     line: Int,
     column: Int
 ) -> Test.Expectation {
-    let location = Test.Source.Location(
+    let location = Source.Location(
         fileID: fileID,
         filePath: filePath,
         line: line,

@@ -16,14 +16,14 @@ extension Test.Requirement {
         public let message: Test.Text
 
         /// The source location where the requirement failed.
-        public let sourceLocation: Test.Source.Location
+        public let sourceLocation: Source.Location
 
         /// Creates a requirement failure.
         ///
         /// - Parameters:
         ///   - message: The failure message.
         ///   - sourceLocation: Where the failure occurred.
-        public init(message: Test.Text, sourceLocation: Test.Source.Location) {
+        public init(message: Test.Text, sourceLocation: Source.Location) {
             self.message = message
             self.sourceLocation = sourceLocation
         }

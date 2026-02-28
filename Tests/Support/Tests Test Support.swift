@@ -18,11 +18,11 @@ extension Tests.Measurement {
 
 // MARK: - Test.Benchmark.Measurement Factory
 
-extension Test_Primitives.Test.Benchmark.Measurement {
+extension Tests_Core.Test.Benchmark.Measurement {
     /// Creates a benchmark measurement from millisecond integer values.
     ///
     /// ```swift
-    /// let m = Test_Primitives.Test.Benchmark.Measurement.with([10, 20, 30])
+    /// let m = Test.Benchmark.Measurement.with([10, 20, 30])
     /// ```
     public static func with(_ milliseconds: [Int]) -> Self {
         Self(durations: milliseconds.map { .milliseconds($0) })
@@ -31,17 +31,17 @@ extension Test_Primitives.Test.Benchmark.Measurement {
 
 // MARK: - Test.Plan.Entry Factory
 
-extension Test_Primitives.Test.Plan.Entry {
+extension Tests_Core.Test.Plan.Entry {
     /// Creates a plan entry with sensible defaults.
     ///
     /// ```swift
-    /// let entry = Test_Primitives.Test.Plan.Entry.stub("myTest")
+    /// let entry = Test.Plan.Entry.stub("myTest")
     /// ```
     public static func stub(
         _ name: Swift.String,
         module: Swift.String = "TestModule",
-        traits: [Test_Primitives.Test.Trait] = [],
-        body: Test_Primitives.Test.Body = .sync {}
+        traits: [Tests_Core.Test.Trait] = [],
+        body: Tests_Core.Test.Body = .sync {}
     ) -> Self {
         .init(
             id: .stub(name, module: module),

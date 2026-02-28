@@ -86,7 +86,7 @@ extension Test.Trait {
     }
 }
 
-extension Collection where Element == Test.Trait {
+extension Swift.Collection where Element == Test.Trait {
     /// Finds the exclusion group from a collection of traits.
     ///
     /// - Returns: The exclusion group if present.

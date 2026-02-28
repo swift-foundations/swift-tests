@@ -11,7 +11,7 @@ struct TestRequirementFailedTests {
 extension TestRequirementFailedTests.Unit {
     @Test
     func `init stores message and sourceLocation`() {
-        let location = Test_Primitives.Test.Source.Location(
+        let location = Source.Location(
             fileID: "Module/File.swift", line: 42, column: 5
         )
         let message = Test_Primitives.Test.Text("requirement not met")
@@ -26,7 +26,7 @@ extension TestRequirementFailedTests.Unit {
 
     @Test
     func `description contains message text`() {
-        let location = Test_Primitives.Test.Source.Location(
+        let location = Source.Location(
             fileID: "Module/File.swift", line: 10, column: 1
         )
         let failed = Test_Primitives.Test.Requirement.Failed(
@@ -38,7 +38,7 @@ extension TestRequirementFailedTests.Unit {
 
     @Test
     func `description contains source location`() {
-        let location = Test_Primitives.Test.Source.Location(
+        let location = Source.Location(
             fileID: "Module/File.swift", line: 99, column: 3
         )
         let failed = Test_Primitives.Test.Requirement.Failed(

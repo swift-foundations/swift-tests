@@ -46,7 +46,7 @@ public func expect(
     line: Int = #line,
     column: Int = #column
 ) -> Test.Expectation {
-    let location = Test.Source.Location(
+    let location = Source.Location(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -103,7 +103,7 @@ public func expect<T: Equatable>(
     line: Int = #line,
     column: Int = #column
 ) -> Test.Expectation {
-    let location = Test.Source.Location(
+    let location = Source.Location(
         fileID: fileID,
         filePath: filePath,
         line: line,

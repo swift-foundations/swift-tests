@@ -45,7 +45,7 @@ public func require(
     line: Int = #line,
     column: Int = #column
 ) throws(Test.Requirement.Failed) {
-    let location = Test.Source.Location(
+    let location = Source.Location(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -79,7 +79,7 @@ public func require<T>(
     line: Int = #line,
     column: Int = #column
 ) throws(Test.Requirement.Failed) -> T {
-    let location = Test.Source.Location(
+    let location = Source.Location(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -116,7 +116,7 @@ public func require<T: Equatable>(
     line: Int = #line,
     column: Int = #column
 ) throws(Test.Requirement.Failed) {
-    let location = Test.Source.Location(
+    let location = Source.Location(
         fileID: fileID,
         filePath: filePath,
         line: line,
