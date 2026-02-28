@@ -10,6 +10,7 @@
 // ===----------------------------------------------------------------------===//
 
 public import Time_Primitives
+public import Sample_Primitives
 
 extension Tests {
     /// Statistical performance measurement containing multiple duration samples.
@@ -37,14 +38,38 @@ extension Tests {
     /// - **Percentiles** (``p50``, ``p75``, ``p90``, ``p95``, ``p99``, ``p999``): Values at specific percentiles
     /// - **Min/Max** (``min``, ``max``): Fastest and slowest iterations
     /// - **Standard Deviation** (``standardDeviation``): Measure of variation
-    public struct Measurement: Sendable, Codable {
+    public struct Measurement: Sendable {
         /// All measured durations from individual test iterations.
         public let durations: [Duration]
+
+        /// Pre-computed batch statistics over the durations.
+        public let batch: Sample.Batch<Duration>
 
         /// Creates a measurement from an array of durations.
         public init(durations: [Duration]) {
             self.durations = durations
+            self.batch = Sample.Batch(durations)
         }
+    }
+}
+
+// MARK: - Codable
+
+extension Tests.Measurement: Codable {
+    private enum CodingKeys: Swift.String, CodingKey {
+        case durations
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(durations, forKey: .durations)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let durations = try container.decode([Duration].self, forKey: .durations)
+        self.durations = durations
+        self.batch = Sample.Batch(durations)
     }
 }
 
@@ -71,54 +96,52 @@ extension Tests.Measurement: Comparable {
 extension Tests.Measurement {
     /// Minimum duration across all iterations.
     public var min: Duration {
-        durations.min() ?? .zero
+        batch.min ?? .zero
     }
 
     /// Maximum duration across all iterations.
     public var max: Duration {
-        durations.max() ?? .zero
+        batch.max ?? .zero
     }
 
     /// Median duration (50th percentile).
     public var median: Duration {
-        percentile(0.5)
+        batch.median ?? .zero
     }
 
     /// Average (mean) duration across all iterations.
     public var mean: Duration {
-        guard !durations.isEmpty else { return .zero }
-        let total = durations.reduce(Duration.zero, +)
-        return total / durations.count
+        batch.mean ?? .zero
     }
 
     /// 50th percentile duration (same as ``median``).
     public var p50: Duration {
-        percentile(0.5)
+        batch.p50 ?? .zero
     }
 
     /// 75th percentile duration.
     public var p75: Duration {
-        percentile(0.75)
+        batch.p75 ?? .zero
     }
 
     /// 90th percentile duration.
     public var p90: Duration {
-        percentile(0.90)
+        batch.p90 ?? .zero
     }
 
     /// 95th percentile duration.
     public var p95: Duration {
-        percentile(0.95)
+        batch.p95 ?? .zero
     }
 
     /// 99th percentile duration.
     public var p99: Duration {
-        percentile(0.99)
+        batch.p99 ?? .zero
     }
 
     /// 99.9th percentile duration.
     public var p999: Duration {
-        percentile(0.999)
+        batch.p999 ?? .zero
     }
 
     /// Calculate a specific percentile.
@@ -126,23 +149,12 @@ extension Tests.Measurement {
     /// - Parameter p: Percentile to calculate, from 0.0 (minimum) to 1.0 (maximum)
     /// - Returns: Duration at the specified percentile, or `.zero` if no durations
     public func percentile(_ p: Double) -> Duration {
-        guard !durations.isEmpty else { return .zero }
-        let sorted = durations.sorted()
-        let index = Int(Double(sorted.count) * p)
-        let clampedIndex = Swift.min(index, sorted.count - 1)
-        return sorted[clampedIndex]
+        batch.percentile(p) ?? .zero
     }
 
     /// Standard deviation of duration measurements.
     public var standardDeviation: Duration {
-        guard durations.count > 1 else { return .zero }
-        let meanSeconds = mean.inSeconds
-        let variance =
-            durations.reduce(0.0) { acc, duration in
-                let diff = duration.inSeconds - meanSeconds
-                return acc + (diff * diff)
-            } / Double(durations.count - 1)
-        return .seconds(variance.squareRoot())
+        batch.standardDeviation ?? .zero
     }
 }
 
@@ -222,4 +234,3 @@ extension Tests {
         return (result, ContinuousClock.now - start)
     }
 }
-

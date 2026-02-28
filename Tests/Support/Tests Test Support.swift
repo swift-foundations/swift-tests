@@ -16,19 +16,6 @@ extension Tests.Measurement {
     }
 }
 
-// MARK: - Test.Benchmark.Measurement Factory
-
-extension Tests_Core.Test.Benchmark.Measurement {
-    /// Creates a benchmark measurement from millisecond integer values.
-    ///
-    /// ```swift
-    /// let m = Test.Benchmark.Measurement.with([10, 20, 30])
-    /// ```
-    public static func with(_ milliseconds: [Int]) -> Self {
-        Self(durations: milliseconds.map { .milliseconds($0) })
-    }
-}
-
 // MARK: - Test.Plan.Entry Factory
 
 extension Tests_Core.Test.Plan.Entry {

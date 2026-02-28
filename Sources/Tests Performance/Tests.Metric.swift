@@ -9,25 +9,17 @@
 //
 // ===----------------------------------------------------------------------===//
 
-extension Tests {
-    /// Performance metrics that can be asserted against
-    public enum Metric: Swift.String, Sendable {
-        case min
-        case max
-        case median
-        case mean
-        case p95
-        case p99
+public import Sample_Primitives
 
-        public func extract(from measurement: Measurement) -> Duration {
-            switch self {
-            case .min: return measurement.min
-            case .max: return measurement.max
-            case .median: return measurement.median
-            case .mean: return measurement.mean
-            case .p95: return measurement.p95
-            case .p99: return measurement.p99
-            }
-        }
+extension Tests {
+    /// Performance metrics that can be asserted against.
+    public typealias Metric = Sample.Metric
+}
+
+extension Sample.Metric {
+    /// Extracts this metric from a measurement.
+    @inlinable
+    public func extract(from measurement: Tests.Measurement) -> Duration {
+        self.extract(from: measurement.batch, using: .duration) ?? .zero
     }
 }

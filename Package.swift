@@ -13,7 +13,6 @@ let package = Package(
     ],
     products: [
         .library(name: "Tests Core", targets: ["Tests Core"]),
-        .library(name: "Tests Benchmark", targets: ["Tests Benchmark"]),
         .library(name: "Tests Snapshot", targets: ["Tests Snapshot"]),
         .library(name: "Tests Performance", targets: ["Tests Performance"]),
         .library(name: "Tests", targets: ["Tests"]),
@@ -32,6 +31,7 @@ let package = Package(
         .package(path: "../swift-file-system"),
         .package(path: "../swift-json"),
         .package(path: "../swift-loader"),
+        .package(path: "../../swift-primitives/swift-sample-primitives"),
     ],
     targets: [
 
@@ -43,17 +43,6 @@ let package = Package(
                 .product(name: "Test Primitives", package: "swift-test-primitives"),
                 .product(name: "Ownership Primitives", package: "swift-ownership-primitives"),
                 .product(name: "Loader", package: "swift-loader"),
-            ]
-        ),
-
-        // MARK: - Benchmark
-
-        .target(
-            name: "Tests Benchmark",
-            dependencies: [
-                "Tests Core",
-                .product(name: "Time Primitives", package: "swift-time-primitives"),
-                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
             ]
         ),
 
@@ -76,6 +65,7 @@ let package = Package(
             name: "Tests Performance",
             dependencies: [
                 "Tests Core",
+                .product(name: "Sample Primitives", package: "swift-sample-primitives"),
                 .product(name: "Time Primitives", package: "swift-time-primitives"),
                 .product(name: "Console", package: "swift-console"),
                 .product(name: "Memory", package: "swift-memory"),
@@ -91,7 +81,6 @@ let package = Package(
             name: "Tests",
             dependencies: [
                 "Tests Core",
-                "Tests Benchmark",
                 "Tests Snapshot",
                 "Tests Performance",
             ]

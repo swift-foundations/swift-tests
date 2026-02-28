@@ -13,3 +13,11 @@ extension Test {
     /// Namespace for benchmark operations.
     public enum Benchmark {}
 }
+
+extension Test.Benchmark {
+    /// Typealias for backwards compatibility.
+    public typealias Measurement = Tests.Measurement
+
+    /// Typealias for backwards compatibility.
+    public typealias Metric = Tests.Metric
+}

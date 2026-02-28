@@ -7,6 +7,7 @@
 
 public import Formatting_Primitives
 public import Time_Primitives
+public import Sample_Primitives
 
 extension Tests {
     /// Performance comparison report between current and baseline measurements.
@@ -37,9 +38,13 @@ extension Tests {
         }
 
         public var change: Double {
-            let cur = currentValue.inSeconds
-            let base = baselineValue.inSeconds
-            return (cur - base) / base
+            let comparison = Sample.Comparison(
+                baseline: baseline.batch,
+                current: current.batch,
+                metric: metric,
+                polarity: .lowerIsBetter
+            )
+            return comparison.change(using: .duration) ?? 0.0
         }
 
         public var isRegression: Bool { change > 0 }
