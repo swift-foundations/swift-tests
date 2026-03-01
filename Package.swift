@@ -32,6 +32,7 @@ let package = Package(
         .package(path: "../swift-json"),
         .package(path: "../swift-loader"),
         .package(path: "../../swift-primitives/swift-sample-primitives"),
+        .package(path: "../swift-witnesses"),
     ],
     targets: [
 
@@ -43,6 +44,7 @@ let package = Package(
                 .product(name: "Test Primitives", package: "swift-test-primitives"),
                 .product(name: "Ownership Primitives", package: "swift-ownership-primitives"),
                 .product(name: "Loader", package: "swift-loader"),
+                .product(name: "Witnesses", package: "swift-witnesses"),
             ]
         ),
 

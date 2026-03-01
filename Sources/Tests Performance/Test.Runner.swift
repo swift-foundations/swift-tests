@@ -38,6 +38,9 @@ extension Test {
         /// The reporter to send events to.
         public let reporter: Reporter
 
+        /// Scope providers that wrap test execution.
+        public var scopeProviders: [Test.Trait.ScopeProvider] = [.timed, .timeLimit, .exclusive]
+
         /// Creates a runner with the given reporter.
         ///
         /// - Parameter reporter: The reporter for test events.
@@ -156,138 +159,52 @@ extension Test {
             return nil
         }
 
-        /// Runs an entry with trait handling.
+        /// Runs an entry with trait handling via composable scope providers.
         private func runWithTraits(_ entry: Plan.Entry) async throws(Error) {
-            // Extract trait configurations
-            var timeLimit: Duration?
-            var timedConfig: Test.Benchmark.Configuration?
-            var exclusionGroup: Swift.String?
+            let traits = Test.Trait.Collection(from: entry.traits)
 
-            for trait in entry.traits {
-                switch trait.kind {
-                case .timeLimit(let limit):
-                    timeLimit = limit
-                case .custom(let name, let value):
-                    if name == "__timed__", let value {
-                        timedConfig = Test.Benchmark.Configuration.decode(from: value)
-                    } else if name == "__exclusive__" {
-                        exclusionGroup = value ?? "__global__"
-                    }
-                default:
-                    break
-                }
-            }
+            let providers = self.scopeProviders
+                .filter { $0.shouldActivate(traits) }
+                .sorted { $0.priority < $1.priority }
 
-            // Build the execution chain
-            // Wrap in test context so dependencies resolve to testValue
-            let baseOperation: @Sendable () async throws(Error) -> Void = { () async throws(Error) in
+            // Base operation: run the test body with dependency scope
+            var chain: @Sendable () async throws -> Void = {
                 do throws(Test.Body.Error) {
-                    try await Dependency.Scope.with({ $0.isTestContext = true }, operation: entry.body.run)
+                    try await Dependency.Scope.with(
+                        { $0.isTestContext = true },
+                        operation: entry.body.run
+                    )
                 } catch {
                     throw Error.bodyFailed(error)
                 }
             }
 
-            // Wrap with timed measurement if configured
-            let timedOperation: @Sendable () async throws(Error) -> Void
-            if let config = timedConfig {
-                timedOperation = { [testName = entry.id.name] () async throws(Error) in
-                    try await self.runTimed(
-                        name: testName,
-                        config: config,
-                        operation: baseOperation
-                    )
-                }
-            } else {
-                timedOperation = baseOperation
-            }
-
-            // Wrap with time limit if configured
-            let timeLimitedOperation: @Sendable () async throws(Error) -> Void
-            if let timeLimit {
-                timeLimitedOperation = { () async throws(Error) in
-                    try await self.withTimeout(timeLimit, operation: timedOperation)
-                }
-            } else {
-                timeLimitedOperation = timedOperation
-            }
-
-            // Wrap with exclusion if configured
-            if let group = exclusionGroup {
-                try await Test.Exclusion.Controller.shared.withExclusiveAccess(group: group, { () async throws(Error) in
-                    try await timeLimitedOperation()
-                })
-            } else {
-                try await timeLimitedOperation()
-            }
-        }
-
-        /// Runs an operation with timed measurement.
-        private func runTimed(
-            name: Swift.String,
-            config: Test.Benchmark.Configuration,
-            operation: @Sendable () async throws(Error) -> Void
-        ) async throws(Error) {
-            // Warmup iterations
-            for _ in 0..<config.warmup {
-                try await operation()
-            }
-
-            // Measured iterations
-            var durations: [Duration] = []
-            durations.reserveCapacity(config.iterations)
-
-            for _ in 0..<config.iterations {
-                let start = ContinuousClock.now
-                try await operation()
-                durations.append(ContinuousClock.now - start)
-            }
-
-            let measurement = Test.Benchmark.Measurement(durations: durations)
-
-            // Print results if configured
-            if config.printResults {
-                Test.Benchmark.printPerformance(name, measurement)
-            }
-
-            // Check threshold if configured
-            if let threshold = config.threshold {
-                let metricValue = config.metric.extract(from: measurement)
-                if metricValue > threshold {
-                    throw Error.performanceThresholdExceeded(
-                        test: name,
-                        metric: config.metric,
-                        expected: threshold,
-                        actual: metricValue
-                    )
+            // Wrap with scope providers (reversed so lowest priority wraps outermost)
+            for provider in providers.reversed() {
+                let inner = chain
+                chain = {
+                    try await provider.provideScope(entry, traits, inner)
                 }
             }
-        }
 
-        /// Runs a closure with a timeout.
-        private func withTimeout(
-            _ timeout: Duration,
-            operation: @escaping @Sendable () async throws(Error) -> Void
-        ) async throws(Error) {
             do {
-                try await withThrowingTaskGroup(of: Void.self) { group in
-                    group.addTask {
-                        try await operation()
-                    }
-
-                    group.addTask {
-                        try await Task.sleep(for: timeout)
-                        throw Error.timeLimitExceeded(limit: timeout)
-                    }
-
-                    // Wait for first to complete
-                    try await group.next()
-                    group.cancelAll()
-                }
+                try await chain()
             } catch let error as Error {
                 throw error
+            } catch let error as Test.Trait.ScopeProvider.TimeLimitExceeded {
+                throw Error.timeLimitExceeded(limit: error.limit)
+            } catch let error as Test.Trait.ScopeProvider.PerformanceThresholdExceeded {
+                throw Error.performanceThresholdExceeded(
+                    test: error.test,
+                    metric: error.metric,
+                    expected: error.expected,
+                    actual: error.actual
+                )
             } catch {
-                throw Error.timeLimitExceeded(limit: timeout)
+                throw Error.bodyFailed(.caught(
+                    type: Swift.String(describing: type(of: error)),
+                    description: Swift.String(describing: error)
+                ))
             }
         }
     }
