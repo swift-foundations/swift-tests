@@ -11,6 +11,7 @@
 
 public import Time_Primitives
 public import Sample_Primitives
+import Clocks
 
 extension Tests {
     /// Statistical performance measurement containing multiple duration samples.
@@ -182,9 +183,9 @@ extension Tests {
         var lastResult: T?
 
         for _ in 0..<iterations {
-            let start = Clock.Continuous.now
+            let start = Clock_Primitives.Clock.Continuous.now
             lastResult = operation()
-            durations.append(Clock.Continuous.now - start)
+            durations.append(Clock_Primitives.Clock.Continuous.now - start)
         }
 
         return (lastResult!, Tests.Measurement(durations: durations))
@@ -208,9 +209,9 @@ extension Tests {
         var lastResult: T?
 
         for _ in 0..<iterations {
-            let start = Clock.Continuous.now
+            let start = Clock_Primitives.Clock.Continuous.now
             lastResult = try await operation()
-            durations.append(Clock.Continuous.now - start)
+            durations.append(Clock_Primitives.Clock.Continuous.now - start)
         }
 
         return (lastResult!, Tests.Measurement(durations: durations))
@@ -219,9 +220,9 @@ extension Tests {
     /// Single-shot timing measurement
     @discardableResult
     public static func time<T>(operation: () -> T) -> (result: T, duration: Duration) {
-        let start = Clock.Continuous.now
+        let start = Clock_Primitives.Clock.Continuous.now
         let result = operation()
-        return (result, Clock.Continuous.now - start)
+        return (result, Clock_Primitives.Clock.Continuous.now - start)
     }
 
     /// Single-shot timing measurement for async operations
@@ -229,8 +230,8 @@ extension Tests {
     public static func time<T, E: Swift.Error>(
         operation: () async throws(E) -> T
     ) async throws(E) -> (result: T, duration: Duration) {
-        let start = Clock.Continuous.now
+        let start = Clock_Primitives.Clock.Continuous.now
         let result = try await operation()
-        return (result, Clock.Continuous.now - start)
+        return (result, Clock_Primitives.Clock.Continuous.now - start)
     }
 }

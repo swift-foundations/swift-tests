@@ -13,8 +13,8 @@ extension Test.Plan {
         /// The test identifier.
         public let id: Test.ID
 
-        /// Traits applied to this test.
-        public let traits: [Test.Trait]
+        /// Modifiers that configure this test's trait collection.
+        public let modifiers: [Test.Trait.Collection.Modifier]
 
         /// The test body to execute.
         public let body: Test.Body
@@ -23,15 +23,15 @@ extension Test.Plan {
         ///
         /// - Parameters:
         ///   - id: The test identifier.
-        ///   - traits: Traits applied to this test.
+        ///   - modifiers: Modifiers for the trait collection.
         ///   - body: The test body.
         public init(
             id: Test.ID,
-            traits: [Test.Trait],
+            modifiers: [Test.Trait.Collection.Modifier] = [],
             body: Test.Body
         ) {
             self.id = id
-            self.traits = traits
+            self.modifiers = modifiers
             self.body = body
         }
     }

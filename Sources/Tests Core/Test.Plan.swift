@@ -20,7 +20,7 @@ extension Test {
     /// var registry = Test.Plan.Registry()
     /// registry.add(
     ///     id: testID,
-    ///     traits: [.timeLimit(.seconds(30))],
+    ///     modifiers: [.timeLimit(.seconds(30))],
     ///     body: { /* test code */ }
     /// )
     /// let plan = registry.finalize()
@@ -65,12 +65,9 @@ extension Test.Plan {
     /// - Returns: A plan containing only matching entries.
     public func filter(tags: Set<String>) -> Self {
         filter { entry in
-            entry.traits.contains { trait in
-                if case .tag(let name) = trait.kind {
-                    return tags.contains(name)
-                }
-                return false
-            }
+            let collection = Test.Trait.Collection(modifiers: entry.modifiers)
+            let entryTags = collection[Test.Trait.Tag.self]
+            return !entryTags.isDisjoint(with: tags)
         }
     }
 

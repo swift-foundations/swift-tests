@@ -5,6 +5,8 @@
 //  Scope provider for timed benchmark execution.
 //
 
+import Clocks
+
 extension Test.Trait.ScopeProvider {
     /// Scope provider for timed benchmark measurement.
     public static var timed: Self {
@@ -34,9 +36,9 @@ extension Test.Trait.ScopeProvider {
         durations.reserveCapacity(config.iterations)
 
         for _ in 0..<config.iterations {
-            let start = Clock.Continuous.now
+            let start = Clock_Primitives.Clock.Continuous.now
             try await operation()
-            durations.append(Clock.Continuous.now - start)
+            durations.append(Clock_Primitives.Clock.Continuous.now - start)
         }
 
         let measurement = Test.Benchmark.Measurement(durations: durations)

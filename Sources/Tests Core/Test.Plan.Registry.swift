@@ -20,7 +20,7 @@ extension Test.Plan {
     ///
     /// registry.add(
     ///     id: Test.ID(module: "MyTests", name: "testExample", sourceLocation: loc),
-    ///     traits: [],
+    ///     modifiers: [],
     ///     body: .sync { #expect(true) }
     /// )
     ///
@@ -47,42 +47,42 @@ extension Test.Plan {
         ///
         /// - Parameters:
         ///   - id: The test identifier.
-        ///   - traits: Traits to apply to this test.
+        ///   - modifiers: Modifiers for the trait collection.
         ///   - body: The test body.
         public mutating func add(
             id: Test.ID,
-            traits: [Test.Trait] = [],
+            modifiers: [Test.Trait.Collection.Modifier] = [],
             body: Test.Body
         ) {
-            entries.append(Entry(id: id, traits: traits, body: body))
+            entries.append(Entry(id: id, modifiers: modifiers, body: body))
         }
 
         /// Adds a synchronous test to the registry.
         ///
         /// - Parameters:
         ///   - id: The test identifier.
-        ///   - traits: Traits to apply to this test.
+        ///   - modifiers: Modifiers for the trait collection.
         ///   - body: The synchronous test body.
         public mutating func add<E: Swift.Error>(
             id: Test.ID,
-            traits: [Test.Trait] = [],
+            modifiers: [Test.Trait.Collection.Modifier] = [],
             body: @escaping @Sendable () throws(E) -> Void
         ) {
-            add(id: id, traits: traits, body: .sync(body))
+            add(id: id, modifiers: modifiers, body: .sync(body))
         }
 
         /// Adds an asynchronous test to the registry.
         ///
         /// - Parameters:
         ///   - id: The test identifier.
-        ///   - traits: Traits to apply to this test.
+        ///   - modifiers: Modifiers for the trait collection.
         ///   - body: The asynchronous test body.
         public mutating func add<E: Swift.Error>(
             id: Test.ID,
-            traits: [Test.Trait] = [],
+            modifiers: [Test.Trait.Collection.Modifier] = [],
             body: @escaping @Sendable () async throws(E) -> Void
         ) {
-            add(id: id, traits: traits, body: .async(body))
+            add(id: id, modifiers: modifiers, body: .async(body))
         }
 
         /// Finalizes the registry and produces a plan.

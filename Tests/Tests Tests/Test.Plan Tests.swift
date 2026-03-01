@@ -57,12 +57,12 @@ extension TestPlanTests.Unit {
         var registry = Test_Primitives.Test.Plan.Registry()
         registry.add(
             id: .stub("tagged"),
-            traits: [.tag("smoke")],
+            modifiers: [.tag("smoke")],
             body: .sync {}
         )
         registry.add(
             id: .stub("untagged"),
-            traits: [],
+            modifiers: [],
             body: .sync {}
         )
         let plan = registry.finalize()

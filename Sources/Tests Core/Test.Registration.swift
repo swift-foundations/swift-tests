@@ -20,8 +20,8 @@ extension Test {
         /// The test identifier.
         public let id: Test.ID
 
-        /// Test traits (tags, timeLimit, enabled, serialized).
-        public let traits: [Test.Trait]
+        /// Modifiers that configure this test's trait collection.
+        public let modifiers: [Test.Trait.Collection.Modifier]
 
         /// The test body to execute.
         public let body: Test.Body
@@ -33,17 +33,17 @@ extension Test {
         ///
         /// - Parameters:
         ///   - id: The test identifier.
-        ///   - traits: Test traits.
+        ///   - modifiers: Modifiers for the trait collection.
         ///   - body: The test body.
         ///   - suiteID: Optional suite identifier.
         public init(
             id: Test.ID,
-            traits: [Test.Trait],
+            modifiers: [Test.Trait.Collection.Modifier] = [],
             body: Test.Body,
             suiteID: Swift.String? = nil
         ) {
             self.id = id
-            self.traits = traits
+            self.modifiers = modifiers
             self.body = body
             self.suiteID = suiteID
         }

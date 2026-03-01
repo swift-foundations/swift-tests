@@ -10,12 +10,13 @@ public import Identity_Primitives
 import Synchronization
 public import File_System
 
-// MARK: - assertSnapshot (Synchronous)
+// MARK: - assertSnapshot (Synchronous, Captured Value)
 
-/// Asserts that a value matches its snapshot.
+/// Asserts that a captured value matches its snapshot.
 ///
-/// On first run (or in record mode), records the snapshot.
-/// On subsequent runs, compares against the stored reference.
+/// The value is evaluated eagerly at the call site. If the value expression
+/// throws, the caller handles it with `try` and the typed error propagates
+/// naturally.
 ///
 /// ## Example
 ///
@@ -23,7 +24,7 @@ public import File_System
 /// @Test
 /// func testUserJSON() {
 ///     let user = User(name: "Alice", age: 30)
-///     assertSnapshot(of: user.description, as: .lines)
+///     assertSnapshot(capturing: user.description, as: .lines)
 /// }
 /// ```
 ///
@@ -33,6 +34,82 @@ public import File_System
 /// - `.missing`: Record if missing; compare if exists (default)
 /// - `.failed`: Record on failure + fail
 /// - `.all`: Always record (overwrite)
+///
+/// - Parameters:
+///   - value: The value to snapshot.
+///   - strategy: How to convert and compare the value.
+///   - name: Optional snapshot name (auto-numbered if nil).
+///   - record: Recording mode override (uses configuration default if nil).
+///   - fileID: Source file ID (captured automatically).
+///   - filePath: Source path (captured automatically).
+///   - line: Source line (captured automatically).
+///   - column: Source column (captured automatically).
+///   - function: Test function name (captured automatically).
+/// - Returns: The snapshot expectation result.
+@discardableResult
+public func assertSnapshot<Value: Sendable, Format: Sendable>(
+    capturing value: Value,
+    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: Swift.String? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
+    line: Int = #line,
+    column: Int = #column,
+    function: Swift.String = #function
+) -> Test.Expectation {
+    // Check for sync snapshot support
+    guard let syncSnapshot = strategy.syncSnapshot else {
+        return makeFailingExpectation(
+            message: "Strategy does not support synchronous capture. Use async assertSnapshot.",
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+    }
+
+    let failure = _verifySnapshot(
+        of: value,
+        syncSnapshot: syncSnapshot,
+        strategy: strategy,
+        named: name,
+        record: recording,
+        filePath: filePath,
+        function: function
+    )
+
+    if let failure {
+        return makeFailingExpectation(
+            message: failure,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+    }
+
+    return makePassingExpectation(
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+    )
+}
+
+// MARK: - assertSnapshot (Synchronous, Autoclosure)
+
+// WORKAROUND: @autoclosure () throws(E) -> Value has a fundamental E inference
+// bug in Swift 6.2. E cannot be inferred in ANY context — not from non-throwing
+// expressions, not even from typed-throwing expressions.
+// WHY: SE-0413 FullTypedThrows inference was never implemented (experimental only).
+// WHEN TO REMOVE: When FullTypedThrows ships in a Swift release.
+// TRACKING: https://github.com/swiftlang/swift/issues/75430
+
+/// Asserts that a value matches its snapshot.
+///
+/// On first run (or in record mode), records the snapshot.
+/// On subsequent runs, compares against the stored reference.
 ///
 /// - Parameters:
 ///   - value: The value to snapshot.
@@ -108,11 +185,68 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
     }
 }
 
-// MARK: - assertSnapshot (Asynchronous)
+// MARK: - assertSnapshot (Asynchronous, Captured Value)
 
-/// Asserts that a value matches its snapshot (async variant).
+/// Asserts that a captured value matches its snapshot (async variant).
 ///
 /// Supports strategies with async snapshot capture.
+///
+/// - Parameters:
+///   - value: The value to snapshot.
+///   - strategy: How to convert and compare the value.
+///   - name: Optional snapshot name.
+///   - record: Recording mode override.
+///   - fileID: Source file ID.
+///   - filePath: Source path.
+///   - line: Source line.
+///   - column: Source column.
+///   - function: Test function name.
+/// - Returns: The snapshot expectation result.
+@discardableResult
+public func assertSnapshot<Value: Sendable, Format: Sendable>(
+    capturing value: Value,
+    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: Swift.String? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
+    fileID: Swift.String = #fileID,
+    filePath: Swift.String = #filePath,
+    line: Int = #line,
+    column: Int = #column,
+    function: Swift.String = #function
+) async -> Test.Expectation {
+    let failure = await _verifySnapshot(
+        of: value,
+        strategy: strategy,
+        named: name,
+        record: recording,
+        filePath: filePath,
+        function: function
+    )
+
+    if let failure {
+        return makeFailingExpectation(
+            message: failure,
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+    }
+
+    return makePassingExpectation(
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
+    )
+}
+
+// MARK: - assertSnapshot (Asynchronous, Autoclosure)
+
+// WORKAROUND: See synchronous autoclosure variant above.
+// TRACKING: https://github.com/swiftlang/swift/issues/75430
+
+/// Asserts that a value matches its snapshot (async variant).
 ///
 /// - Parameters:
 ///   - value: The value to snapshot.
@@ -176,13 +310,79 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
     }
 }
 
-// MARK: - verifySnapshot
+// MARK: - verifySnapshot (Captured Value)
 
-/// Verifies that a value matches its snapshot, returning the failure message if any.
+/// Verifies that a captured value matches its snapshot, returning the failure message if any.
 ///
-/// Unlike ``assertSnapshot(of:as:named:record:fileID:filePath:line:column:function:)``,
+/// Unlike ``assertSnapshot(capturing:as:named:record:fileID:filePath:line:column:function:)``,
 /// this function returns the failure message instead of recording a test failure.
 /// Useful when you want to handle snapshot failures programmatically.
+///
+/// - Parameters:
+///   - value: The value to snapshot.
+///   - strategy: How to convert and compare the value.
+///   - name: Optional snapshot name.
+///   - record: Recording mode override.
+///   - filePath: Source path.
+///   - function: Test function name.
+/// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
+public func verifySnapshot<Value: Sendable, Format: Sendable>(
+    capturing value: Value,
+    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: Swift.String? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
+    filePath: Swift.String = #filePath,
+    function: Swift.String = #function
+) -> Swift.String? {
+    guard let syncSnapshot = strategy.syncSnapshot else {
+        return "Strategy does not support synchronous capture. Use async verifySnapshot."
+    }
+
+    return _verifySnapshot(
+        of: value,
+        syncSnapshot: syncSnapshot,
+        strategy: strategy,
+        named: name,
+        record: recording,
+        filePath: filePath,
+        function: function
+    )
+}
+
+/// Verifies that a captured value matches its snapshot (async variant).
+///
+/// - Parameters:
+///   - value: The value to snapshot.
+///   - strategy: How to convert and compare the value.
+///   - name: Optional snapshot name.
+///   - record: Recording mode override.
+///   - filePath: Source path.
+///   - function: Test function name.
+/// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
+public func verifySnapshot<Value: Sendable, Format: Sendable>(
+    capturing value: Value,
+    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    named name: Swift.String? = nil,
+    record recording: Test.Snapshot.Recording? = nil,
+    filePath: Swift.String = #filePath,
+    function: Swift.String = #function
+) async -> Swift.String? {
+    await _verifySnapshot(
+        of: value,
+        strategy: strategy,
+        named: name,
+        record: recording,
+        filePath: filePath,
+        function: function
+    )
+}
+
+// MARK: - verifySnapshot (Autoclosure)
+
+// WORKAROUND: See assertSnapshot autoclosure variant above.
+// TRACKING: https://github.com/swiftlang/swift/issues/75430
+
+/// Verifies that a value matches its snapshot, returning the failure message if any.
 ///
 /// - Parameters:
 ///   - value: The value to snapshot.

@@ -27,12 +27,12 @@ extension Tests_Core.Test.Plan.Entry {
     public static func stub(
         _ name: Swift.String,
         module: Swift.String = "TestModule",
-        traits: [Tests_Core.Test.Trait] = [],
+        modifiers: [Tests_Core.Test.Trait.Collection.Modifier] = [],
         body: Tests_Core.Test.Body = .sync {}
     ) -> Self {
         .init(
             id: .stub(name, module: module),
-            traits: traits,
+            modifiers: modifiers,
             body: body
         )
     }

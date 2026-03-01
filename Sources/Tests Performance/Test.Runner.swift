@@ -6,6 +6,7 @@
 //
 
 public import Test_Primitives
+import Clocks
 import Dependency_Primitives
 import Standard_Library_Extensions
 
@@ -65,7 +66,7 @@ extension Test {
         public func run(_ plan: Plan, concurrency: Concurrency) async -> Result {
             let sink = reporter.makeSink()
 
-            let startTime = Clock.Continuous.now
+            let startTime = Clock_Primitives.Clock.Continuous.now
 
             // Emit run started
             await sink.send(Test.Event(kind: .runStarted, elapsed: .zero))
@@ -138,8 +139,8 @@ extension Test {
         }
 
         /// Computes elapsed duration since start.
-        private func elapsed(since start: Clock.Continuous.Instant) -> Duration {
-            Clock.Continuous.now - start
+        private func elapsed(since start: Clock_Primitives.Clock.Continuous.Instant) -> Duration {
+            Clock_Primitives.Clock.Continuous.now - start
         }
 
         /// Checks if a test is enabled based on its trait collection.
@@ -242,5 +243,3 @@ extension Test.Runner {
     /// Errors thrown during test execution.
     public typealias Error = Test.Trait.ScopeProvider.Error
 }
-
-

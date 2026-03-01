@@ -43,6 +43,16 @@ extension Test.Trait {
             }
         }
 
+        /// Creates a trait collection from modifiers.
+        ///
+        /// - Parameter modifiers: The modifiers to apply.
+        public init(modifiers: [Modifier]) {
+            self.storage = Witness.Values()
+            for modifier in modifiers {
+                modifier.apply(to: &self)
+            }
+        }
+
         /// Type-safe subscript for any witness key.
         public subscript<K: Witness.Key>(key: K.Type) -> K.Value where K.Value: Copyable {
             get { storage[key] }

@@ -20,20 +20,20 @@ extension Test.Suite {
         /// Unique identifier for this suite.
         public let id: Test.ID
 
-        /// Suite traits (tags, timeLimit, enabled, serialized).
-        public let traits: [Test.Trait]
+        /// Modifiers that configure this suite's trait collection.
+        public let modifiers: [Test.Trait.Collection.Modifier]
 
         /// Creates a suite registration.
         ///
         /// - Parameters:
         ///   - id: Suite identifier.
-        ///   - traits: Suite-level traits.
+        ///   - modifiers: Modifiers for the trait collection.
         public init(
             id: Test.ID,
-            traits: [Test.Trait]
+            modifiers: [Test.Trait.Collection.Modifier] = []
         ) {
             self.id = id
-            self.traits = traits
+            self.modifiers = modifiers
         }
     }
 }
