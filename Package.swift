@@ -14,6 +14,7 @@ let package = Package(
     products: [
         .library(name: "Tests Core", targets: ["Tests Core"]),
         .library(name: "Tests Snapshot", targets: ["Tests Snapshot"]),
+        .library(name: "Tests Inline Snapshot", targets: ["Tests Inline Snapshot"]),
         .library(name: "Tests Performance", targets: ["Tests Performance"]),
         .library(name: "Tests", targets: ["Tests"]),
         .library(name: "Tests Test Support", targets: ["Tests Test Support"]),
@@ -35,6 +36,7 @@ let package = Package(
         .package(path: "../../swift-primitives/swift-sample-primitives"),
         .package(path: "../swift-clocks"),
         .package(path: "../swift-witnesses"),
+        .package(url: "https://github.com/swiftlang/swift-syntax", "600.0.0"..<"603.0.0"),
     ],
     targets: [
 
@@ -64,6 +66,18 @@ let package = Package(
             ]
         ),
 
+        // MARK: - Inline Snapshot
+
+        .target(
+            name: "Tests Inline Snapshot",
+            dependencies: [
+                "Tests Snapshot",
+                .product(name: "SwiftParser", package: "swift-syntax"),
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+            ]
+        ),
+
         // MARK: - Performance
 
         .target(
@@ -88,6 +102,7 @@ let package = Package(
             dependencies: [
                 "Tests Core",
                 "Tests Snapshot",
+                "Tests Inline Snapshot",
                 "Tests Performance",
             ]
         ),

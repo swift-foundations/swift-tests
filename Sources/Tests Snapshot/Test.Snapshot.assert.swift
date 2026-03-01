@@ -683,6 +683,8 @@ private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> Swift.Str
         return message
     case .missingReference(let path):
         return "No reference snapshot found at: \(path)\nRun with recording mode '.missing' or '.all' to create the reference snapshot."
+    case .recordedInline(let sourceFile):
+        return "Inline snapshot recorded in: \(sourceFile). Re-run to assert."
     }
 }
 

@@ -42,6 +42,12 @@ extension Test {
         /// Scope providers that wrap test execution.
         public var scopeProviders: [Test.Trait.ScopeProvider] = [.timed, .timeLimit, .exclusive]
 
+        /// Actions to execute after all tests complete but before the reporter finishes.
+        ///
+        /// Used by inline snapshot testing to write accumulated snapshots back
+        /// to source files after the test run.
+        public var postRunActions: [@Sendable () async -> Void] = []
+
         /// Creates a runner with the given reporter.
         ///
         /// - Parameter reporter: The reporter for test events.
@@ -132,6 +138,11 @@ extension Test {
 
             // Emit run ended
             await sink.send(Test.Event(kind: .runEnded, elapsed: elapsed(since: startTime)))
+
+            // Execute post-run actions (e.g., inline snapshot write-back)
+            for action in postRunActions {
+                await action()
+            }
 
             await sink.finish()
 
