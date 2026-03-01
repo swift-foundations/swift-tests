@@ -34,9 +34,9 @@ extension Test.Trait.ScopeProvider {
         durations.reserveCapacity(config.iterations)
 
         for _ in 0..<config.iterations {
-            let start = ContinuousClock.now
+            let start = Clock.Continuous.now
             try await operation()
-            durations.append(ContinuousClock.now - start)
+            durations.append(Clock.Continuous.now - start)
         }
 
         let measurement = Test.Benchmark.Measurement(durations: durations)

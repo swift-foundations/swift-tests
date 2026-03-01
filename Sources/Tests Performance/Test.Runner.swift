@@ -65,7 +65,7 @@ extension Test {
         public func run(_ plan: Plan, concurrency: Concurrency) async -> Result {
             let sink = reporter.makeSink()
 
-            let startTime = ContinuousClock.now
+            let startTime = Clock.Continuous.now
 
             // Emit run started
             await sink.send(Test.Event(kind: .runStarted, elapsed: .zero))
@@ -77,12 +77,15 @@ extension Test {
 
             // Execute tests
             for entry in plan.entries {
+                // Build trait collection once per entry
+                let traits = Test.Trait.Collection(modifiers: entry.modifiers)
+
                 // Check if test is enabled
-                if !isEnabled(entry) {
+                if !isEnabled(traits) {
                     skipped += 1
                     await sink.send(Test.Event(
                         id: entry.id,
-                        kind: .testSkipped(disabledReason(entry)),
+                        kind: .testSkipped(disabledReason(traits)),
                         elapsed: elapsed(since: startTime)
                     ))
                     continue
@@ -97,7 +100,7 @@ extension Test {
 
                 let testResult: Test.Event.Result
                 do {
-                    try await runWithTraits(entry)
+                    try await runWithTraits(entry, traits: traits)
                     testResult = .passed
                     passed += 1
                 } catch {
@@ -135,34 +138,25 @@ extension Test {
         }
 
         /// Computes elapsed duration since start.
-        private func elapsed(since start: ContinuousClock.Instant) -> Duration {
-            ContinuousClock.now - start
+        private func elapsed(since start: Clock.Continuous.Instant) -> Duration {
+            Clock.Continuous.now - start
         }
 
-        /// Checks if a test entry is enabled.
-        private func isEnabled(_ entry: Plan.Entry) -> Bool {
-            for trait in entry.traits {
-                if case .enabled(let isEnabled, _) = trait.kind, !isEnabled {
-                    return false
-                }
+        /// Checks if a test is enabled based on its trait collection.
+        private func isEnabled(_ traits: Test.Trait.Collection) -> Bool {
+            guard let enabled = traits[Test.Trait.Enabled.self] else {
+                return true
             }
-            return true
+            return enabled.isEnabled
         }
 
-        /// Gets the disabled reason for an entry, if any.
-        private func disabledReason(_ entry: Plan.Entry) -> Test.Text? {
-            for trait in entry.traits {
-                if case .enabled(false, let reason) = trait.kind {
-                    return reason
-                }
-            }
-            return nil
+        /// Gets the disabled reason from a trait collection, if any.
+        private func disabledReason(_ traits: Test.Trait.Collection) -> Test.Text? {
+            traits[Test.Trait.Enabled.self].flatMap { !$0.isEnabled ? $0.comment : nil }
         }
 
         /// Runs an entry with trait handling via composable scope providers.
-        private func runWithTraits(_ entry: Plan.Entry) async throws(Error) {
-            let traits = Test.Trait.Collection(from: entry.traits)
-
+        private func runWithTraits(_ entry: Plan.Entry, traits: Test.Trait.Collection) async throws(Error) {
             let providers = self.scopeProviders
                 .filter { $0.shouldActivate(traits) }
                 .sorted { $0.priority < $1.priority }
