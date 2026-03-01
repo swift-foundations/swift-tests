@@ -168,44 +168,29 @@ extension Test {
                 .sorted { $0.priority < $1.priority }
 
             // Base operation: run the test body with dependency scope
-            var chain: @Sendable () async throws -> Void = {
-                do throws(Test.Body.Error) {
+            var chain: @Sendable () async throws(Error) -> Void = { () async throws(Error) in
+                do {
                     try await Dependency.Scope.with(
                         { $0.isTestContext = true },
                         operation: entry.body.run
                     )
                 } catch {
-                    throw Error.bodyFailed(error)
+                    throw Error.bodyFailed(.caught(
+                        type: Swift.String(describing: type(of: error)),
+                        description: Swift.String(describing: error)
+                    ))
                 }
             }
 
             // Wrap with scope providers (reversed so lowest priority wraps outermost)
             for provider in providers.reversed() {
                 let inner = chain
-                chain = {
+                chain = { () async throws(Error) in
                     try await provider.provideScope(entry, traits, inner)
                 }
             }
 
-            do {
-                try await chain()
-            } catch let error as Error {
-                throw error
-            } catch let error as Test.Trait.ScopeProvider.TimeLimitExceeded {
-                throw Error.timeLimitExceeded(limit: error.limit)
-            } catch let error as Test.Trait.ScopeProvider.PerformanceThresholdExceeded {
-                throw Error.performanceThresholdExceeded(
-                    test: error.test,
-                    metric: error.metric,
-                    expected: error.expected,
-                    actual: error.actual
-                )
-            } catch {
-                throw Error.bodyFailed(.caught(
-                    type: Swift.String(describing: type(of: error)),
-                    description: Swift.String(describing: error)
-                ))
-            }
+            try await chain()
         }
     }
 }
@@ -257,25 +242,11 @@ extension Test.Runner {
     }
 }
 
-// MARK: - Errors
+// MARK: - Error
 
 extension Test.Runner {
     /// Errors thrown during test execution.
-    public enum Error: Swift.Error, Sendable {
-        /// Test exceeded its configured time limit.
-        case timeLimitExceeded(limit: Duration)
-
-        /// Performance metric exceeded the configured threshold.
-        case performanceThresholdExceeded(
-            test: Swift.String,
-            metric: Test.Benchmark.Metric,
-            expected: Duration,
-            actual: Duration
-        )
-
-        /// The test body threw an error.
-        case bodyFailed(Test.Body.Error)
-    }
+    public typealias Error = Test.Trait.ScopeProvider.Error
 }
 
 

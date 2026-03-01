@@ -25,8 +25,8 @@ extension Test.Trait {
         public var provideScope: @Sendable (
             Test.Plan.Entry,
             Test.Trait.Collection,
-            @Sendable () async throws -> Void
-        ) async throws -> Void
+            @Sendable () async throws(Error) -> Void
+        ) async throws(Error) -> Void
 
         /// Creates a scope provider.
         ///
@@ -42,8 +42,8 @@ extension Test.Trait {
             provideScope: @escaping @Sendable (
                 Test.Plan.Entry,
                 Test.Trait.Collection,
-                @Sendable () async throws -> Void
-            ) async throws -> Void
+                @Sendable () async throws(Error) -> Void
+            ) async throws(Error) -> Void
         ) {
             self.id = id
             self.priority = priority

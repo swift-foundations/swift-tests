@@ -12,63 +12,51 @@ extension Test.Trait.ScopeProvider {
             id: "timed",
             priority: 50,
             shouldActivate: { $0[Test.Trait.Timed.self] != nil },
-            provideScope: { entry, traits, operation in
-                let config = traits[Test.Trait.Timed.self]!
-
-                // Warmup iterations
-                for _ in 0..<config.warmup {
-                    try await operation()
-                }
-
-                // Measured iterations
-                var durations: [Duration] = []
-                durations.reserveCapacity(config.iterations)
-
-                for _ in 0..<config.iterations {
-                    let start = ContinuousClock.now
-                    try await operation()
-                    durations.append(ContinuousClock.now - start)
-                }
-
-                let measurement = Test.Benchmark.Measurement(durations: durations)
-
-                // Print results if configured
-                if config.printResults {
-                    Test.Benchmark.printPerformance(entry.id.name, measurement)
-                }
-
-                // Check threshold if configured
-                if let threshold = config.threshold {
-                    let metricValue = config.metric.extract(from: measurement)
-                    if metricValue > threshold {
-                        throw PerformanceThresholdExceeded(
-                            test: entry.id.name,
-                            metric: config.metric,
-                            expected: threshold,
-                            actual: metricValue
-                        )
-                    }
-                }
-            }
+            provideScope: _timedScope
         )
     }
-}
 
-// MARK: - Errors
+    @Sendable
+    private static func _timedScope(
+        _ entry: Test.Plan.Entry,
+        _ traits: Test.Trait.Collection,
+        _ operation: @Sendable () async throws(Error) -> Void
+    ) async throws(Error) {
+        let config = traits[Test.Trait.Timed.self]!
 
-extension Test.Trait.ScopeProvider {
-    /// Error thrown when a performance threshold is exceeded.
-    public struct PerformanceThresholdExceeded: Swift.Error, Sendable {
-        /// The test that exceeded the threshold.
-        public let test: Swift.String
+        // Warmup iterations
+        for _ in 0..<config.warmup {
+            try await operation()
+        }
 
-        /// The metric that was checked.
-        public let metric: Test.Benchmark.Metric
+        // Measured iterations
+        var durations: [Duration] = []
+        durations.reserveCapacity(config.iterations)
 
-        /// The expected threshold.
-        public let expected: Duration
+        for _ in 0..<config.iterations {
+            let start = ContinuousClock.now
+            try await operation()
+            durations.append(ContinuousClock.now - start)
+        }
 
-        /// The actual measured value.
-        public let actual: Duration
+        let measurement = Test.Benchmark.Measurement(durations: durations)
+
+        // Print results if configured
+        if config.printResults {
+            Test.Benchmark.printPerformance(entry.id.name, measurement)
+        }
+
+        // Check threshold if configured
+        if let threshold = config.threshold {
+            let metricValue = config.metric.extract(from: measurement)
+            if metricValue > threshold {
+                throw .performanceThresholdExceeded(
+                    test: entry.id.name,
+                    metric: config.metric,
+                    expected: threshold,
+                    actual: metricValue
+                )
+            }
+        }
     }
 }
