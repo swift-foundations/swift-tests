@@ -19,6 +19,7 @@ let package = Package(
         .library(name: "Tests Test Support", targets: ["Tests Test Support"]),
     ],
     dependencies: [
+        .package(path: "../../swift-primitives/swift-ascii-primitives"),
         .package(path: "../../swift-primitives/swift-test-primitives"),
         .package(path: "../../swift-primitives/swift-binary-primitives"),
         .package(path: "../../swift-primitives/swift-time-primitives"),
@@ -32,6 +33,7 @@ let package = Package(
         .package(path: "../swift-json"),
         .package(path: "../swift-loader"),
         .package(path: "../../swift-primitives/swift-sample-primitives"),
+        .package(path: "../swift-clocks"),
         .package(path: "../swift-witnesses"),
     ],
     targets: [
@@ -41,6 +43,7 @@ let package = Package(
         .target(
             name: "Tests Core",
             dependencies: [
+                .product(name: "ASCII Primitives", package: "swift-ascii-primitives"),
                 .product(name: "Test Primitives", package: "swift-test-primitives"),
                 .product(name: "Ownership Primitives", package: "swift-ownership-primitives"),
                 .product(name: "Loader", package: "swift-loader"),
@@ -74,6 +77,7 @@ let package = Package(
                 .product(name: "Binary Primitives", package: "swift-binary-primitives"),
                 .product(name: "Formatting Primitives", package: "swift-formatting-primitives"),
                 .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
+                .product(name: "Clocks", package: "swift-clocks"),
             ]
         ),
 

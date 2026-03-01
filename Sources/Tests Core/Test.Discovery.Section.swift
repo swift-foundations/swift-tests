@@ -44,7 +44,8 @@ extension Test {
     ///
     /// - Warning: This type is used by the `@Test` macro. Do not use directly.
     public typealias __TestContentRecord = (
-        /// Record kind: 0x74657374 ('test') for tests, 0x65786974 ('exit') for exit tests.
+        /// Record kind: 'test' for tests, 'suit' for suites, 'exit' for exit tests.
+        /// See ``Test/__TestContentKind``.
         kind: UInt32,
         /// Reserved for future use.
         reserved1: UInt32,
