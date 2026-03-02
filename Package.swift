@@ -38,7 +38,7 @@ let package = Package(
         .package(path: "../../swift-primitives/swift-sample-primitives"),
         .package(path: "../swift-clocks"),
         .package(path: "../swift-witnesses"),
-        .package(url: "https://github.com/swiftlang/swift-syntax", "600.0.0"..<"603.0.0"),
+        .package(url: "https://github.com/swiftlang/swift-syntax", "602.0.0"..<"603.0.0"),
     ],
     targets: [
 
