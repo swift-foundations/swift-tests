@@ -14,8 +14,9 @@ extension Test {
     /// Executes test plans and reports results.
     ///
     /// `Runner` is the core execution engine that:
-    /// - Executes tests from a ``Test/Plan``
+    /// - Walks the hierarchical test tree from a ``Test/Plan``
     /// - Applies traits (time limits, serialization, etc.)
+    /// - Controls concurrency per-suite via ``Concurrency``
     /// - Sends events to a ``Test/Reporter``
     /// - Tracks timing via Duration offsets
     ///
@@ -32,9 +33,12 @@ extension Test {
     ///
     /// ## Concurrency
     ///
-    /// By default, tests run concurrently. Tests with the `.serialized`
-    /// trait run one at a time. Use ``run(_:concurrency:)`` to control
-    /// the maximum parallelism.
+    /// By default, sibling tests and suites run concurrently. Suites with
+    /// the `.serialized` trait force their children to run sequentially.
+    /// Use ``run(_:concurrency:)`` to control maximum parallelism:
+    /// - `.automatic` — siblings run in parallel (default)
+    /// - `.serial` — all tests run sequentially
+    /// - `.limited(N)` — at most N concurrent siblings
     public struct Runner: Sendable {
         /// The reporter to send events to.
         public let reporter: Reporter
@@ -65,127 +69,38 @@ extension Test {
 
         /// Runs a test plan with specified concurrency.
         ///
+        /// Walks the plan's hierarchical tree, executing tests and suites
+        /// with the given concurrency mode. The `.serialized` trait on a
+        /// suite overrides to `.serial` for that subtree's children.
+        ///
         /// - Parameters:
         ///   - plan: The plan to execute.
         ///   - concurrency: The concurrency mode.
         /// - Returns: The run result.
         public func run(_ plan: Plan, concurrency: Concurrency) async -> Result {
             let sink = reporter.makeSink()
+            let handle = sink.handle
 
             let startTime = Clock_Primitives.Clock.Continuous.now
 
             // Emit run started
-            await sink.send(Test.Event(kind: .runStarted, elapsed: .zero))
-            await sink.send(Test.Event(kind: .planCreated, elapsed: elapsed(since: startTime)))
+            await handle.send(Test.Event(kind: .runStarted, elapsed: .zero))
+            await handle.send(Test.Event(kind: .planCreated, elapsed: elapsed(since: startTime)))
 
-            var passed = 0
-            var failed = 0
-            var skipped = 0
-
-            // Execute tests
-            for entry in plan.entries {
-                // Build trait collection once per entry
-                let traits = Test.Trait.Collection(modifiers: entry.modifiers)
-
-                // Check if test is enabled
-                if !isEnabled(traits) {
-                    skipped += 1
-                    await sink.send(Test.Event(
-                        id: entry.id,
-                        kind: .testSkipped(disabledReason(traits)),
-                        elapsed: elapsed(since: startTime)
-                    ))
-                    continue
-                }
-
-                // Run the test
-                await sink.send(Test.Event(
-                    id: entry.id,
-                    kind: .testStarted,
-                    elapsed: elapsed(since: startTime)
-                ))
-
-                // Create a collector for this test's expectations
-                let collector = Test.Expectation.Collector()
-                var bodyThrew = false
-
-                let testResult: Test.Event.Result
-                do {
-                    try await Test.Expectation.Collector.$current.withValue(collector) {
-                        try await runWithTraits(entry, traits: traits)
-                    }
-                } catch {
-                    bodyThrew = true
-
-                    // Requirement failures are already recorded as expectations
-                    // in the collector — skip the redundant .errorCaught issue.
-                    let runnerError = error as! Error
-                    let isRequirementFailure: Bool
-                    if case .bodyFailed(.requirementFailed) = runnerError {
-                        isRequirementFailure = true
-                    } else {
-                        isRequirementFailure = false
-                    }
-
-                    if !isRequirementFailure {
-                        let issue = Test.Issue(
-                            kind: .errorCaught(
-                                type: Swift.String(describing: type(of: error)),
-                                description: Test.Text(Swift.String(describing: error))
-                            ),
-                            sourceLocation: entry.id.sourceLocation
-                        )
-                        await sink.send(Test.Event(
-                            id: entry.id,
-                            kind: .issueRecorded(issue),
-                            elapsed: elapsed(since: startTime)
-                        ))
-                    }
-                }
-
-                // Drain expectations recorded during the test body
-                let expectations = collector.drain()
-                let hasExpectationFailures = expectations.contains(where: \.isFailing)
-
-                // Emit events for all recorded expectations
-                for expectation in expectations {
-                    await sink.send(Test.Event(
-                        id: entry.id,
-                        kind: .expectationChecked(expectation),
-                        elapsed: elapsed(since: startTime)
-                    ))
-
-                    if expectation.isFailing {
-                        let issue = Test.Issue(
-                            kind: .expectationFailed(expectation.id),
-                            sourceLocation: expectation.expression.sourceLocation
-                        )
-                        await sink.send(Test.Event(
-                            id: entry.id,
-                            kind: .issueRecorded(issue),
-                            elapsed: elapsed(since: startTime)
-                        ))
-                    }
-                }
-
-                // Determine result: failed if body threw OR any expectations failed
-                if bodyThrew || hasExpectationFailures {
-                    testResult = .failed
-                    failed += 1
-                } else {
-                    testResult = .passed
-                    passed += 1
-                }
-
-                await sink.send(Test.Event(
-                    id: entry.id,
-                    kind: .testEnded(testResult),
-                    elapsed: elapsed(since: startTime)
-                ))
+            // Walk the tree
+            let counters: Counters
+            if let root = plan.tree.root {
+                counters = await walk(
+                    plan.tree, at: root,
+                    concurrency: concurrency,
+                    handle: handle, startTime: startTime
+                )
+            } else {
+                counters = Counters()
             }
 
             // Emit run ended
-            await sink.send(Test.Event(kind: .runEnded, elapsed: elapsed(since: startTime)))
+            await handle.send(Test.Event(kind: .runEnded, elapsed: elapsed(since: startTime)))
 
             // Execute post-run actions (e.g., inline snapshot write-back)
             for action in postRunActions {
@@ -194,8 +109,281 @@ extension Test {
 
             await sink.finish()
 
-            return Result(passed: passed, failed: failed, skipped: skipped)
+            return Result(passed: counters.passed, failed: counters.failed, skipped: counters.skipped)
         }
+
+        // MARK: - Tree Walking
+
+        /// Walks a single node in the test tree.
+        ///
+        /// Named `walk(_:at:...)` per [API-NAME-002] — single-word verb
+        /// with `at:` label for the position parameter.
+        ///
+        /// Dispatches based on node type:
+        /// - `nil` value (structural intermediate) → dispatch children
+        /// - Suite node (body == nil) → emit suite events, dispatch children
+        /// - Test node (body != nil) → execute with scope providers
+        private func walk(
+            _ tree: Tree.Keyed<String, Plan.Node?>,
+            at position: Tree.Position,
+            concurrency: Concurrency,
+            handle: Reporter.Sink.Handle,
+            startTime: Clock_Primitives.Clock.Continuous.Instant
+        ) async -> Counters {
+            switch tree.peek(at: position) as Plan.Node?? {
+            case nil:
+                return Counters()
+
+            case .some(nil):
+                // Structural nil node — module boundary or implicit nesting.
+                return await dispatch(
+                    tree, childrenOf: position,
+                    concurrency: concurrency, traits: nil,
+                    handle: handle, startTime: startTime
+                )
+
+            case .some(.some(let node)):
+                let traits = node.traits
+
+                if !isEnabled(traits) {
+                    await handle.send(Test.Event(
+                        id: node.id,
+                        kind: .testSkipped(disabledReason(traits)),
+                        elapsed: elapsed(since: startTime)
+                    ))
+                    return Counters(passed: 0, failed: 0, skipped: 1)
+                }
+
+                if node.body != nil {
+                    // Test node — execute with scope providers
+                    return await execute(
+                        node, traits: traits,
+                        handle: handle, startTime: startTime
+                    )
+                } else {
+                    // Suite node — bracket children with suite events
+                    await handle.send(Test.Event(
+                        id: node.id,
+                        kind: .testStarted,
+                        elapsed: elapsed(since: startTime)
+                    ))
+
+                    let counters = await dispatch(
+                        tree, childrenOf: position,
+                        concurrency: concurrency, traits: traits,
+                        handle: handle, startTime: startTime
+                    )
+
+                    await handle.send(Test.Event(
+                        id: node.id,
+                        kind: .testEnded(counters.failed > 0 ? .failed : .passed),
+                        elapsed: elapsed(since: startTime)
+                    ))
+
+                    return counters
+                }
+            }
+        }
+
+        /// Dispatches children of a node according to the concurrency mode.
+        ///
+        /// Named `dispatch(_:childrenOf:...)` per [API-NAME-002] — single-word
+        /// verb. The `childrenOf:` label communicates the scope.
+        ///
+        /// If the node has the `.serialized` trait, forces serial execution
+        /// regardless of the top-level concurrency setting.
+        private func dispatch(
+            _ tree: Tree.Keyed<String, Plan.Node?>,
+            childrenOf position: Tree.Position,
+            concurrency: Concurrency,
+            traits: Test.Trait.Collection?,
+            handle: Reporter.Sink.Handle,
+            startTime: Clock_Primitives.Clock.Continuous.Instant
+        ) async -> Counters {
+            guard let children = tree.children(of: position), !children.isEmpty else {
+                return Counters()
+            }
+
+            // .serialized trait on this node forces serial for children
+            let effective: Concurrency
+            if let traits, traits[Test.Trait.Serialized.self] {
+                effective = .serial
+            } else {
+                effective = concurrency
+            }
+
+            switch effective {
+            case .serial:
+                let sorted = children.sorted { a, b in
+                    let aLoc = sourceLocation(of: a.position, in: tree)
+                    let bLoc = sourceLocation(of: b.position, in: tree)
+                    if let aLoc, let bLoc { return aLoc < bLoc }
+                    return a.key < b.key
+                }
+                var counters = Counters()
+                for (_, childPos) in sorted {
+                    counters += await walk(
+                        tree, at: childPos,
+                        concurrency: effective,
+                        handle: handle, startTime: startTime
+                    )
+                }
+                return counters
+
+            case .automatic:
+                return await withTaskGroup(of: Counters.self, returning: Counters.self) { group in
+                    for (_, childPos) in children {
+                        group.addTask {
+                            await self.walk(
+                                tree, at: childPos,
+                                concurrency: effective,
+                                handle: handle, startTime: startTime
+                            )
+                        }
+                    }
+                    var counters = Counters()
+                    for await childCounters in group {
+                        counters += childCounters
+                    }
+                    return counters
+                }
+
+            case .limited(let maxConcurrent):
+                return await withTaskGroup(of: Counters.self, returning: Counters.self) { group in
+                    var counters = Counters()
+                    var inFlight = 0
+                    var childIter = children.makeIterator()
+
+                    // Seed initial batch
+                    while inFlight < maxConcurrent, let (_, childPos) = childIter.next() {
+                        group.addTask {
+                            await self.walk(
+                                tree, at: childPos,
+                                concurrency: effective,
+                                handle: handle, startTime: startTime
+                            )
+                        }
+                        inFlight += 1
+                    }
+
+                    // As tasks complete, spawn more
+                    for await childCounters in group {
+                        counters += childCounters
+                        inFlight -= 1
+                        if let (_, childPos) = childIter.next() {
+                            group.addTask {
+                                await self.walk(
+                                    tree, at: childPos,
+                                    concurrency: effective,
+                                    handle: handle, startTime: startTime
+                                )
+                            }
+                            inFlight += 1
+                        }
+                    }
+
+                    return counters
+                }
+            }
+        }
+
+        // MARK: - Test Execution
+
+        /// Executes a single test node with scope providers.
+        ///
+        /// Named `execute(_:traits:...)` per [API-NAME-002] — single-word verb.
+        private func execute(
+            _ node: Plan.Node,
+            traits: Test.Trait.Collection,
+            handle: Reporter.Sink.Handle,
+            startTime: Clock_Primitives.Clock.Continuous.Instant
+        ) async -> Counters {
+            await handle.send(Test.Event(
+                id: node.id,
+                kind: .testStarted,
+                elapsed: elapsed(since: startTime)
+            ))
+
+            let entry = Test.Plan.Entry(
+                id: node.id,
+                modifiers: node.modifiers,
+                body: node.body!
+            )
+
+            let collector = Test.Expectation.Collector()
+            var bodyThrew = false
+
+            let testResult: Test.Event.Result
+            do {
+                try await Test.Expectation.Collector.$current.withValue(collector) {
+                    try await runWithTraits(entry, traits: traits)
+                }
+            } catch {
+                bodyThrew = true
+
+                let runnerError = error as! Error
+                let isRequirementFailure: Bool
+                if case .bodyFailed(.requirementFailed) = runnerError {
+                    isRequirementFailure = true
+                } else {
+                    isRequirementFailure = false
+                }
+
+                if !isRequirementFailure {
+                    await handle.send(Test.Event(
+                        id: node.id,
+                        kind: .issueRecorded(Test.Issue(
+                            kind: .errorCaught(
+                                type: Swift.String(describing: type(of: error)),
+                                description: Test.Text(Swift.String(describing: error))
+                            ),
+                            sourceLocation: entry.id.sourceLocation
+                        )),
+                        elapsed: elapsed(since: startTime)
+                    ))
+                }
+            }
+
+            let expectations = collector.drain()
+            let hasExpectationFailures = expectations.contains(where: \.isFailing)
+
+            for expectation in expectations {
+                await handle.send(Test.Event(
+                    id: node.id,
+                    kind: .expectationChecked(expectation),
+                    elapsed: elapsed(since: startTime)
+                ))
+
+                if expectation.isFailing {
+                    await handle.send(Test.Event(
+                        id: node.id,
+                        kind: .issueRecorded(Test.Issue(
+                            kind: .expectationFailed(expectation.id),
+                            sourceLocation: expectation.expression.sourceLocation
+                        )),
+                        elapsed: elapsed(since: startTime)
+                    ))
+                }
+            }
+
+            if bodyThrew || hasExpectationFailures {
+                testResult = .failed
+            } else {
+                testResult = .passed
+            }
+
+            await handle.send(Test.Event(
+                id: node.id,
+                kind: .testEnded(testResult),
+                elapsed: elapsed(since: startTime)
+            ))
+
+            return testResult == .passed
+                ? Counters(passed: 1, failed: 0, skipped: 0)
+                : Counters(passed: 0, failed: 1, skipped: 0)
+        }
+
+        // MARK: - Helpers
 
         /// Computes elapsed duration since start.
         private func elapsed(since start: Clock_Primitives.Clock.Continuous.Instant) -> Duration {
@@ -215,6 +403,20 @@ extension Test {
             traits[Test.Trait.Enabled.self].flatMap { !$0.isEnabled ? $0.comment : nil }
         }
 
+        /// Returns the source location for the node at a position.
+        ///
+        /// Named `sourceLocation(of:in:)` per [API-NAME-002] — labels
+        /// carry the semantics instead of a compound method name.
+        private func sourceLocation(
+            of position: Tree.Position,
+            in tree: Tree.Keyed<String, Plan.Node?>
+        ) -> Source.Location? {
+            switch tree.peek(at: position) as Plan.Node?? {
+            case .some(.some(let node)): node.id.sourceLocation
+            default: nil
+            }
+        }
+
         /// Runs an entry with trait handling via composable scope providers.
         private func runWithTraits(_ entry: Plan.Entry, traits: Test.Trait.Collection) async throws(Error) {
             let providers = self.scopeProviders
@@ -229,7 +431,6 @@ extension Test {
                         operation: entry.body.run
                     )
                 } catch {
-                    // Preserve the typed body error (including .requirementFailed)
                     let bodyError = error as? Test.Body.Error ?? .caught(
                         type: Swift.String(describing: type(of: error)),
                         description: Swift.String(describing: error)
@@ -251,18 +452,52 @@ extension Test {
     }
 }
 
+// MARK: - Counters
+
+extension Test.Runner {
+    /// Aggregated test result counters.
+    ///
+    /// Each `walk` call returns a `Counters` value. These are aggregated
+    /// functionally — no shared mutable state needed, even across concurrent
+    /// task groups.
+    private struct Counters: Sendable {
+        var passed: Int = 0
+        var failed: Int = 0
+        var skipped: Int = 0
+
+        static func + (lhs: Counters, rhs: Counters) -> Counters {
+            Counters(
+                passed: lhs.passed + rhs.passed,
+                failed: lhs.failed + rhs.failed,
+                skipped: lhs.skipped + rhs.skipped
+            )
+        }
+
+        static func += (lhs: inout Counters, rhs: Counters) {
+            lhs = lhs + rhs
+        }
+    }
+}
+
 // MARK: - Concurrency
 
 extension Test.Runner {
     /// Concurrency mode for test execution.
     public enum Concurrency: Sendable {
         /// System determines concurrency level.
+        ///
+        /// Sibling tests and suites run in parallel via `withTaskGroup`.
         case automatic
 
         /// Run tests serially.
+        ///
+        /// All tests execute sequentially, sorted by source location.
         case serial
 
         /// Run up to N tests in parallel.
+        ///
+        /// Uses `withTaskGroup` with backpressure: at most N concurrent
+        /// tasks at any time.
         case limited(Int)
     }
 }

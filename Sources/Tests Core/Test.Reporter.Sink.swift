@@ -32,7 +32,8 @@ extension Test.Reporter {
     /// - No accidental sink duplication
     public struct Sink: ~Copyable, Sendable {
         /// The underlying implementation.
-        private let _impl: any SinkImplementation
+        @usableFromInline
+        let _impl: any SinkImplementation
 
         /// Creates a sink from an implementation.
         ///
