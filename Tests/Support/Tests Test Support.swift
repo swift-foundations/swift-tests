@@ -1,5 +1,6 @@
 public import Tests
 public import Test_Primitives
+import Synchronization
 
 // MARK: - Tests.Measurement Factory
 
@@ -35,5 +36,37 @@ extension Tests_Core.Test.Plan.Entry {
             modifiers: modifiers,
             body: body
         )
+    }
+}
+
+// MARK: - Spy Sink
+
+/// A sink that captures all events for test assertions.
+public final class SpySink: Tests_Core.Test.Reporter.SinkImplementation, @unchecked Sendable {
+    private let _events = Mutex<[Test_Primitives.Test.Event]>([])
+
+    public init() {}
+
+    public var events: [Test_Primitives.Test.Event] {
+        _events.withLock { $0 }
+    }
+
+    public func send(_ event: Test_Primitives.Test.Event) async {
+        _events.withLock { $0.append(event) }
+    }
+
+    public func finish() async {}
+}
+
+// MARK: - Spy Reporter
+
+/// Creates a reporter + spy pair for test assertions.
+public enum SpyReporter {
+    public static func make() -> (Tests_Core.Test.Reporter, SpySink) {
+        let spy = SpySink()
+        let reporter = Tests_Core.Test.Reporter {
+            Tests_Core.Test.Reporter.Sink(spy)
+        }
+        return (reporter, spy)
     }
 }

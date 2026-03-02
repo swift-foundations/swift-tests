@@ -105,14 +105,17 @@ extension Test {
                     elapsed: elapsed(since: startTime)
                 ))
 
+                // Create a collector for this test's expectations
+                let collector = Test.Expectation.Collector()
+                var bodyThrew = false
+
                 let testResult: Test.Event.Result
                 do {
-                    try await runWithTraits(entry, traits: traits)
-                    testResult = .passed
-                    passed += 1
+                    try await Test.Expectation.Collector.$current.withValue(collector) {
+                        try await runWithTraits(entry, traits: traits)
+                    }
                 } catch {
-                    testResult = .failed
-                    failed += 1
+                    bodyThrew = true
 
                     // Record the error as an issue
                     let issue = Test.Issue(
@@ -127,6 +130,40 @@ extension Test {
                         kind: .issueRecorded(issue),
                         elapsed: elapsed(since: startTime)
                     ))
+                }
+
+                // Drain expectations recorded during the test body
+                let expectations = collector.drain()
+                let hasExpectationFailures = expectations.contains(where: \.isFailing)
+
+                // Emit events for all recorded expectations
+                for expectation in expectations {
+                    await sink.send(Test.Event(
+                        id: entry.id,
+                        kind: .expectationChecked(expectation),
+                        elapsed: elapsed(since: startTime)
+                    ))
+
+                    if expectation.isFailing {
+                        let issue = Test.Issue(
+                            kind: .expectationFailed(expectation.id),
+                            sourceLocation: expectation.expression.sourceLocation
+                        )
+                        await sink.send(Test.Event(
+                            id: entry.id,
+                            kind: .issueRecorded(issue),
+                            elapsed: elapsed(since: startTime)
+                        ))
+                    }
+                }
+
+                // Determine result: failed if body threw OR any expectations failed
+                if bodyThrew || hasExpectationFailures {
+                    testResult = .failed
+                    failed += 1
+                } else {
+                    testResult = .passed
+                    passed += 1
                 }
 
                 await sink.send(Test.Event(

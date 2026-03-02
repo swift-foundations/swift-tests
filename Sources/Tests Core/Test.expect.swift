@@ -62,8 +62,10 @@ public func expect(
 
     let expectationID = Test.Expectation.ID(__unchecked: (), nextExpectationID())
 
+    let expectation: Test.Expectation
+
     if condition {
-        return Test.Expectation(
+        expectation = Test.Expectation(
             id: expectationID,
             expression: expression,
             isPassing: true
@@ -73,13 +75,16 @@ public func expect(
             message: "Expectation failed",
             comment: comment
         )
-        return Test.Expectation(
+        expectation = Test.Expectation(
             id: expectationID,
             expression: expression,
             isPassing: false,
             failure: failure
         )
     }
+
+    Test.Expectation.Collector.current?.record(expectation)
+    return expectation
 }
 
 /// Evaluates an equality expectation.
@@ -124,8 +129,10 @@ public func expect<T: Equatable>(
     let expectationID = Test.Expectation.ID(__unchecked: (), nextExpectationID())
     let isPassing = lhs == rhs
 
+    let expectation: Test.Expectation
+
     if isPassing {
-        return Test.Expectation(
+        expectation = Test.Expectation(
             id: expectationID,
             expression: expression,
             isPassing: true
@@ -137,13 +144,16 @@ public func expect<T: Equatable>(
             actual: .init(capturing: lhs, label: "actual"),
             comment: comment
         )
-        return Test.Expectation(
+        expectation = Test.Expectation(
             id: expectationID,
             expression: expression,
             isPassing: false,
             failure: failure
         )
     }
+
+    Test.Expectation.Collector.current?.record(expectation)
+    return expectation
 }
 
 // MARK: - ID Counters

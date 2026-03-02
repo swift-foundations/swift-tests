@@ -576,11 +576,13 @@ private func makeInlinePassingExpectation(
 
     let expectationID = Test.Expectation.ID(__unchecked: (), nextInlineExpectationID())
 
-    return Test.Expectation(
+    let expectation = Test.Expectation(
         id: expectationID,
         expression: expression,
         isPassing: true
     )
+    Test.Expectation.Collector.current?.record(expectation)
+    return expectation
 }
 
 private func makeInlineFailingExpectation(
@@ -607,10 +609,12 @@ private func makeInlineFailingExpectation(
     let expectationID = Test.Expectation.ID(__unchecked: (), nextInlineExpectationID())
     let failure = Test.Expectation.Failure(message: Test.Text(message))
 
-    return Test.Expectation(
+    let expectation = Test.Expectation(
         id: expectationID,
         expression: expression,
         isPassing: false,
         failure: failure
     )
+    Test.Expectation.Collector.current?.record(expectation)
+    return expectation
 }

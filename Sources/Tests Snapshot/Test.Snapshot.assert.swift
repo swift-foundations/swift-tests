@@ -713,11 +713,13 @@ private func makePassingExpectation(
 
     let expectationID = Test.Expectation.ID(__unchecked: (), nextSnapshotExpectationID())
 
-    return Test.Expectation(
+    let expectation = Test.Expectation(
         id: expectationID,
         expression: expression,
         isPassing: true
     )
+    Test.Expectation.Collector.current?.record(expectation)
+    return expectation
 }
 
 /// Creates a failing expectation with a message.
@@ -745,12 +747,14 @@ private func makeFailingExpectation(
     let expectationID = Test.Expectation.ID(__unchecked: (), nextSnapshotExpectationID())
     let failure = Test.Expectation.Failure(message: Test.Text(message))
 
-    return Test.Expectation(
+    let expectation = Test.Expectation(
         id: expectationID,
         expression: expression,
         isPassing: false,
         failure: failure
     )
+    Test.Expectation.Collector.current?.record(expectation)
+    return expectation
 }
 
 // MARK: - ID Counters

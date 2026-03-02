@@ -110,8 +110,11 @@ private final class InlineSnapshotSyntaxRewriter: SyntaxRewriter {
         let nodeLine = location.line
         let nodeColumn = location.column
 
-        // Match by line (column is approximate — macros may shift it)
+        // Match by line, with column disambiguation for same-line calls
         guard nodeLine == entry.line else {
+            return super.visit(node)
+        }
+        if entry.column > 1 && nodeColumn > 1 && nodeColumn != entry.column {
             return super.visit(node)
         }
 
