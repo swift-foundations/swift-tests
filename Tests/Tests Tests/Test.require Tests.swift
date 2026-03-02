@@ -71,6 +71,54 @@ extension TestRequireTests.Runner {
     }
 
     @Test
+    func `failing require does not emit redundant errorCaught`() async {
+        var registry = Test_Primitives.Test.Plan.Registry()
+        registry.add(id: .stub("noRedundant")) {
+            try require(false)
+        }
+        let plan = registry.finalize()
+
+        let (reporter, spy) = SpyReporter.make()
+        let runner = Test_Primitives.Test.Runner(reporter: reporter)
+        _ = await runner.run(plan)
+
+        let errorCaughtIssues = spy.events.filter {
+            if case .issueRecorded(let issue) = $0.kind,
+               case .errorCaught = issue.kind {
+                return true
+            }
+            return false
+        }
+        #expect(errorCaughtIssues.isEmpty,
+            "require() should not produce .errorCaught — the expectation covers it")
+    }
+
+    @Test
+    func `independent throw still emits errorCaught`() async {
+        struct TestError: Swift.Error {}
+
+        var registry = Test_Primitives.Test.Plan.Registry()
+        registry.add(id: .stub("independentThrow")) {
+            throw TestError()
+        }
+        let plan = registry.finalize()
+
+        let (reporter, spy) = SpyReporter.make()
+        let runner = Test_Primitives.Test.Runner(reporter: reporter)
+        _ = await runner.run(plan)
+
+        let errorCaughtIssues = spy.events.filter {
+            if case .issueRecorded(let issue) = $0.kind,
+               case .errorCaught = issue.kind {
+                return true
+            }
+            return false
+        }
+        #expect(!errorCaughtIssues.isEmpty,
+            "Independent throws should still produce .errorCaught")
+    }
+
+    @Test
     func `passing require records passing expectation`() async {
         var registry = Test_Primitives.Test.Plan.Registry()
         registry.add(id: .stub("passingRequire")) {

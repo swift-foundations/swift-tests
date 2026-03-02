@@ -117,19 +117,30 @@ extension Test {
                 } catch {
                     bodyThrew = true
 
-                    // Record the error as an issue
-                    let issue = Test.Issue(
-                        kind: .errorCaught(
-                            type: Swift.String(describing: type(of: error)),
-                            description: Test.Text(Swift.String(describing: error))
-                        ),
-                        sourceLocation: entry.id.sourceLocation
-                    )
-                    await sink.send(Test.Event(
-                        id: entry.id,
-                        kind: .issueRecorded(issue),
-                        elapsed: elapsed(since: startTime)
-                    ))
+                    // Requirement failures are already recorded as expectations
+                    // in the collector — skip the redundant .errorCaught issue.
+                    let runnerError = error as! Error
+                    let isRequirementFailure: Bool
+                    if case .bodyFailed(.requirementFailed) = runnerError {
+                        isRequirementFailure = true
+                    } else {
+                        isRequirementFailure = false
+                    }
+
+                    if !isRequirementFailure {
+                        let issue = Test.Issue(
+                            kind: .errorCaught(
+                                type: Swift.String(describing: type(of: error)),
+                                description: Test.Text(Swift.String(describing: error))
+                            ),
+                            sourceLocation: entry.id.sourceLocation
+                        )
+                        await sink.send(Test.Event(
+                            id: entry.id,
+                            kind: .issueRecorded(issue),
+                            elapsed: elapsed(since: startTime)
+                        ))
+                    }
                 }
 
                 // Drain expectations recorded during the test body
@@ -218,10 +229,12 @@ extension Test {
                         operation: entry.body.run
                     )
                 } catch {
-                    throw Error.bodyFailed(.caught(
+                    // Preserve the typed body error (including .requirementFailed)
+                    let bodyError = error as? Test.Body.Error ?? .caught(
                         type: Swift.String(describing: type(of: error)),
                         description: Swift.String(describing: error)
-                    ))
+                    )
+                    throw Error.bodyFailed(bodyError)
                 }
             }
 

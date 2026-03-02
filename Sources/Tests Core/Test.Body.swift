@@ -44,6 +44,9 @@ extension Test {
                 do {
                     try body()
                 } catch {
+                    if error is Test.Requirement.Failed {
+                        throw Error.requirementFailed
+                    }
                     throw Error.caught(
                         type: Swift.String(describing: type(of: error)),
                         description: Swift.String(describing: error)
@@ -65,6 +68,9 @@ extension Test {
                 do {
                     try await body()
                 } catch {
+                    if error is Test.Requirement.Failed {
+                        throw Error.requirementFailed
+                    }
                     throw Error.caught(
                         type: Swift.String(describing: type(of: error)),
                         description: Swift.String(describing: error)
@@ -123,5 +129,11 @@ extension Test.Body {
     public enum Error: Swift.Error, Sendable {
         /// A user test error was caught and wrapped.
         case caught(type: Swift.String, description: Swift.String)
+
+        /// A requirement failed and was already recorded as an expectation.
+        ///
+        /// The runner should not emit an additional `.errorCaught` issue
+        /// because the collector already contains the structured expectation.
+        case requirementFailed
     }
 }
