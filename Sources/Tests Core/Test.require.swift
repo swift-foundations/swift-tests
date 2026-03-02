@@ -6,6 +6,7 @@
 //
 
 public import Test_Primitives
+import Synchronization
 
 // MARK: - Require Functions
 
@@ -52,7 +53,33 @@ public func require(
         column: column
     )
 
-    if !condition {
+    let expressionID = Test.Expression.ID(__unchecked: (), nextRequireExpressionID())
+    let expression = Test.Expression(
+        id: expressionID,
+        sourceCode: "\(condition)",
+        sourceLocation: location
+    )
+    let expectationID = Test.Expectation.ID(__unchecked: (), nextRequireExpectationID())
+
+    if condition {
+        let expectation = Test.Expectation(
+            id: expectationID,
+            expression: expression,
+            isPassing: true
+        )
+        Test.Expectation.Collector.current?.record(expectation)
+    } else {
+        let failure = Test.Expectation.Failure(
+            message: "Requirement failed",
+            comment: comment
+        )
+        let expectation = Test.Expectation(
+            id: expectationID,
+            expression: expression,
+            isPassing: false,
+            failure: failure
+        )
+        Test.Expectation.Collector.current?.record(expectation)
         throw Test.Requirement.Failed(
             message: comment ?? "Requirement failed",
             sourceLocation: location
@@ -86,13 +113,38 @@ public func require<T>(
         column: column
     )
 
+    let expressionID = Test.Expression.ID(__unchecked: (), nextRequireExpressionID())
+    let expression = Test.Expression(
+        id: expressionID,
+        sourceCode: "require(\(T.self)?)",
+        sourceLocation: location
+    )
+    let expectationID = Test.Expectation.ID(__unchecked: (), nextRequireExpectationID())
+
     guard let value = optional else {
+        let failure = Test.Expectation.Failure(
+            message: "Required value was nil",
+            comment: comment
+        )
+        let expectation = Test.Expectation(
+            id: expectationID,
+            expression: expression,
+            isPassing: false,
+            failure: failure
+        )
+        Test.Expectation.Collector.current?.record(expectation)
         throw Test.Requirement.Failed(
             message: comment ?? "Required value was nil",
             sourceLocation: location
         )
     }
 
+    let expectation = Test.Expectation(
+        id: expectationID,
+        expression: expression,
+        isPassing: true
+    )
+    Test.Expectation.Collector.current?.record(expectation)
     return value
 }
 
@@ -123,7 +175,26 @@ public func require<T: Equatable>(
         column: column
     )
 
-    if lhs != rhs {
+    let expressionID = Test.Expression.ID(__unchecked: (), nextRequireExpressionID())
+    let expression = Test.Expression(
+        id: expressionID,
+        sourceCode: "lhs == rhs",
+        sourceLocation: location,
+        values: [
+            .init(capturing: lhs, label: "lhs"),
+            .init(capturing: rhs, label: "rhs"),
+        ]
+    )
+    let expectationID = Test.Expectation.ID(__unchecked: (), nextRequireExpectationID())
+
+    if lhs == rhs {
+        let expectation = Test.Expectation(
+            id: expectationID,
+            expression: expression,
+            isPassing: true
+        )
+        Test.Expectation.Collector.current?.record(expectation)
+    } else {
         let message = comment ?? Test.Text([
             .init("Expected ", style: .plain),
             .init(String(describing: rhs), style: .value),
@@ -131,11 +202,38 @@ public func require<T: Equatable>(
             .init(String(describing: lhs), style: .value),
         ])
 
+        let failure = Test.Expectation.Failure(
+            message: "Values are not equal",
+            expected: .init(capturing: rhs, label: "expected"),
+            actual: .init(capturing: lhs, label: "actual"),
+            comment: comment
+        )
+        let expectation = Test.Expectation(
+            id: expectationID,
+            expression: expression,
+            isPassing: false,
+            failure: failure
+        )
+        Test.Expectation.Collector.current?.record(expectation)
         throw Test.Requirement.Failed(
             message: message,
             sourceLocation: location
         )
     }
+}
+
+// MARK: - ID Counters
+
+private let _requireExpressionCounter = Atomic<UInt64>(0)
+
+private func nextRequireExpressionID() -> UInt64 {
+    _requireExpressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
+}
+
+private let _requireExpectationCounter = Atomic<UInt64>(0)
+
+private func nextRequireExpectationID() -> UInt64 {
+    _requireExpectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
 }
 
 // MARK: - Deprecated Alias
