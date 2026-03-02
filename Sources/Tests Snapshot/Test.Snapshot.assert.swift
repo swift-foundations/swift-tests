@@ -387,7 +387,7 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
 ) async -> Swift.String? {
     let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
-    await _verifySnapshot(
+    return await _verifySnapshot(
         of: value,
         strategy: effectiveStrategy,
         named: name,

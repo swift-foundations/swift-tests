@@ -392,7 +392,7 @@ public func verifyInlineSnapshot<Value: Sendable>(
 ) async -> Swift.String? {
     let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
-    await _verifyInlineSnapshotAsync(
+    return await _verifyInlineSnapshotAsync(
         of: value,
         strategy: effectiveStrategy,
         record: recording,
