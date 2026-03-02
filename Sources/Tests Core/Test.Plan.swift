@@ -142,11 +142,11 @@ extension Test.Plan {
     ///
     /// - Parameter tags: The tags to filter by.
     /// - Returns: A plan containing only matching entries.
-    public func filter(tags: Set<String>) -> Self {
+    public func filter(tags: Set<Swift.String>.Ordered) -> Self {
         filter { entry in
             let collection = Test.Trait.Collection(modifiers: entry.modifiers)
             let entryTags = collection[Test.Trait.Tag.self]
-            return !entryTags.isDisjoint(with: tags)
+            return tags.contains(where: { entryTags.contains($0) })
         }
     }
 

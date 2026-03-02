@@ -2,7 +2,7 @@
 
 <!--
 ---
-version: 1.0.0
+version: 2.0.0
 last_updated: 2026-03-02
 status: DECISION
 ---
@@ -12,9 +12,8 @@ status: DECISION
 
 `Test.Reporter.Sink` is a `~Copyable` type with consuming `finish()` semantics.
 The tree-walking test runner needs to share event emission across concurrent task
-group closures. A proposed `Sink.Handle` wrapper was created, but the existing
-ownership-primitives and reference-primitives packages already provide
-infrastructure for sharing `~Copyable` values.
+group closures. The type system must make incorrect code impossible — relying on
+code discipline to not call `finish()` is rejected per [IMPL-INTENT].
 
 **Trigger**: Implementation of hierarchical test execution engine requires
 concurrent event emission from multiple task group children to a single sink.
@@ -22,216 +21,188 @@ concurrent event emission from multiple task group children to a single sink.
 ## Question
 
 What is the theoretically correct ownership pattern for sharing a `~Copyable`
-sink's event emission capability across concurrent tasks?
+sink's event emission capability across concurrent tasks, where the type system
+enforces the capability restriction?
 
 ## Analysis
 
 ### Type-Theoretic Structure
 
-The Sink presents a **split capability** problem. It bundles two distinct
-capabilities in one type:
+The Sink presents a **substructural capability split**:
 
 1. **Send capability**: `send(_ event:) async` — non-consuming, idempotent,
-   safe for concurrent use. Semantically a **shared reference** to a channel.
-2. **Finish capability**: `finish() consuming async` — consuming, exactly-once,
-   must outlive all senders. Semantically a **unique (linear) capability**.
+   safe for concurrent use. Substructurally **unrestricted** (copyable).
+2. **Finish capability**: `finish() consuming async` — consuming, exactly-once.
+   Substructurally **affine** (at most once).
 
-The `~Copyable` constraint on Sink conflates both capabilities. The underlying
-`_impl: any SinkImplementation` is a protocol existential that is already
-`Copyable` and `Sendable` — it provides both capabilities but with no
-ownership discipline.
+The `~Copyable` constraint on Sink correctly encodes the affine finish
+capability. The challenge: project the unrestricted send capability as a
+separate Copyable type without exposing finish.
 
-The theoretical ideal: separate the send capability (shared, copyable) from
-the finish capability (unique, consuming).
+### Option A: `Ownership.Shared(sink)`
 
-### Option A: Bespoke `Sink.Handle` Type
-
-Create a new `Sink.Handle` struct wrapping `any SinkImplementation`.
+Consume the Sink into `Ownership.Shared`. The `let value: Sink` binding
+provides borrowed access — `send()` works (non-consuming), `finish()` is
+rejected by the compiler (consuming on `let`).
 
 ```swift
-extension Test.Reporter.Sink {
-    public struct Handle: Sendable {
-        let _impl: any Test.Reporter.SinkImplementation
-        public func send(_ event: Test.Event) async { ... }
-    }
-    public var handle: Handle { Handle(_impl: _impl) }
-}
+let shared = Ownership.Shared(sink)  // consumes sink
+// shared.value.send(event) — ✓ borrowed access, non-consuming
+// shared.value.finish()    — ✗ compiler error: consuming on let
 ```
 
-**Advantages:**
-- Type-safe: Handle only exposes `send`, not `finish`
-- The abstraction boundary communicates intent (send-only capability)
-- Simple to understand
+**Type-system enforcement**: Perfect. The compiler prevents `finish()`.
 
-**Disadvantages:**
-- Bespoke type when primitives already provide sharing patterns
-- Requires widening `_impl` from `private` to `@usableFromInline`
-- Introduces a new concept (Handle) that doesn't exist in the primitives vocabulary
-- The type doesn't compose — it's a one-off wrapper specific to Sink
+**Fatal flaw**: The Sink is consumed into Shared with no way to recover it.
+`finish()` can never be called. The `SinkImplementation.finish()` cleanup
+(flushing buffers, closing files, signaling completion) is permanently lost.
+`Ownership.Shared` has no `take()` — values are reclaimed only by ARC
+deallocation, which cannot run async cleanup.
 
-### Option B: `Ownership.Shared` Wrapping the Impl
+**Verdict**: Rejected. Correct send restriction, but destroys the finish path.
 
-Pass `Ownership.Shared(impl)` through the tree walk.
+### Option B: Pass `any SinkImplementation` Directly
+
+Extract `_impl` from the Sink and pass the protocol existential through the
+tree walk.
 
 ```swift
 let sink = reporter.makeSink()
-let shared = Ownership.Shared(sink._impl) // shares the impl reference
-// ... tasks call shared.value.send(event) ...
-await sink.finish()
+let impl = sink._impl  // Copyable + Sendable existential
+// impl.send(event)  — ✓
+// impl.finish()     — ✓ type system allows this!
 ```
 
-**Advantages:**
-- Uses existing primitives infrastructure
-- No new types needed
-- `Ownership.Shared` is well-understood in the ecosystem
+**Type-system enforcement**: None. `SinkImplementation` exposes both `send`
+and `finish`. Callers must discipline themselves to not call `finish()`.
 
-**Disadvantages:**
-- `any SinkImplementation` is already Copyable — wrapping a Copyable value
-  in `Ownership.Shared` (designed for `~Copyable` values) is semantically wrong.
-  Shared adds ARC overhead on top of an existential that already has ARC.
-- Still exposes `finish()` via `SinkImplementation` protocol — no capability
-  restriction
-- Requires `_impl` visibility widening
+**Verdict**: Rejected per [IMPL-INTENT]. Incorrect code compiles.
 
-### Option C: Pass `any SinkImplementation` Directly
+### Option C: ~Copyable Capability Projection (`Sink.Sender`)
 
-Extract the impl from the Sink and pass the existential through the tree walk.
-
-```swift
-let sink = reporter.makeSink()
-let impl = sink._impl // already Copyable + Sendable
-// ... tasks call impl.send(event) ...
-await sink.finish()
-```
-
-**Advantages:**
-- No wrapper type needed
-- No double-indirection or redundant ARC
-- Uses the natural reference semantics of protocol existentials
-- Simplest implementation
-
-**Disadvantages:**
-- Exposes `finish()` to tasks that should only send
-- Requires `_impl` visibility widening to at least `@usableFromInline`
-- No abstraction boundary — callers must discipline themselves to not call `finish()`
-
-### Option D: Sink Provides a Send-Only Projection
-
-The Sink itself provides a method or property that returns a send-only
-capability, using the natural structure of the type.
+The ~Copyable Sink projects a Copyable, Sendable send-only type. This follows
+the standard ~Copyable projection pattern ([IMPL-021]): the ~Copyable owner
+retains the affine capability while projecting the unrestricted capability as
+a separate Copyable type.
 
 ```swift
 extension Test.Reporter.Sink {
-    /// A send-only capability extracted from this sink.
+    /// The copyable send-only projection of this ~Copyable sink.
     ///
-    /// The returned closure is Copyable and Sendable — it can be freely
-    /// captured in task group closures. The Sink retains ownership of
-    /// the finish capability.
-    public var sender: @Sendable (Test.Event) async -> Void {
-        { [_impl] event in await _impl.send(event) }
+    /// Sink is ~Copyable (affine: consuming finish). Sender is the
+    /// unrestricted capability projection — Copyable and Sendable,
+    /// can be captured in any number of concurrent task group closures.
+    ///
+    /// The type system enforces the split: Sender has send(), Sink
+    /// retains finish(). Incorrect code does not compile.
+    public struct Sender: Sendable {
+        private let _impl: any SinkImplementation
+        public func send(_ event: Test.Event) async { await _impl.send(event) }
     }
+
+    /// Projects the send-only capability.
+    ///
+    /// Non-consuming: the Sink retains ownership and can still be finished.
+    public var sender: Sender { Sender(_impl: _impl) }
 }
 ```
 
-Or using the existing primitives vocabulary:
-
+Usage:
 ```swift
-extension Test.Reporter {
-    /// Protocol for send-only event sinks.
-    ///
-    /// This is the shared capability extracted from a ~Copyable Sink.
-    /// Multiple concurrent tasks can hold references to the same sender.
-    public protocol SinkSender: Sendable {
-        func send(_ event: Test.Event) async
-    }
-}
+let sink = reporter.makeSink()   // ~Copyable, owns finish
+let sender = sink.sender         // Copyable, send-only — non-consuming
+// ... pass sender to concurrent task group closures ...
+// sender.send(event)  — ✓ compile
+// sender.finish()     — ✗ no such method
+await sink.finish()              // ✓ Sink still alive, consumed here
 ```
 
-With `SinkImplementation` already conforming to `SinkSender` (it has `send`).
+**Type-system enforcement**: Complete. `Sender` has no `finish()` method.
+The compiler prevents incorrect code. The Sink retains ownership of finish
+and is consumed exactly once after all tasks complete.
 
-**Advantages:**
-- Clean capability split: Sink retains finish, sender is send-only
-- No visibility widening of `_impl` needed
-- No new wrapper struct
-- The closure/protocol captures exactly the right capability
-- Composable — works with any Sink implementation
+**No `Ownership.Shared` needed**: The underlying `any SinkImplementation`
+existential is already Copyable and Sendable (protocol existentials are
+reference-counted). Wrapping a Copyable value in `Ownership.Shared` (designed
+for `~Copyable` values) would be a semantic type error — double-wrapping a
+reference with no benefit.
 
-**Disadvantages:**
-- Closure variant: loses type identity, harder to debug
-- Protocol variant: adds a protocol to the type hierarchy
+**Naming**: `Sender` per [IMPL-INTENT] — communicates what the type does (sends
+events), not what it is mechanistically (a handle). `Handle` is mechanism-speak.
+
+**File placement**: Defined in the same file as `Sink` (`Test.Reporter.Sink.swift`).
+This keeps `_impl` private — the `sender` property accesses it within the same
+file, `Sender._impl` is independently private. No encapsulation break.
 
 ### Comparison
 
-| Criterion | A: Handle | B: Shared | C: Impl Direct | D: Projection |
-|-----------|-----------|-----------|-----------------|---------------|
-| Uses existing infra | No | Yes | Partial | Partial |
-| Capability restriction | Yes (send-only) | No | No | Yes (send-only) |
-| _impl visibility change | Yes | Yes | Yes | No |
-| New types introduced | 1 (Handle) | 0 | 0 | 0 or 1 |
-| Double indirection | No | Yes (redundant) | No | No |
-| Type-theoretic correctness | Medium | Wrong (Copyable in Shared) | Low | High |
-| Composability | Low | High | Medium | High |
+| Criterion | A: Shared | B: Impl Direct | C: Sender |
+|-----------|-----------|-----------------|-----------|
+| Type-system enforcement | Partial (blocks finish, but finish is lost) | None | Complete |
+| finish() callable afterward | No (consumed into Shared) | Yes | Yes |
+| _impl visibility change | Yes | Yes | No (same file) |
+| New types | 0 | 0 | 1 (Sender) |
+| Correct ~Copyable pattern | Wrong (consumes owner) | N/A | Yes (projection) |
+| Intent-communicating name | N/A | N/A | Yes ("Sender") |
 
-### Theoretical Analysis
+### Theoretical Grounding
 
-The problem is a **substructural capability split**. In linear/affine type theory:
+The ~Copyable projection pattern is an instance of **capability decomposition**
+from linear type theory. A value with mixed substructural profile (some
+capabilities unrestricted, some linear/affine) is decomposed by projecting
+the unrestricted capabilities as a separate type:
 
-- `Sink` has affine semantics (use at most once for `finish`, many times for `send`)
-- The `send` capability is **unrestricted** (copyable, shareable)
-- The `finish` capability is **affine** (at most once)
+- **Owner** (affine): `Sink` — ~Copyable, retains `finish()`
+- **Projection** (unrestricted): `Sender` — Copyable, has only `send()`
 
-The theoretically perfect decomposition separates these two substructural
-profiles. The Sink type should project its unrestricted capability without
-exposing the affine one.
+This is the Swift analog of Rust's borrowing/sharing model where `&T` (shared
+reference) provides read-only access while `T` (owned) provides consuming
+operations. In Swift's ~Copyable system, the projection is explicit (a separate
+type) rather than implicit (a reference).
 
-Option D achieves this most precisely:
-- The `sender` projection extracts the unrestricted (send) capability
-- The Sink retains the affine (finish) capability
-- No implementation details are exposed
-- No new types duplicate existing infrastructure
+The pattern appears throughout the primitives ecosystem:
+- `Property<Tag, Base>.View` projects mutable access from ~Copyable owners
+- `Tree.Keyed` projects `Tree.Position` (Copyable cursor) from ~Copyable tree
+- `Ownership.Transfer.Cell.Token` projects take-capability from ~Copyable Cell
 
-The closure form `@Sendable (Test.Event) async -> Void` is the simplest
-encoding, but lacks a name. A dedicated protocol (`SinkSender`) gives the
-capability a name in the type system without creating a wrapper struct.
-
-However, looking at the actual Runner code: the sender is only used within
-the Runner's private methods. It never escapes the module. Given this, the
-simplest correct approach is to just pass `any SinkImplementation` directly
-within the Runner (Option C) — the capability restriction (not calling `finish`)
-is enforced by the Runner's own code structure, not the type system.
+`Sink.Sender` follows the same structural pattern: a Copyable projection of
+a specific capability from a ~Copyable owner.
 
 ## Outcome
 
 **Status**: DECISION
 
-**The `_impl` approach (Option C) for the private Runner internals, with the
-design space for a public send-only projection (Option D) noted for future API.**
+**Option C: `Sink.Sender` — the ~Copyable capability projection pattern.**
 
-Rationale:
-1. `any SinkImplementation` is already `Copyable + Sendable`. Wrapping it in
-   `Handle` or `Ownership.Shared` adds indirection for no structural benefit.
-2. The capability restriction (send-only) is enforced by the Runner's code
-   structure — the `_impl` never escapes the Runner's private methods.
-3. No new types are introduced. No `_impl` visibility change beyond
-   `@usableFromInline` (which is the minimum for the `handle` property in
-   Option A anyway).
-4. If a public send-only API is needed in the future, Option D (projection)
-   is the correct approach — it keeps `_impl` private and projects only the
-   send capability.
+The Sink projects a Copyable, Sendable `Sender` type that only exposes `send()`.
+The type system prevents calling `finish()` through the Sender — incorrect code
+does not compile. The Sink retains `finish()` and is consumed exactly once after
+all concurrent tasks complete.
 
-**Action**: Remove `Sink.Handle`, revert `_impl` to `private`. The Runner
-passes `any SinkImplementation` obtained once at `run()` entry through its
-private tree-walking methods. Since `SinkImplementation` is a public protocol
-and the Runner is in a different module (`Tests Performance`), the Sink needs
-a way to expose the impl. The cleanest approach: add a `@usableFromInline`
-internal computed property `var sender: any SinkImplementation { _impl }` that
-communicates the send-only intent through naming, or just keep `_impl` as
-`@usableFromInline` since the accessor is module-crossing but within our
-controlled codebase.
+**Implementation**:
+1. Define `Sink.Sender` in `Test.Reporter.Sink.swift` (same file, `_impl` stays private)
+2. Add `var sender: Sender` non-consuming property to Sink
+3. Delete `Test.Reporter.Sink.Handle.swift` (the bespoke Handle file)
+4. Runner passes `Sender` (not Handle, not `any SinkImplementation`) through tree walk
+
+**Why not Ownership.Shared**: The Sink must be finished after sharing. Shared
+consumes the value permanently — no way to call `finish()` afterward. And
+wrapping an already-Copyable existential in Shared is a semantic type error.
+
+**Why not raw impl**: The type system would allow calling `finish()` on the
+shared existential. Code discipline is not a substitute for type safety.
+
+## Changelog
+
+- v2.0.0 (2026-03-02): Revised decision from Option C (impl direct) to
+  Option C (Sender projection). Previous decision relied on code discipline
+  for capability restriction; revised to type-system enforcement per
+  [IMPL-INTENT] and ~Copyable-first-class principle.
+- v1.0.0 (2026-03-02): Initial analysis with 4 options.
 
 ## References
 
-- Ownership Primitives: `Ownership.Shared`, `Ownership.Mutable`, `Ownership.Slot`
-- Walker & Watkins, "A Concurrent Logical Framework: The Propositional Fragment"
-  (substructural capability types)
+- [IMPL-INTENT] Code Reads as Intent, Not Mechanism
+- [IMPL-021] Property vs Property.View (~Copyable projection pattern)
+- Ownership Primitives: `Ownership.Shared`, `Ownership.Transfer.Cell.Token`
 - Wadler, "Linear Types Can Change the World!" (affine/linear decomposition)

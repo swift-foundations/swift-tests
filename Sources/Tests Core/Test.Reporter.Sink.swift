@@ -32,8 +32,7 @@ extension Test.Reporter {
     /// - No accidental sink duplication
     public struct Sink: ~Copyable, Sendable {
         /// The underlying implementation.
-        @usableFromInline
-        let _impl: any SinkImplementation
+        private let _impl: any SinkImplementation
 
         /// Creates a sink from an implementation.
         ///
@@ -54,6 +53,50 @@ extension Test.Reporter {
         /// This consumes the sink - it cannot be used after calling this method.
         public consuming func finish() async {
             await _impl.finish()
+        }
+
+        /// Projects the send-only capability.
+        ///
+        /// `Sender` is the Copyable, Sendable projection of this ~Copyable
+        /// sink. It exposes only ``Sender/send(_:)`` — the type system
+        /// prevents calling ``finish()`` through a Sender.
+        ///
+        /// This follows the ~Copyable capability projection pattern: the
+        /// affine owner (Sink) retains the consuming operation while
+        /// projecting the unrestricted operation as a separate Copyable type.
+        ///
+        /// Non-consuming: the Sink retains ownership and can still be finished.
+        public var sender: Sender {
+            Sender(_impl: _impl)
+        }
+
+        /// The Copyable, Sendable send-only projection of a ~Copyable Sink.
+        ///
+        /// Multiple concurrent tasks can hold references to the same `Sender`.
+        /// The type system enforces the capability split — `Sender` has
+        /// ``send(_:)`` but no `finish()`. Incorrect code does not compile.
+        ///
+        /// Obtain a sender before starting concurrent work:
+        ///
+        /// ```swift
+        /// let sink = reporter.makeSink()
+        /// let sender = sink.sender
+        /// // ... pass sender to concurrent tasks ...
+        /// await sink.finish()
+        /// ```
+        public struct Sender: Sendable {
+            private let _impl: any SinkImplementation
+
+            fileprivate init(_impl: any SinkImplementation) {
+                self._impl = _impl
+            }
+
+            /// Sends an event through the underlying sink.
+            ///
+            /// - Parameter event: The event to send.
+            public func send(_ event: Test.Event) async {
+                await _impl.send(event)
+            }
         }
     }
 }

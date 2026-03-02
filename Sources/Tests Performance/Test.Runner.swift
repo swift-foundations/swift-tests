@@ -5,7 +5,8 @@
 //  Test plan executor.
 //
 
-public import Test_Primitives
+public import Tests_Core
+import Tree_Keyed_Primitives
 import Clocks
 import Dependency_Primitives
 import Standard_Library_Extensions
@@ -79,13 +80,13 @@ extension Test {
         /// - Returns: The run result.
         public func run(_ plan: Plan, concurrency: Concurrency) async -> Result {
             let sink = reporter.makeSink()
-            let handle = sink.handle
+            let sender = sink.sender
 
             let startTime = Clock_Primitives.Clock.Continuous.now
 
             // Emit run started
-            await handle.send(Test.Event(kind: .runStarted, elapsed: .zero))
-            await handle.send(Test.Event(kind: .planCreated, elapsed: elapsed(since: startTime)))
+            await sender.send(Test.Event(kind: .runStarted, elapsed: .zero))
+            await sender.send(Test.Event(kind: .planCreated, elapsed: elapsed(since: startTime)))
 
             // Walk the tree
             let counters: Counters
@@ -93,14 +94,14 @@ extension Test {
                 counters = await walk(
                     plan.tree, at: root,
                     concurrency: concurrency,
-                    handle: handle, startTime: startTime
+                    sender: sender, startTime: startTime
                 )
             } else {
                 counters = Counters()
             }
 
             // Emit run ended
-            await handle.send(Test.Event(kind: .runEnded, elapsed: elapsed(since: startTime)))
+            await sender.send(Test.Event(kind: .runEnded, elapsed: elapsed(since: startTime)))
 
             // Execute post-run actions (e.g., inline snapshot write-back)
             for action in postRunActions {
@@ -124,10 +125,10 @@ extension Test {
         /// - Suite node (body == nil) → emit suite events, dispatch children
         /// - Test node (body != nil) → execute with scope providers
         private func walk(
-            _ tree: Tree.Keyed<String, Plan.Node?>,
+            _ tree: Tree.Keyed<Swift.String, Plan.Node?>,
             at position: Tree.Position,
             concurrency: Concurrency,
-            handle: Reporter.Sink.Handle,
+            sender: Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
         ) async -> Counters {
             switch tree.peek(at: position) as Plan.Node?? {
@@ -139,14 +140,14 @@ extension Test {
                 return await dispatch(
                     tree, childrenOf: position,
                     concurrency: concurrency, traits: nil,
-                    handle: handle, startTime: startTime
+                    sender: sender, startTime: startTime
                 )
 
             case .some(.some(let node)):
                 let traits = node.traits
 
                 if !isEnabled(traits) {
-                    await handle.send(Test.Event(
+                    await sender.send(Test.Event(
                         id: node.id,
                         kind: .testSkipped(disabledReason(traits)),
                         elapsed: elapsed(since: startTime)
@@ -158,11 +159,11 @@ extension Test {
                     // Test node — execute with scope providers
                     return await execute(
                         node, traits: traits,
-                        handle: handle, startTime: startTime
+                        sender: sender, startTime: startTime
                     )
                 } else {
                     // Suite node — bracket children with suite events
-                    await handle.send(Test.Event(
+                    await sender.send(Test.Event(
                         id: node.id,
                         kind: .testStarted,
                         elapsed: elapsed(since: startTime)
@@ -171,10 +172,10 @@ extension Test {
                     let counters = await dispatch(
                         tree, childrenOf: position,
                         concurrency: concurrency, traits: traits,
-                        handle: handle, startTime: startTime
+                        sender: sender, startTime: startTime
                     )
 
-                    await handle.send(Test.Event(
+                    await sender.send(Test.Event(
                         id: node.id,
                         kind: .testEnded(counters.failed > 0 ? .failed : .passed),
                         elapsed: elapsed(since: startTime)
@@ -193,11 +194,11 @@ extension Test {
         /// If the node has the `.serialized` trait, forces serial execution
         /// regardless of the top-level concurrency setting.
         private func dispatch(
-            _ tree: Tree.Keyed<String, Plan.Node?>,
+            _ tree: Tree.Keyed<Swift.String, Plan.Node?>,
             childrenOf position: Tree.Position,
             concurrency: Concurrency,
             traits: Test.Trait.Collection?,
-            handle: Reporter.Sink.Handle,
+            sender: Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
         ) async -> Counters {
             guard let children = tree.children(of: position), !children.isEmpty else {
@@ -225,7 +226,7 @@ extension Test {
                     counters += await walk(
                         tree, at: childPos,
                         concurrency: effective,
-                        handle: handle, startTime: startTime
+                        sender: sender, startTime: startTime
                     )
                 }
                 return counters
@@ -237,7 +238,7 @@ extension Test {
                             await self.walk(
                                 tree, at: childPos,
                                 concurrency: effective,
-                                handle: handle, startTime: startTime
+                                sender: sender, startTime: startTime
                             )
                         }
                     }
@@ -260,7 +261,7 @@ extension Test {
                             await self.walk(
                                 tree, at: childPos,
                                 concurrency: effective,
-                                handle: handle, startTime: startTime
+                                sender: sender, startTime: startTime
                             )
                         }
                         inFlight += 1
@@ -275,7 +276,7 @@ extension Test {
                                 await self.walk(
                                     tree, at: childPos,
                                     concurrency: effective,
-                                    handle: handle, startTime: startTime
+                                    sender: sender, startTime: startTime
                                 )
                             }
                             inFlight += 1
@@ -295,10 +296,10 @@ extension Test {
         private func execute(
             _ node: Plan.Node,
             traits: Test.Trait.Collection,
-            handle: Reporter.Sink.Handle,
+            sender: Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
         ) async -> Counters {
-            await handle.send(Test.Event(
+            await sender.send(Test.Event(
                 id: node.id,
                 kind: .testStarted,
                 elapsed: elapsed(since: startTime)
@@ -330,7 +331,7 @@ extension Test {
                 }
 
                 if !isRequirementFailure {
-                    await handle.send(Test.Event(
+                    await sender.send(Test.Event(
                         id: node.id,
                         kind: .issueRecorded(Test.Issue(
                             kind: .errorCaught(
@@ -348,14 +349,14 @@ extension Test {
             let hasExpectationFailures = expectations.contains(where: \.isFailing)
 
             for expectation in expectations {
-                await handle.send(Test.Event(
+                await sender.send(Test.Event(
                     id: node.id,
                     kind: .expectationChecked(expectation),
                     elapsed: elapsed(since: startTime)
                 ))
 
                 if expectation.isFailing {
-                    await handle.send(Test.Event(
+                    await sender.send(Test.Event(
                         id: node.id,
                         kind: .issueRecorded(Test.Issue(
                             kind: .expectationFailed(expectation.id),
@@ -372,7 +373,7 @@ extension Test {
                 testResult = .passed
             }
 
-            await handle.send(Test.Event(
+            await sender.send(Test.Event(
                 id: node.id,
                 kind: .testEnded(testResult),
                 elapsed: elapsed(since: startTime)
@@ -409,7 +410,7 @@ extension Test {
         /// carry the semantics instead of a compound method name.
         private func sourceLocation(
             of position: Tree.Position,
-            in tree: Tree.Keyed<String, Plan.Node?>
+            in tree: Tree.Keyed<Swift.String, Plan.Node?>
         ) -> Source.Location? {
             switch tree.peek(at: position) as Plan.Node?? {
             case .some(.some(let node)): node.id.sourceLocation
