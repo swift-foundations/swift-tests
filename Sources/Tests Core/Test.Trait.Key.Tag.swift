@@ -14,5 +14,5 @@ extension Test.Trait.Tag: Witness.Key {
     public typealias Value = Set<Swift.String>.Ordered
 
     @inlinable
-    public static var liveValue: Set<Swift.String>.Ordered { .init() }
+    public static var liveValue: Set<Swift.String>.Ordered { [] }
 }

@@ -67,7 +67,7 @@ extension TestPlanTests.Unit {
         )
         let plan = registry.finalize()
 
-        let filtered = plan.filter(tags: .init(["smoke"]))
+        let filtered = plan.filter(tags: ["smoke"])
         #expect(filtered.count == 1)
     }
 
