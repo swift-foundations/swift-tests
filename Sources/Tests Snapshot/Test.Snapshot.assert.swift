@@ -7,7 +7,6 @@
 
 public import Test_Primitives
 public import Identity_Primitives
-import Synchronization
 public import File_System
 
 // MARK: - assertSnapshot (Synchronous, Captured Value)
@@ -40,6 +39,7 @@ public import File_System
 ///   - strategy: How to convert and compare the value.
 ///   - name: Optional snapshot name (auto-numbered if nil).
 ///   - record: Recording mode override (uses configuration default if nil).
+///   - redactions: Redactions to apply after capture and before comparison.
 ///   - fileID: Source file ID (captured automatically).
 ///   - filePath: Source path (captured automatically).
 ///   - line: Source line (captured automatically).
@@ -52,14 +52,17 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
 ) -> Test.Expectation {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
     // Check for sync snapshot support
-    guard let syncSnapshot = strategy.syncSnapshot else {
+    guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
         return makeFailingExpectation(
             message: "Strategy does not support synchronous capture. Use async assertSnapshot.",
             fileID: fileID,
@@ -72,7 +75,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
     let failure = _verifySnapshot(
         of: value,
         syncSnapshot: syncSnapshot,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         named: name,
         record: recording,
         filePath: filePath,
@@ -116,6 +119,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 ///   - strategy: How to convert and compare the value.
 ///   - name: Optional snapshot name (auto-numbered if nil).
 ///   - record: Recording mode override (uses configuration default if nil).
+///   - redactions: Redactions to apply after capture and before comparison.
 ///   - fileID: Source file ID (captured automatically).
 ///   - filePath: Source path (captured automatically).
 ///   - line: Source line (captured automatically).
@@ -128,6 +132,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
@@ -136,9 +141,10 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 ) -> Test.Expectation {
     do {
         let capturedValue = try value()
+        let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
         // Check for sync snapshot support
-        guard let syncSnapshot = strategy.syncSnapshot else {
+        guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
             return makeFailingExpectation(
                 message: "Strategy does not support synchronous capture. Use async assertSnapshot.",
                 fileID: fileID,
@@ -151,7 +157,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
         let failure = _verifySnapshot(
             of: capturedValue,
             syncSnapshot: syncSnapshot,
-            strategy: strategy,
+            strategy: effectiveStrategy,
             named: name,
             record: recording,
             filePath: filePath,
@@ -196,6 +202,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 ///   - strategy: How to convert and compare the value.
 ///   - name: Optional snapshot name.
 ///   - record: Recording mode override.
+///   - redactions: Redactions to apply after capture and before comparison.
 ///   - fileID: Source file ID.
 ///   - filePath: Source path.
 ///   - line: Source line.
@@ -208,15 +215,18 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
 ) async -> Test.Expectation {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
     let failure = await _verifySnapshot(
         of: value,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         named: name,
         record: recording,
         filePath: filePath,
@@ -253,6 +263,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 ///   - strategy: How to convert and compare the value.
 ///   - name: Optional snapshot name.
 ///   - record: Recording mode override.
+///   - redactions: Redactions to apply after capture and before comparison.
 ///   - fileID: Source file ID.
 ///   - filePath: Source path.
 ///   - line: Source line.
@@ -265,6 +276,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
@@ -273,10 +285,11 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 ) async -> Test.Expectation {
     do {
         let capturedValue = try value()
+        let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
         let failure = await _verifySnapshot(
             of: capturedValue,
-            strategy: strategy,
+            strategy: effectiveStrategy,
             named: name,
             record: recording,
             filePath: filePath,
@@ -331,17 +344,20 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     filePath: Swift.String = #filePath,
     function: Swift.String = #function
 ) -> Swift.String? {
-    guard let syncSnapshot = strategy.syncSnapshot else {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
+    guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
         return "Strategy does not support synchronous capture. Use async verifySnapshot."
     }
 
     return _verifySnapshot(
         of: value,
         syncSnapshot: syncSnapshot,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         named: name,
         record: recording,
         filePath: filePath,
@@ -356,6 +372,7 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
 ///   - strategy: How to convert and compare the value.
 ///   - name: Optional snapshot name.
 ///   - record: Recording mode override.
+///   - redactions: Redactions to apply after capture and before comparison.
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
@@ -364,12 +381,15 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     filePath: Swift.String = #filePath,
     function: Swift.String = #function
 ) async -> Swift.String? {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
     await _verifySnapshot(
         of: value,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         named: name,
         record: recording,
         filePath: filePath,
@@ -397,20 +417,22 @@ public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     filePath: Swift.String = #filePath,
     function: Swift.String = #function
 ) -> Swift.String? {
     do {
         let capturedValue = try value()
+        let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
-        guard let syncSnapshot = strategy.syncSnapshot else {
+        guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
             return "Strategy does not support synchronous capture. Use async verifySnapshot."
         }
 
         return _verifySnapshot(
             of: capturedValue,
             syncSnapshot: syncSnapshot,
-            strategy: strategy,
+            strategy: effectiveStrategy,
             named: name,
             record: recording,
             filePath: filePath,
@@ -428,6 +450,7 @@ public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 ///   - strategy: How to convert and compare the value.
 ///   - name: Optional snapshot name.
 ///   - record: Recording mode override.
+///   - redactions: Redactions to apply after capture and before comparison.
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
@@ -436,14 +459,17 @@ public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
     filePath: Swift.String = #filePath,
     function: Swift.String = #function
 ) async -> Swift.String? {
     do {
         let capturedValue = try value()
+        let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
         return await _verifySnapshot(
             of: capturedValue,
-            strategy: strategy,
+            strategy: effectiveStrategy,
             named: name,
             record: recording,
             filePath: filePath,
@@ -495,6 +521,15 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
         mode: mode
     )
 
+    if case .failed = result {
+        Test.Attachment.collector.record(
+            .init(
+                name: "actual.\(strategy.pathExtension ?? "bin")",
+                bytes: actualBytes
+            )
+        )
+    }
+
     return resultToFailureMessage(result)
 }
 
@@ -535,6 +570,15 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
         path: snapshotPath,
         mode: mode
     )
+
+    if case .failed = result {
+        Test.Attachment.collector.record(
+            .init(
+                name: "actual.\(strategy.pathExtension ?? "bin")",
+                bytes: actualBytes
+            )
+        )
+    }
 
     return resultToFailureMessage(result)
 }
@@ -675,6 +719,11 @@ private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> Swift.Str
         // Recording is considered success in default mode
         return nil
     case .failed(let diff, let referencePath):
+        // Record diff as CI attachment
+        Test.Attachment.collector.record(
+            .init(name: "snapshot-diff.txt", string: diff.description)
+        )
+
         var message = "Snapshot does not match reference at: \(referencePath)\n"
         message += diff.summary
         if let unifiedDiff = diff.unifiedDiff {
@@ -690,39 +739,18 @@ private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> Swift.Str
 
 // MARK: - Expectation Creation
 
-/// Creates a passing expectation.
 private func makePassingExpectation(
     fileID: Swift.String,
     filePath: Swift.String,
     line: Int,
     column: Int
 ) -> Test.Expectation {
-    let location = Source.Location(
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
+    .record(
+        passing: "assertSnapshot(of: ..., as: ...)",
+        at: Source.Location(fileID: fileID, filePath: filePath, line: line, column: column)
     )
-
-    let expressionID = Test.Expression.ID(__unchecked: (), nextSnapshotExpressionID())
-    let expression = Test.Expression(
-        id: expressionID,
-        sourceCode: "assertSnapshot(of: ..., as: ...)",
-        sourceLocation: location
-    )
-
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextSnapshotExpectationID())
-
-    let expectation = Test.Expectation(
-        id: expectationID,
-        expression: expression,
-        isPassing: true
-    )
-    Test.Expectation.Collector.current?.record(expectation)
-    return expectation
 }
 
-/// Creates a failing expectation with a message.
 private func makeFailingExpectation(
     message: Swift.String,
     fileID: Swift.String,
@@ -730,45 +758,9 @@ private func makeFailingExpectation(
     line: Int,
     column: Int
 ) -> Test.Expectation {
-    let location = Source.Location(
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-    )
-
-    let expressionID = Test.Expression.ID(__unchecked: (), nextSnapshotExpressionID())
-    let expression = Test.Expression(
-        id: expressionID,
+    .record(
+        failing: message,
         sourceCode: "assertSnapshot(of: ..., as: ...)",
-        sourceLocation: location
+        at: Source.Location(fileID: fileID, filePath: filePath, line: line, column: column)
     )
-
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextSnapshotExpectationID())
-    let failure = Test.Expectation.Failure(message: Test.Text(message))
-
-    let expectation = Test.Expectation(
-        id: expectationID,
-        expression: expression,
-        isPassing: false,
-        failure: failure
-    )
-    Test.Expectation.Collector.current?.record(expectation)
-    return expectation
-}
-
-// MARK: - ID Counters
-
-/// Atomic counter for snapshot expression IDs.
-private let _snapshotExpressionCounter = Atomic<UInt64>(0)
-
-private func nextSnapshotExpressionID() -> UInt64 {
-    _snapshotExpressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
-}
-
-/// Atomic counter for snapshot expectation IDs.
-private let _snapshotExpectationCounter = Atomic<UInt64>(0)
-
-private func nextSnapshotExpectationID() -> UInt64 {
-    _snapshotExpectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
 }

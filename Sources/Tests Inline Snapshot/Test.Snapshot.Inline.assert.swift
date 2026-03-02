@@ -9,7 +9,6 @@
 //
 
 public import Test_Primitives
-import Synchronization
 
 // MARK: - assertInlineSnapshot (Synchronous, Captured Value)
 
@@ -54,6 +53,7 @@ public func assertInlineSnapshot<Value: Sendable>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
     matches expected: (() -> Swift.String)? = nil,
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
@@ -61,7 +61,9 @@ public func assertInlineSnapshot<Value: Sendable>(
     column: Int = #column,
     function: Swift.String = #function
 ) -> Test.Expectation {
-    guard let syncSnapshot = strategy.syncSnapshot else {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
+    guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
         return makeInlineFailingExpectation(
             message: "Strategy does not support synchronous capture. Use async assertInlineSnapshot.",
             fileID: fileID,
@@ -74,7 +76,7 @@ public func assertInlineSnapshot<Value: Sendable>(
     let failure = _verifyInlineSnapshot(
         of: value,
         syncSnapshot: syncSnapshot,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         record: recording,
         expected: expected,
         filePath: filePath,
@@ -127,6 +129,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
     matches expected: (() -> Swift.String)? = nil,
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
@@ -136,8 +139,9 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
 ) -> Test.Expectation {
     do {
         let capturedValue = try value()
+        let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
-        guard let syncSnapshot = strategy.syncSnapshot else {
+        guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
             return makeInlineFailingExpectation(
                 message: "Strategy does not support synchronous capture. Use async assertInlineSnapshot.",
                 fileID: fileID,
@@ -150,7 +154,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
         let failure = _verifyInlineSnapshot(
             of: capturedValue,
             syncSnapshot: syncSnapshot,
-            strategy: strategy,
+            strategy: effectiveStrategy,
             record: recording,
             expected: expected,
             filePath: filePath,
@@ -206,6 +210,7 @@ public func assertInlineSnapshot<Value: Sendable>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
     matches expected: (() -> Swift.String)? = nil,
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
@@ -213,9 +218,11 @@ public func assertInlineSnapshot<Value: Sendable>(
     column: Int = #column,
     function: Swift.String = #function
 ) async -> Test.Expectation {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
     let failure = await _verifyInlineSnapshotAsync(
         of: value,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         record: recording,
         expected: expected,
         filePath: filePath,
@@ -265,6 +272,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
     matches expected: (() -> Swift.String)? = nil,
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
@@ -274,10 +282,11 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
 ) async -> Test.Expectation {
     do {
         let capturedValue = try value()
+        let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
         let failure = await _verifyInlineSnapshotAsync(
             of: capturedValue,
-            strategy: strategy,
+            strategy: effectiveStrategy,
             record: recording,
             expected: expected,
             filePath: filePath,
@@ -332,20 +341,23 @@ public func verifyInlineSnapshot<Value: Sendable>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
     matches expected: (() -> Swift.String)? = nil,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
 ) -> Swift.String? {
-    guard let syncSnapshot = strategy.syncSnapshot else {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
+    guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
         return "Strategy does not support synchronous capture. Use async verifyInlineSnapshot."
     }
 
     return _verifyInlineSnapshot(
         of: value,
         syncSnapshot: syncSnapshot,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         record: recording,
         expected: expected,
         filePath: filePath,
@@ -371,15 +383,18 @@ public func verifyInlineSnapshot<Value: Sendable>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
     matches expected: (() -> Swift.String)? = nil,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
 ) async -> Swift.String? {
+    let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
+
     await _verifyInlineSnapshotAsync(
         of: value,
-        strategy: strategy,
+        strategy: effectiveStrategy,
         record: recording,
         expected: expected,
         filePath: filePath,
@@ -542,47 +557,16 @@ private func _processInlineSnapshot<Value: Sendable>(
 
 // MARK: - Expectation Creation
 
-private let _inlineExpressionCounter = Atomic<UInt64>(0)
-
-private func nextInlineExpressionID() -> UInt64 {
-    _inlineExpressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
-}
-
-private let _inlineExpectationCounter = Atomic<UInt64>(0)
-
-private func nextInlineExpectationID() -> UInt64 {
-    _inlineExpectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
-}
-
 private func makeInlinePassingExpectation(
     fileID: Swift.String,
     filePath: Swift.String,
     line: Int,
     column: Int
 ) -> Test.Expectation {
-    let location = Source.Location(
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
+    .record(
+        passing: "assertInlineSnapshot(of: ..., as: ...)",
+        at: Source.Location(fileID: fileID, filePath: filePath, line: line, column: column)
     )
-
-    let expressionID = Test.Expression.ID(__unchecked: (), nextInlineExpressionID())
-    let expression = Test.Expression(
-        id: expressionID,
-        sourceCode: "assertInlineSnapshot(of: ..., as: ...)",
-        sourceLocation: location
-    )
-
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextInlineExpectationID())
-
-    let expectation = Test.Expectation(
-        id: expectationID,
-        expression: expression,
-        isPassing: true
-    )
-    Test.Expectation.Collector.current?.record(expectation)
-    return expectation
 }
 
 private func makeInlineFailingExpectation(
@@ -592,29 +576,9 @@ private func makeInlineFailingExpectation(
     line: Int,
     column: Int
 ) -> Test.Expectation {
-    let location = Source.Location(
-        fileID: fileID,
-        filePath: filePath,
-        line: line,
-        column: column
-    )
-
-    let expressionID = Test.Expression.ID(__unchecked: (), nextInlineExpressionID())
-    let expression = Test.Expression(
-        id: expressionID,
+    .record(
+        failing: message,
         sourceCode: "assertInlineSnapshot(of: ..., as: ...)",
-        sourceLocation: location
+        at: Source.Location(fileID: fileID, filePath: filePath, line: line, column: column)
     )
-
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextInlineExpectationID())
-    let failure = Test.Expectation.Failure(message: Test.Text(message))
-
-    let expectation = Test.Expectation(
-        id: expectationID,
-        expression: expression,
-        isPassing: false,
-        failure: failure
-    )
-    Test.Expectation.Collector.current?.record(expectation)
-    return expectation
 }
