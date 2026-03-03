@@ -1,6 +1,5 @@
 import Testing
 import Tests_Test_Support
-import Dependency_Primitives
 
 @Suite("Test.expect")
 struct TestExpectTests {
@@ -14,7 +13,7 @@ extension TestExpectTests.Unit {
     @Test
     func `expect registers with collector when present`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Dependency.Scope.with({ $0[Test_Primitives.Test.Expectation.Collector.Key.self] = collector }) {
+        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
             expect(true)
             expect(false)
         }
@@ -29,7 +28,7 @@ extension TestExpectTests.Unit {
     @Test
     func `expect equality registers with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Dependency.Scope.with({ $0[Test_Primitives.Test.Expectation.Collector.Key.self] = collector }) {
+        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
             expect(1, equals: 1)
             expect(1, equals: 2)
         }

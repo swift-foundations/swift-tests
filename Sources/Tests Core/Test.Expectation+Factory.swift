@@ -27,23 +27,6 @@ private func _nextExpectationID() -> Test.Expectation.ID {
     )
 }
 
-// MARK: - External Failure Handler
-
-extension Test.Expectation {
-    /// External failure handler for bridging to test frameworks.
-    ///
-    /// When no ``Collector`` is installed (i.e., tests run without the
-    /// Institute's `Test.Runner`), this handler is called for each failure.
-    /// It can be set by a bridge module (e.g., `Tests Apple Testing Bridge`)
-    /// to forward failures to the active test runner.
-    ///
-    /// Set once before tests run; read during test execution.
-    /// When the Institute's runner is active, ``Collector/current`` is
-    /// non-nil and this handler is never invoked.
-    public nonisolated(unsafe) static var externalFailureHandler:
-        (@Sendable (_ message: Swift.String, _ location: Source.Location) -> Void)?
-}
-
 // MARK: - Factories
 
 extension Test.Expectation {
@@ -114,9 +97,9 @@ extension Test.Expectation {
 
     /// Creates a failing expectation and records it with the current collector.
     ///
-    /// When no collector is installed, the failure is forwarded to
-    /// ``externalFailureHandler`` if one has been installed by a bridge
-    /// module (e.g., `Tests Apple Testing Bridge`).
+    /// When no collector is installed (i.e., tests run under Apple's Swift Testing
+    /// runner instead of the custom `Test.Runner`), the failure is bridged to
+    /// `Testing.Issue.record` so it is not silently dropped.
     ///
     /// - Parameters:
     ///   - message: Description of the failure.
@@ -131,9 +114,39 @@ extension Test.Expectation {
     ) -> Self {
         let result = failing(message, sourceCode: sourceCode, at: location)
         Collector.current?.record(result)
+        #if canImport(Testing)
         if Collector.current == nil {
-            Self.externalFailureHandler?(message, location)
+            _bridgeFailureToSwiftTesting(message, at: location)
         }
+        #endif
         return result
     }
 }
+
+// MARK: - Swift Testing Bridge
+
+#if canImport(Testing)
+import Testing
+
+/// Bridges a failure to Apple's Swift Testing when no collector is installed.
+///
+/// This is the fallback path for tests running under Swift Testing's native
+/// runner, where `Collector.current` is `nil` because `Test.Runner` was never
+/// instantiated. Without this bridge, failures from `assertInlineSnapshot`,
+/// `assertSnapshot`, and all other assertions built on `record(failing:...)`
+/// would be silently discarded.
+private func _bridgeFailureToSwiftTesting(
+    _ message: Swift.String,
+    at location: Source.Location
+) {
+    Testing.Issue.record(
+        Testing.Comment(rawValue: message),
+        sourceLocation: Testing.SourceLocation(
+            fileID: location.fileID,
+            filePath: location.filePath ?? location.fileID,
+            line: location.line,
+            column: location.column
+        )
+    )
+}
+#endif

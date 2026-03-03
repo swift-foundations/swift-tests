@@ -17,7 +17,6 @@ let package = Package(
         .library(name: "Tests Inline Snapshot", targets: ["Tests Inline Snapshot"]),
         .library(name: "Tests Performance", targets: ["Tests Performance"]),
         .library(name: "Tests", targets: ["Tests"]),
-        .library(name: "Tests Apple Testing Bridge", targets: ["Tests Apple Testing Bridge"]),
         .library(name: "Tests Test Support", targets: ["Tests Test Support"]),
     ],
     dependencies: [
@@ -52,7 +51,6 @@ let package = Package(
                 .product(name: "ASCII Primitives", package: "swift-ascii-primitives"),
                 .product(name: "Test Primitives", package: "swift-test-primitives"),
                 .product(name: "Ownership Primitives", package: "swift-ownership-primitives"),
-                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
                 .product(name: "Loader", package: "swift-loader"),
                 .product(name: "Witnesses", package: "swift-witnesses"),
                 .product(name: "Set Primitives", package: "swift-set-primitives"),
@@ -115,16 +113,6 @@ let package = Package(
                 "Tests Snapshot",
                 "Tests Inline Snapshot",
                 "Tests Performance",
-            ]
-        ),
-
-        // MARK: - Apple Testing Bridge
-
-        .target(
-            name: "Tests Apple Testing Bridge",
-            dependencies: [
-                "Tests Snapshot",
-                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
             ]
         ),
 
