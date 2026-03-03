@@ -80,6 +80,10 @@ public func require(
             failure: failure
         )
         Test.Expectation.Collector.current?.record(expectation)
+        Test.Expectation._reportExternalFailure(
+            comment.map { "Requirement failed: \($0)" } ?? "Requirement failed",
+            at: location
+        )
         throw Test.Requirement.Failed(
             message: comment ?? "Requirement failed",
             sourceLocation: location
@@ -133,6 +137,10 @@ public func require<T>(
             failure: failure
         )
         Test.Expectation.Collector.current?.record(expectation)
+        Test.Expectation._reportExternalFailure(
+            comment.map { "Required value was nil: \($0)" } ?? "Required value was nil",
+            at: location
+        )
         throw Test.Requirement.Failed(
             message: comment ?? "Required value was nil",
             sourceLocation: location
@@ -215,6 +223,11 @@ public func require<T: Equatable>(
             failure: failure
         )
         Test.Expectation.Collector.current?.record(expectation)
+        Test.Expectation._reportExternalFailure(
+            comment.map { "Values are not equal: \($0)" }
+                ?? "Values are not equal: expected \(rhs), got \(lhs)",
+            at: location
+        )
         throw Test.Requirement.Failed(
             message: message,
             sourceLocation: location
