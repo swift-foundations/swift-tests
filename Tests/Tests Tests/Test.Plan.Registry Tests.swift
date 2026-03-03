@@ -53,4 +53,40 @@ extension TestPlanRegistryTests.Unit {
         #expect(plan.count == 2)
         #expect(!plan.isEmpty)
     }
+
+    @Test
+    func `components for suite omits empty name`() {
+        let suiteID = Test_Primitives.Test.ID(
+            module: "M",
+            suite: "MySuite",
+            name: "",
+            sourceLocation: .stub()
+        )
+        let components = Tests_Core.Test.Plan.components(for: suiteID)
+        #expect(components == ["M", "MySuite"])
+    }
+
+    @Test
+    func `suite trait propagation via finalize`() {
+        var registry = Test_Primitives.Test.Plan.Registry()
+
+        // Register a suite with .serialized
+        registry.add(suite: Tests_Core.Test.Suite.Registration(
+            id: .init(module: "M", suite: "MySuite", name: "", sourceLocation: .stub()),
+            modifiers: [.serialized]
+        ))
+
+        // Register a test inside that suite
+        registry.add(
+            id: .stub("testFoo", module: "M", suite: "MySuite"),
+            body: .sync {}
+        )
+
+        let plan = registry.finalize()
+
+        // The test node should have inherited .serialized from the suite
+        let node: Tests_Core.Test.Plan.Node? = plan.tree["M", "MySuite", "testFoo"]
+        #expect(node != nil)
+        #expect(node?.traits[Tests_Core.Test.Trait.Serialized.self] == true)
+    }
 }

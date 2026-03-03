@@ -106,11 +106,12 @@ extension Test {
 extension Test.Plan {
     /// Converts a Test.ID into tree key path components.
     ///
-    /// The key path is: `[module] + suite.split(".") + [name]`.
+    /// The key path is: `[module] + suite.split(".") + [name]` (empty names omitted).
     ///
     /// Examples:
     /// - `Test.ID(module: "M", suite: nil, name: "t")` → `["M", "t"]`
     /// - `Test.ID(module: "M", suite: "A.B", name: "t")` → `["M", "A", "B", "t"]`
+    /// - `Test.ID(module: "M", suite: "S", name: "")` → `["M", "S"]` (suite registration)
     ///
     /// Named `components` per [API-NAME-002] — the `Test.Plan` context
     /// already establishes the tree key path domain.
@@ -122,7 +123,9 @@ extension Test.Plan {
         if let suite = id.suite {
             path.append(contentsOf: suite.split(separator: ".").map(String.init))
         }
-        path.append(id.name)
+        if !id.name.isEmpty {
+            path.append(id.name)
+        }
         return path
     }
 }
