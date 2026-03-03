@@ -1,4 +1,5 @@
 import Testing
+import Tests_Inline_Snapshot
 import Tests_Test_Support
 
 @Suite("Test.Snapshot.Inline.assert")

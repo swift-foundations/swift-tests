@@ -112,7 +112,6 @@ let package = Package(
             dependencies: [
                 "Tests Core",
                 "Tests Snapshot",
-                "Tests Inline Snapshot",
                 "Tests Performance",
             ]
         ),
@@ -155,6 +154,7 @@ let package = Package(
             name: "Tests Tests",
             dependencies: [
                 "Tests",
+                "Tests Inline Snapshot",
                 "Tests Test Support",
             ]
         ),
