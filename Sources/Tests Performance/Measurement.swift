@@ -157,6 +157,21 @@ extension Tests.Measurement {
     public var standardDeviation: Duration {
         batch.standardDeviation ?? .zero
     }
+
+    /// Coefficient of variation as a percentage.
+    public var coefficientOfVariation: Double? {
+        batch.coefficientOfVariation
+    }
+
+    /// Median Absolute Deviation.
+    public var medianAbsoluteDeviation: Duration? {
+        batch.medianAbsoluteDeviation
+    }
+
+    /// Count of outliers beyond `k × MAD` from the median.
+    public func outlierCount(threshold k: Double = 3.0) -> Int? {
+        batch.outlierCount(threshold: k)
+    }
 }
 
 // MARK: - Measurement API

@@ -6,6 +6,7 @@
 //
 
 import Clocks
+import Memory
 
 extension Test.Trait.ScopeProvider {
     /// Scope provider for timed benchmark measurement.
@@ -34,31 +35,66 @@ extension Test.Trait.ScopeProvider {
         // Measured iterations
         var durations: [Duration] = []
         durations.reserveCapacity(config.iterations)
+        var allocationStats: [Memory.Allocation.Statistics]? = config.trackAllocations ? [] : nil
 
         for _ in 0..<config.iterations {
+            let before = config.trackAllocations
+                ? Memory.Allocation.Statistics.capture()
+                : nil
             let start = Clock_Primitives.Clock.Continuous.now
             try await operation()
             durations.append(Clock_Primitives.Clock.Continuous.now - start)
+            if let before {
+                let after = Memory.Allocation.Statistics.capture()
+                allocationStats?.append(Memory.Allocation.Statistics.delta(from: before, to: after))
+            }
         }
 
         let measurement = Test.Benchmark.Measurement(durations: durations)
 
-        // Print results if configured
-        if config.printResults {
-            Test.Benchmark.printPerformance(entry.id.name, measurement)
+        // Build diagnostic
+        let environment = Test.Environment.capture()
+        let cv = measurement.batch.coefficientOfVariation
+        let mad = measurement.batch.medianAbsoluteDeviation
+        let outliers = measurement.batch.outlierCount()
+        let trend = Tests.Trend.mannKendall(measurement.durations)
+
+        let metricValue = config.metric.extract(from: measurement)
+        let exceeded = config.threshold.map { metricValue > $0 } ?? false
+        let factor: Double? = if let threshold = config.threshold, exceeded {
+            metricValue.inSeconds / threshold.inSeconds
+        } else {
+            nil
         }
 
-        // Check threshold if configured
-        if let threshold = config.threshold {
-            let metricValue = config.metric.extract(from: measurement)
-            if metricValue > threshold {
-                throw .performanceThresholdExceeded(
-                    test: entry.id.name,
-                    metric: config.metric,
-                    expected: threshold,
-                    actual: metricValue
-                )
-            }
+        let diagnostic = Tests.Diagnostic(
+            testName: entry.id.name,
+            metric: config.metric,
+            measurement: measurement,
+            environment: environment,
+            coefficientOfVariation: cv,
+            medianAbsoluteDeviation: mad,
+            outlierCount: outliers,
+            trend: trend,
+            threshold: config.threshold,
+            exceedanceFactor: factor,
+            allocations: allocationStats
+        )
+
+        // Print results if configured
+        if config.printResults {
+            print(diagnostic.formatted())
+            print(diagnostic.jsonBlock())
+        }
+
+        // Throw if threshold exceeded
+        if exceeded {
+            throw .performanceThresholdExceeded(
+                test: entry.id.name,
+                metric: config.metric,
+                expected: config.threshold!,
+                actual: metricValue
+            )
         }
     }
 }

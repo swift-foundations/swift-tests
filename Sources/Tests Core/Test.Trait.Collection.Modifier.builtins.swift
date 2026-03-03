@@ -73,11 +73,13 @@ extension Test.Trait.Collection.Modifier {
     ///   - warmup: Number of untimed warmup runs (default: 0).
     ///   - threshold: Optional performance budget.
     ///   - metric: Metric to check against threshold (default: .median).
+    ///   - trackAllocations: Whether to track memory allocations per iteration (default: false).
     public static func timed(
         iterations: Int = 10,
         warmup: Int = 0,
         threshold: Duration? = nil,
-        metric: Test.Benchmark.Metric = .median
+        metric: Test.Benchmark.Metric = .median,
+        trackAllocations: Bool = false
     ) -> Self {
         Self {
             $0[Test.Trait.Timed.self] = .init(
@@ -85,7 +87,8 @@ extension Test.Trait.Collection.Modifier {
                 warmup: warmup,
                 printResults: true,
                 threshold: threshold,
-                metric: metric
+                metric: metric,
+                trackAllocations: trackAllocations
             )
         }
     }
