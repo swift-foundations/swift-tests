@@ -424,13 +424,12 @@ extension Test {
                 .filter { $0.shouldActivate(traits) }
                 .sorted { $0.priority < $1.priority }
 
-            // Base operation: run the test body with dependency scope
+            // Base operation: run the test body
+            // Note: L1 isTestContext is propagated by Witness.Context.with(mode: .test)
+            // in Testing.Main.runReturningResult — no explicit L1 push needed here.
             var chain: @Sendable () async throws(Error) -> Void = { () async throws(Error) in
                 do {
-                    try await Dependency.Scope.with(
-                        { $0.isTestContext = true },
-                        operation: entry.body.run
-                    )
+                    try await entry.body.run()
                 } catch {
                     let bodyError = error as? Test.Body.Error ?? .caught(
                         type: Swift.String(describing: type(of: error)),
