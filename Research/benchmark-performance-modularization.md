@@ -2,9 +2,9 @@
 
 <!--
 ---
-version: 2.0.0
-last_updated: 2026-02-28
-status: RECOMMENDATION
+version: 2.1.0
+last_updated: 2026-03-03
+status: MOSTLY IMPLEMENTED
 tier: 3
 ---
 -->
@@ -343,44 +343,51 @@ Cognitive Dimensions Framework assessment for Option D:
 
 ## Outcome
 
-**Status**: RECOMMENDATION
+**Status**: MOSTLY IMPLEMENTED (Phases 1 and 3 complete; Phase 2 open)
 
 ### Recommended: Option D — `Sample<T>` + `Aggregate` + Unified Test Module
 
-Executed in three phases:
+### Phase 1: `swift-sample-primitives` (Layer 1) — IMPLEMENTED
 
-### Phase 1: `swift-sample-primitives` (Layer 1)
+Package created at `/Users/coen/Developer/swift-primitives/swift-sample-primitives/`. Types in use across the ecosystem:
 
-New primitives package. Zero external dependencies.
+| Type | Description | Status |
+|------|-------------|--------|
+| `Sample.Batch<T: Comparable & Sendable>` | Sorted collection with order statistics | ✅ In use |
+| `Sample.Metric` | Selector enum with `extract(from:using:)` | ✅ In use |
+| `Sample.Comparison<T>` | Percentage-change with polarity | ✅ In use |
+| `Sample.Averaging<T>` | Value witness for type-generic arithmetic | ✅ In use |
+| `Sample.Polarity` | `.lowerIsBetter` / `.higherIsBetter` | ✅ In use |
+| `Sample.Accumulator` | Streaming O(1) monoid for UInt64 | ✅ In use |
+| `Sample.Batch.coefficientOfVariation` | CV as `Double?` | ✅ Added for diagnostics |
+| `Sample.Batch.medianAbsoluteDeviation` | MAD as `Element?` | ✅ Added for diagnostics |
+| `Sample.Batch.outlierCount(threshold:)` | Count beyond k × MAD | ✅ Added for diagnostics |
 
-| Type | Description |
-|------|-------------|
-| `Sample<T: Comparable & Sendable>` | Sorted collection of observations with order statistics |
-| `Sample.Metric` | Selector enum: `.min`, `.max`, `.median`, `.mean`, `.p95`, `.p99` |
-
-Conformances: `Sendable`, `Codable` (conditional), `Comparable` (by median), `@inlinable` statistical methods.
-
-Tiered extensions:
+Tiered extensions implemented as recommended:
 - Tier 0 (`Comparable`): min, max, percentile, median, p50–p999
 - Tier 1 (`Comparable & AdditiveArithmetic`): mean
 - Duration-specific: standardDeviation (via `.components` conversion, no Foundation)
 
-### Phase 2: Extract `Aggregate` (Layer 1)
+### Phase 2: Extract `Aggregate` (Layer 1) — OPEN
 
-Extract `IO.Blocking.Threads.Aggregate` to a shared primitives location. Commutative monoid for O(1) streaming accumulation. Enable adoption by Pool metrics and Abandoning Lane metrics.
+`Sample.Accumulator` exists at Layer 1 (streaming O(1) monoid for UInt64). However, `IO.Blocking.Threads.Aggregate` in swift-io has NOT been migrated to use it. Pool metrics and Abandoning Lane metrics also not yet wired. This is the remaining deduplication opportunity.
 
-### Phase 3: Merge Benchmark + Performance → `Tests Performance` (Layer 3)
+### Phase 3: Merge Benchmark + Performance → `Tests Performance` (Layer 3) — IMPLEMENTED
 
-Single module. References `Sample_Primitives` for data model. Retains all test-specific APIs:
+Single `Tests Performance` module in swift-tests. No separate `Tests Benchmark` target. All test-specific APIs consolidated:
 
-| From Benchmark | From Performance | Shared (→ Sample Primitives) |
-|----------------|-----------------|------------------------------|
-| `.timed()` trait | `Tests.Suite` | `Sample<Duration>` (was `Measurement`) |
-| `Test.Runner` | `Tests.Comparison` | `Sample.Metric` (was `Metric`) |
-| `Test.Benchmark.Configuration` | `expectPerformance()` | |
-| | `expectNoRegression()` | |
-| | Console reporting | |
-| | Memory tracking | |
+| API | Source | Status |
+|-----|--------|--------|
+| `.timed()` trait | Benchmark | ✅ Integrated |
+| `Test.Runner` | Benchmark | ✅ Integrated |
+| `Tests.Suite` | Performance | ✅ Integrated |
+| `Tests.Comparison` | Performance | ✅ Uses `Sample.Comparison` |
+| `Tests.expectPerformance()` | Performance | ✅ Integrated |
+| `Tests.expectNoRegression()` | Performance | ✅ Integrated |
+| Console reporting | Performance | ✅ Integrated |
+| Allocation tracking | Performance | ✅ Integrated |
+| `Tests.Diagnostic` | New | ✅ Rich diagnostic output |
+| `Tests.Trend` (Mann-Kendall) | New | ✅ Trend analysis |
 
 ### Naming Decision
 
@@ -390,6 +397,8 @@ Single module. References `Sample_Primitives` for data model. Retains all test-s
 3. Generic-friendly — `Sample<Duration>`, `Sample<Int>`, `Sample<Double>` all read naturally
 4. Follows Haskell precedent (criterion uses `Sample` for the raw data vector)
 5. Compliant with [API-NAME-001] — `Sample` is not a compound name
+
+**Note**: The Layer 3 type `Tests.Measurement` still wraps `Sample.Batch<Duration>` as `measurement.batch` rather than being replaced by it directly. This is acceptable — `Tests.Measurement` adds the raw `durations` array (temporal order) alongside the sorted batch.
 
 ### Deferred
 
