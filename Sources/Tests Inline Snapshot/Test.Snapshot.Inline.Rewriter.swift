@@ -61,8 +61,9 @@ extension Test.Snapshot.Inline.Rewriter {
             tree: sourceFile
         )
 
-        // Sort entries by line descending so edits don't shift earlier positions
-        let sorted = entries.sorted { $0.line > $1.line }
+        // Sort entries by line ascending to match SyntaxRewriter's
+        // top-to-bottom traversal order.
+        let sorted = entries.sorted { $0.line < $1.line }
 
         // Apply rewrites
         let rewriter = InlineSnapshotSyntaxRewriter(
@@ -110,11 +111,10 @@ private final class InlineSnapshotSyntaxRewriter: SyntaxRewriter {
         let nodeLine = location.line
         let nodeColumn = location.column
 
-        // Match by line, with column disambiguation for same-line calls
+        // Match by line number. Column is not checked because #column
+        // reports the opening parenthesis position while SwiftSyntax's
+        // startLocation reports the callee expression start — they never match.
         guard nodeLine == entry.line else {
-            return super.visit(node)
-        }
-        if entry.column > 1 && nodeColumn > 1 && nodeColumn != entry.column {
             return super.visit(node)
         }
 
