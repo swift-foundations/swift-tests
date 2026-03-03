@@ -91,6 +91,7 @@ let package = Package(
                 .product(name: "Sample Primitives", package: "swift-sample-primitives"),
                 .product(name: "Time Primitives", package: "swift-time-primitives"),
                 .product(name: "Console", package: "swift-console"),
+                .product(name: "Kernel", package: "swift-kernel"),
                 .product(name: "Memory", package: "swift-memory"),
                 .product(name: "Binary Primitives", package: "swift-binary-primitives"),
                 .product(name: "Formatting Primitives", package: "swift-formatting-primitives"),
