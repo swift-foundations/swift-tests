@@ -6,7 +6,6 @@
 //
 
 public import Test_Primitives
-import Synchronization
 
 // MARK: - Require Functions
 
@@ -53,13 +52,12 @@ public func require(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(__unchecked: (), nextRequireExpressionID())
     let expression = Test.Expression(
-        id: expressionID,
+        id: _nextExpressionID(),
         sourceCode: "\(condition)",
         sourceLocation: location
     )
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextRequireExpectationID())
+    let expectationID = _nextExpectationID()
 
     if condition {
         let expectation = Test.Expectation(
@@ -117,13 +115,12 @@ public func require<T>(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(__unchecked: (), nextRequireExpressionID())
     let expression = Test.Expression(
-        id: expressionID,
+        id: _nextExpressionID(),
         sourceCode: "require(\(T.self)?)",
         sourceLocation: location
     )
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextRequireExpectationID())
+    let expectationID = _nextExpectationID()
 
     guard let value = optional else {
         let failure = Test.Expectation.Failure(
@@ -183,9 +180,8 @@ public func require<T: Equatable>(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(__unchecked: (), nextRequireExpressionID())
     let expression = Test.Expression(
-        id: expressionID,
+        id: _nextExpressionID(),
         sourceCode: "lhs == rhs",
         sourceLocation: location,
         values: [
@@ -193,7 +189,7 @@ public func require<T: Equatable>(
             .init(capturing: rhs, label: "rhs"),
         ]
     )
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextRequireExpectationID())
+    let expectationID = _nextExpectationID()
 
     if lhs == rhs {
         let expectation = Test.Expectation(
@@ -233,20 +229,6 @@ public func require<T: Equatable>(
             sourceLocation: location
         )
     }
-}
-
-// MARK: - ID Counters
-
-private let _requireExpressionCounter = Atomic<UInt64>(0)
-
-private func nextRequireExpressionID() -> UInt64 {
-    _requireExpressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
-}
-
-private let _requireExpectationCounter = Atomic<UInt64>(0)
-
-private func nextRequireExpectationID() -> UInt64 {
-    _requireExpectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
 }
 
 // MARK: - Deprecated Alias

@@ -6,8 +6,6 @@
 //
 
 public import Test_Primitives
-import Identity_Primitives
-import Synchronization
 
 // MARK: - Expect Functions
 
@@ -53,14 +51,13 @@ public func expect(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(__unchecked: (), nextExpressionID())
     let expression = Test.Expression(
-        id: expressionID,
+        id: _nextExpressionID(),
         sourceCode: "\(condition)",
         sourceLocation: location
     )
 
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextExpectationID())
+    let expectationID = _nextExpectationID()
 
     let expectation: Test.Expectation
 
@@ -121,9 +118,8 @@ public func expect<T: Equatable>(
         column: column
     )
 
-    let expressionID = Test.Expression.ID(__unchecked: (), nextExpressionID())
     let expression = Test.Expression(
-        id: expressionID,
+        id: _nextExpressionID(),
         sourceCode: "lhs == rhs",
         sourceLocation: location,
         values: [
@@ -132,7 +128,7 @@ public func expect<T: Equatable>(
         ]
     )
 
-    let expectationID = Test.Expectation.ID(__unchecked: (), nextExpectationID())
+    let expectationID = _nextExpectationID()
     let isPassing = lhs == rhs
 
     let expectation: Test.Expectation
@@ -169,18 +165,3 @@ public func expect<T: Equatable>(
     return expectation
 }
 
-// MARK: - ID Counters
-
-/// Atomic counter for expression IDs.
-private let _expressionCounter = Atomic<UInt64>(0)
-
-private func nextExpressionID() -> UInt64 {
-    _expressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
-}
-
-/// Atomic counter for expectation IDs.
-private let _expectationCounter = Atomic<UInt64>(0)
-
-private func nextExpectationID() -> UInt64 {
-    _expectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
-}

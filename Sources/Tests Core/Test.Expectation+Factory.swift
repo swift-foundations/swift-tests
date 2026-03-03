@@ -14,14 +14,14 @@ import Synchronization
 private let _expressionCounter = Atomic<UInt64>(0)
 private let _expectationCounter = Atomic<UInt64>(0)
 
-private func _nextExpressionID() -> Test.Expression.ID {
+func _nextExpressionID() -> Test.Expression.ID {
     Test.Expression.ID(
         __unchecked: (),
         _expressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
     )
 }
 
-private func _nextExpectationID() -> Test.Expectation.ID {
+func _nextExpectationID() -> Test.Expectation.ID {
     Test.Expectation.ID(
         __unchecked: (),
         _expectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
