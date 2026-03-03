@@ -316,7 +316,7 @@ extension Test {
 
             let testResult: Test.Event.Result
             do {
-                try await Test.Expectation.Collector.$current.withValue(collector) {
+                try await Dependency.Scope.with({ $0[Test.Expectation.Collector.Key.self] = collector }) {
                     try await runWithTraits(entry, traits: traits)
                 }
             } catch {

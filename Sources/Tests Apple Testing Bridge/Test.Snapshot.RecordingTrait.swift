@@ -11,6 +11,7 @@
 #if canImport(Testing)
 public import Test_Primitives
 public import Testing
+import Tests_Snapshot
 import Dependency_Primitives
 
 /// Swift Testing trait that sets the snapshot recording mode for a suite or test.

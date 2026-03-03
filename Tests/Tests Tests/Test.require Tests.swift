@@ -1,5 +1,6 @@
 import Testing
 import Tests_Test_Support
+import Dependency_Primitives
 
 @Suite("Test.require")
 struct TestRequireTests {
@@ -150,7 +151,7 @@ extension TestRequireTests.Unit {
     @Test
     func `require registers with collector when present`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Dependency.Scope.with({ $0[Test_Primitives.Test.Expectation.Collector.Key.self] = collector }) {
             try? require(true)
             try? require(false)
         }
@@ -165,7 +166,7 @@ extension TestRequireTests.Unit {
     @Test
     func `require unwrap registers with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Dependency.Scope.with({ $0[Test_Primitives.Test.Expectation.Collector.Key.self] = collector }) {
             _ = try? require(Optional(42))
             _ = try? require(nil as Int?)
         }
@@ -180,7 +181,7 @@ extension TestRequireTests.Unit {
     @Test
     func `require equality registers with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Dependency.Scope.with({ $0[Test_Primitives.Test.Expectation.Collector.Key.self] = collector }) {
             try? require(1, equals: 1)
             try? require(1, equals: 2)
         }
