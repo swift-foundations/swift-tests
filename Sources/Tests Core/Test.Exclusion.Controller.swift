@@ -77,5 +77,3 @@ extension Test.Exclusion {
     }
 }
 
-@available(*, deprecated, renamed: "Test.Exclusion.Controller")
-public typealias ExclusionController = Test.Exclusion.Controller

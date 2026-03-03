@@ -23,14 +23,14 @@ extension SnapshotConfigurationTests.Unit {
     }
 
     @Test
-    func `resolveRecording returns explicit when provided`() {
-        let result = Test_Primitives.Test.Snapshot.Configuration.resolveRecording(explicit: .all)
+    func `resolve returns explicit when provided`() {
+        let result = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: .all)
         #expect(result == .all)
     }
 
     @Test
-    func `resolveRecording returns missing as default fallback`() {
-        let result = Test_Primitives.Test.Snapshot.Configuration.resolveRecording(explicit: nil)
+    func `resolve returns missing as default fallback`() {
+        let result = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: nil)
         // Without task-local or env var, falls back to .missing
         #expect(result == .missing)
     }

@@ -104,11 +104,7 @@ func _jsonFormatPath(_ path: [Swift.String]) -> Swift.String {
         if Int(segment) != nil {
             result += "[\(segment)]"
         } else {
-            if index > 0, let prev = path.indices.contains(index - 1) ? path[index - 1] : nil,
-               Int(prev) == nil
-            {
-                result += "."
-            } else if index > 0, Int(path[index - 1]) != nil {
+            if index > 0 {
                 result += "."
             }
             result += segment

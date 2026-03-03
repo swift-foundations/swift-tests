@@ -64,7 +64,7 @@ public func assertInlineSnapshot<Value: Sendable>(
     let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
     guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
-        return makeInlineFailingExpectation(
+        return expectation(
             message: "Strategy does not support synchronous capture. Use async assertInlineSnapshot.",
             fileID: fileID,
             filePath: filePath,
@@ -86,7 +86,7 @@ public func assertInlineSnapshot<Value: Sendable>(
     )
 
     if let failure {
-        return makeInlineFailingExpectation(
+        return expectation(
             message: failure,
             fileID: fileID,
             filePath: filePath,
@@ -95,7 +95,7 @@ public func assertInlineSnapshot<Value: Sendable>(
         )
     }
 
-    return makeInlinePassingExpectation(
+    return expectation(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -142,7 +142,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
         let effectiveStrategy = redactions.isEmpty ? strategy : strategy.redacting(redactions)
 
         guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
-            return makeInlineFailingExpectation(
+            return expectation(
                 message: "Strategy does not support synchronous capture. Use async assertInlineSnapshot.",
                 fileID: fileID,
                 filePath: filePath,
@@ -164,7 +164,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
         )
 
         if let failure {
-            return makeInlineFailingExpectation(
+            return expectation(
                 message: failure,
                 fileID: fileID,
                 filePath: filePath,
@@ -173,14 +173,14 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
             )
         }
 
-        return makeInlinePassingExpectation(
+        return expectation(
             fileID: fileID,
             filePath: filePath,
             line: line,
             column: column
         )
     } catch {
-        return makeInlineFailingExpectation(
+        return expectation(
             message: "Failed to capture value: \(error)",
             fileID: fileID,
             filePath: filePath,
@@ -232,7 +232,7 @@ public func assertInlineSnapshot<Value: Sendable>(
     )
 
     if let failure {
-        return makeInlineFailingExpectation(
+        return expectation(
             message: failure,
             fileID: fileID,
             filePath: filePath,
@@ -241,7 +241,7 @@ public func assertInlineSnapshot<Value: Sendable>(
         )
     }
 
-    return makeInlinePassingExpectation(
+    return expectation(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -296,7 +296,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
         )
 
         if let failure {
-            return makeInlineFailingExpectation(
+            return expectation(
                 message: failure,
                 fileID: fileID,
                 filePath: filePath,
@@ -305,14 +305,14 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
             )
         }
 
-        return makeInlinePassingExpectation(
+        return expectation(
             fileID: fileID,
             filePath: filePath,
             line: line,
             column: column
         )
     } catch {
-        return makeInlineFailingExpectation(
+        return expectation(
             message: "Failed to capture value: \(error)",
             fileID: fileID,
             filePath: filePath,
@@ -418,7 +418,7 @@ private func _verifyInlineSnapshot<Value: Sendable>(
     column: Int,
     function: Swift.String
 ) -> Swift.String? {
-    let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
+    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
     let actual = syncSnapshot(value)
 
     return _processInlineSnapshot(
@@ -444,7 +444,7 @@ private func _verifyInlineSnapshotAsync<Value: Sendable>(
     column: Int,
     function: Swift.String
 ) async -> Swift.String? {
-    let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
+    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
     let actual = await strategy.capture(value)
 
     return _processInlineSnapshot(
@@ -557,7 +557,7 @@ private func _processInlineSnapshot<Value: Sendable>(
 
 // MARK: - Expectation Creation
 
-private func makeInlinePassingExpectation(
+private func expectation(
     fileID: Swift.String,
     filePath: Swift.String,
     line: Int,
@@ -569,7 +569,7 @@ private func makeInlinePassingExpectation(
     )
 }
 
-private func makeInlineFailingExpectation(
+private func expectation(
     message: Swift.String,
     fileID: Swift.String,
     filePath: Swift.String,

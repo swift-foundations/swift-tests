@@ -53,7 +53,7 @@ extension Test {
         /// Each call creates a fresh sink instance.
         ///
         /// - Returns: A new sink ready to receive events.
-        public func makeSink() -> Sink {
+        public func sink() -> Sink {
             _makeSink()
         }
     }

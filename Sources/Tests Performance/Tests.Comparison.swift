@@ -75,5 +75,3 @@ extension Tests {
     }
 }
 
-@available(*, deprecated, renamed: "Tests.Comparison")
-public typealias PerformanceComparison = Tests.Comparison

@@ -30,7 +30,7 @@ extension Tests.Baseline.Recording {
     /// - `"all"` → `.all`
     /// - `"never"` → `.never`
     /// - Anything else → `.normal`
-    public static func fromEnvironment() -> Self {
+    public static var current: Self {
         guard let value = Environment.read("SWIFT_BENCHMARK_RECORD") else {
             return .normal
         }

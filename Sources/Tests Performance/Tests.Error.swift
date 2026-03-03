@@ -14,22 +14,6 @@ public import Formatting_Primitives
 public import Memory
 public import Dependency_Primitives
 
-// MARK: - Type Aliases for Allocation Tracking
-
-extension Tests {
-    /// Alias for allocation statistics from Memory.Allocation
-    public typealias AllocationStats = Memory.Allocation.Statistics
-
-    /// Alias for allocation tracker from Memory.Allocation
-    public typealias AllocationTracker = Memory.Allocation.Tracker
-
-    /// Alias for leak detector from Memory.Allocation
-    public typealias LeakDetector = Memory.Allocation.Leak.Detector
-
-    /// Alias for peak memory tracker from Memory.Allocation
-    public typealias PeakTracker = Memory.Allocation.Peak.Tracker
-}
-
 // MARK: - Error Types
 
 extension Tests {

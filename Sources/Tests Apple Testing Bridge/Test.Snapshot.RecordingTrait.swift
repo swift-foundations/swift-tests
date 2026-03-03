@@ -1,5 +1,5 @@
 //
-//  Test.Snapshot.RecordingTrait.swift
+//  Test.Snapshot.Recording.Trait.swift
 //  swift-tests
 //
 //  Swift Testing SuiteTrait/TestTrait bridge for snapshot recording mode.
@@ -13,29 +13,31 @@ public import Test_Primitives
 public import Testing
 import Dependency_Primitives
 
-/// Swift Testing trait that sets the snapshot recording mode for a suite or test.
-///
-/// ## Usage
-///
-/// ```swift
-/// @Suite(.snapshots(record: .all))
-/// struct MySnapshotTests {
-///     @Test func mySnapshot() {
-///         assertInlineSnapshot(of: value, as: .lines)
-///     }
-/// }
-/// ```
-public struct SnapshotRecordingTrait: Testing.SuiteTrait, Testing.TestTrait, Sendable {
-    /// The recording mode to apply within this scope.
-    public let recording: Test_Primitives.Test.Snapshot.Recording
+extension Test_Primitives.Test.Snapshot.Recording {
+    /// Swift Testing trait that sets the snapshot recording mode for a suite or test.
+    ///
+    /// ## Usage
+    ///
+    /// ```swift
+    /// @Suite(.snapshots(record: .all))
+    /// struct MySnapshotTests {
+    ///     @Test func mySnapshot() {
+    ///         assertInlineSnapshot(of: value, as: .lines)
+    ///     }
+    /// }
+    /// ```
+    public struct Trait: Testing.SuiteTrait, Testing.TestTrait, Sendable {
+        /// The recording mode to apply within this scope.
+        public let recording: Test_Primitives.Test.Snapshot.Recording
 
-    /// Propagate to all nested tests and suites.
-    public var isRecursive: Bool { true }
+        /// Propagate to all nested tests and suites.
+        public var isRecursive: Bool { true }
+    }
 }
 
 // MARK: - Test Scoping
 
-extension SnapshotRecordingTrait: Testing.TestScoping {
+extension Test_Primitives.Test.Snapshot.Recording.Trait: Testing.TestScoping {
     @concurrent
     public func provideScope(
         for test: Testing.Test,
@@ -52,7 +54,7 @@ extension SnapshotRecordingTrait: Testing.TestScoping {
 
 // MARK: - Trait Factory
 
-extension Testing.Trait where Self == SnapshotRecordingTrait {
+extension Testing.Trait where Self == Test_Primitives.Test.Snapshot.Recording.Trait {
     /// Sets the snapshot recording mode for a suite or test.
     ///
     /// - Parameter recording: The recording mode to use.
@@ -60,7 +62,7 @@ extension Testing.Trait where Self == SnapshotRecordingTrait {
     public static func snapshots(
         record recording: Test_Primitives.Test.Snapshot.Recording
     ) -> Self {
-        SnapshotRecordingTrait(recording: recording)
+        Test_Primitives.Test.Snapshot.Recording.Trait(recording: recording)
     }
 }
 #endif

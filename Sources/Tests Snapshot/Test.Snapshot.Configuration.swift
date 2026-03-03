@@ -85,13 +85,13 @@ extension Test.Snapshot.Configuration {
     /// 3. Environment variable `SWIFT_SNAPSHOT_RECORD`
     /// 4. Default (``.missing``)
     ///
-    /// - Parameter explicit: Explicitly provided recording mode, if any.
+    /// - Parameter recording: Explicitly provided recording mode, if any.
     /// - Returns: The resolved recording mode.
-    public static func resolveRecording(
-        explicit: Test.Snapshot.Recording?
+    public static func resolve(
+        recording: Test.Snapshot.Recording?
     ) -> Test.Snapshot.Recording {
         // 1. Explicit parameter takes precedence
-        if let explicit { return explicit }
+        if let recording { return recording }
 
         // 2. Task-local configuration
         if let current = Test.Snapshot.Configuration.current {

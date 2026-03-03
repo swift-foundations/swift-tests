@@ -6,10 +6,10 @@
 //
 
 public import Test_Primitives
+import File_System
 import SwiftParser
 import SwiftSyntax
 import SwiftSyntaxBuilder
-internal import Foundation
 
 extension Test.Snapshot.Inline {
     /// SwiftSyntax-based source file rewriter for inline snapshots.
@@ -49,7 +49,11 @@ extension Test.Snapshot.Inline.Rewriter {
         // Read source
         let source: Swift.String
         do {
-            source = try Swift.String(contentsOfFile: filePath, encoding: .utf8)
+            source = try File(File.Path(stringLiteral: filePath)).read.full { span in
+                unsafe span.withUnsafeBufferPointer { buffer in
+                    unsafe Swift.String(decoding: buffer, as: UTF8.self)
+                }
+            }
         } catch {
             throw .readFailed(path: filePath, underlying: Swift.String(describing: error))
         }
@@ -66,7 +70,7 @@ extension Test.Snapshot.Inline.Rewriter {
         let sorted = entries.sorted { $0.line < $1.line }
 
         // Apply rewrites
-        let rewriter = InlineSnapshotSyntaxRewriter(
+        let rewriter = Syntax(
             entries: sorted,
             locationConverter: locationConverter
         )
@@ -75,7 +79,7 @@ extension Test.Snapshot.Inline.Rewriter {
         // Write result
         let output = rewritten.description
         do {
-            try output.write(toFile: filePath, atomically: true, encoding: .utf8)
+            try File(File.Path(stringLiteral: filePath)).write.atomic(output)
         } catch {
             throw .writeFailed(path: filePath, underlying: Swift.String(describing: error))
         }
@@ -84,50 +88,51 @@ extension Test.Snapshot.Inline.Rewriter {
 
 // MARK: - Syntax Rewriter
 
-/// Visits function call expressions and rewrites matching call sites
-/// with trailing closures containing the inline snapshot value.
-private final class InlineSnapshotSyntaxRewriter: SyntaxRewriter {
-    let entries: [Test.Snapshot.Inline.State.Entry]
-    let locationConverter: SourceLocationConverter
-    private var entryIndex = 0
+extension Test.Snapshot.Inline.Rewriter {
+    /// Visits function call expressions and rewrites matching call sites
+    /// with trailing closures containing the inline snapshot value.
+    private final class Syntax: SyntaxRewriter {
+        let entries: [Test.Snapshot.Inline.State.Entry]
+        let locationConverter: SourceLocationConverter
+        private var entryIndex = 0
 
-    init(
-        entries: [Test.Snapshot.Inline.State.Entry],
-        locationConverter: SourceLocationConverter
-    ) {
-        self.entries = entries
-        self.locationConverter = locationConverter
-    }
-
-    override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
-        guard entryIndex < entries.count else {
-            return super.visit(node)
+        init(
+            entries: [Test.Snapshot.Inline.State.Entry],
+            locationConverter: SourceLocationConverter
+        ) {
+            self.entries = entries
+            self.locationConverter = locationConverter
         }
 
-        let entry = entries[entryIndex]
+        override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
+            guard entryIndex < entries.count else {
+                return super.visit(node)
+            }
 
-        // Get source location of this call
-        let location = node.startLocation(converter: locationConverter)
-        let nodeLine = location.line
-        let nodeColumn = location.column
+            let entry = entries[entryIndex]
 
-        // Match by line number. Column is not checked because #column
-        // reports the opening parenthesis position while SwiftSyntax's
-        // startLocation reports the callee expression start — they never match.
-        guard nodeLine == entry.line else {
-            return super.visit(node)
+            // Get source location of this call
+            let location = node.startLocation(converter: locationConverter)
+            let nodeLine = location.line
+
+            // Match by line number. Column is not checked because #column
+            // reports the opening parenthesis position while SwiftSyntax's
+            // startLocation reports the callee expression start — they never match.
+            guard nodeLine == entry.line else {
+                return super.visit(node)
+            }
+
+            // Check that this looks like an inline snapshot call
+            guard isInlineSnapshotCall(node) else {
+                return super.visit(node)
+            }
+
+            entryIndex += 1
+
+            // Build the replacement node
+            let updated = applyInlineSnapshot(to: node, value: entry.actual)
+            return super.visit(updated)
         }
-
-        // Check that this looks like an inline snapshot call
-        guard isInlineSnapshotCall(node) else {
-            return super.visit(node)
-        }
-
-        entryIndex += 1
-
-        // Build the replacement node
-        let updated = applyInlineSnapshot(to: node, value: entry.actual)
-        return super.visit(updated)
     }
 }
 
@@ -135,7 +140,7 @@ private final class InlineSnapshotSyntaxRewriter: SyntaxRewriter {
 
 /// Checks whether a function call is an inline snapshot macro or function call.
 private func isInlineSnapshotCall(_ node: FunctionCallExprSyntax) -> Bool {
-    let callee = node.calledExpression.description.trimmingCharacters(in: .whitespaces)
+    let callee = node.calledExpression.trimmedDescription
     return callee.contains("__snapshotInline") || callee.contains("assertInlineSnapshot")
 }
 
@@ -177,9 +182,6 @@ private func applyInlineSnapshot(
         \(innerIndent)\(hashString)\"\"\"
         """
     }
-
-    // Build the trailing closure
-    let closureSource = " {\n\(innerIndent)\(closureBody)\n\(indent)}"
 
     // Remove existing trailing closure if present, then append new one
     var updated = node

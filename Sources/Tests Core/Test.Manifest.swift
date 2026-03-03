@@ -37,8 +37,8 @@ extension Test {
         /// Thread-safe storage for factory names.
         private static let _factoryNames = Mutex<[Swift.String]>([])
 
-        /// Gets the current list of factory names.
-        public static func getFactoryNames() -> [Swift.String] {
+        /// The current list of factory names.
+        public static var factoryNames: [Swift.String] {
             _factoryNames.withLock { $0 }
         }
 

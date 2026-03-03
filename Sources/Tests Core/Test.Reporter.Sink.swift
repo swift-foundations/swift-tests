@@ -16,7 +16,7 @@ extension Test.Reporter {
     /// ## Example
     ///
     /// ```swift
-    /// var sink = reporter.makeSink()
+    /// var sink = reporter.sink()
     /// await sink.send(Test.Event(kind: .runStarted))
     /// await sink.send(Test.Event(id: testID, kind: .testStarted))
     /// // ... more events ...
@@ -79,7 +79,7 @@ extension Test.Reporter {
         /// Obtain a sender before starting concurrent work:
         ///
         /// ```swift
-        /// let sink = reporter.makeSink()
+        /// let sink = reporter.sink()
         /// let sender = sink.sender
         /// // ... pass sender to concurrent tasks ...
         /// await sink.finish()

@@ -19,9 +19,9 @@ extension Tests.Baseline.Recording.Test.Unit {
     }
 
     @Test
-    func `fromEnvironment defaults to normal`() {
+    func `current defaults to normal`() {
         // Assumes SWIFT_BENCHMARK_RECORD is not set in the test process.
-        let mode = Tests.Baseline.Recording.fromEnvironment()
+        let mode = Tests.Baseline.Recording.current
         #expect(mode == .normal)
     }
 }

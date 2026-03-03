@@ -60,19 +60,24 @@ extension Test.Snapshot {
         }
     }
 
-    /// Dependency key for snapshot counter.
-    ///
-    /// Provides a default counter for each scope.
-    public enum CounterKey: Dependency.Key {
-        public static var liveValue: Counter { Counter() }
-        public static var testValue: Counter { Counter() }
-    }
-
     /// Current counter for snapshot numbering.
     ///
     /// Each test execution should set up its own counter via ``withCounter(_:operation:)``.
     public static var counter: Counter {
-        Dependency.Scope.current[CounterKey.self]
+        Dependency.Scope.current[Counter.Key.self]
+    }
+}
+
+// MARK: - Counter Key
+
+extension Test.Snapshot.Counter {
+    /// Dependency key for snapshot counter.
+    ///
+    /// Provides a default counter for each scope.
+    public enum Key: Dependency.Key {
+        public typealias Value = Test.Snapshot.Counter
+        public static var liveValue: Value { Value() }
+        public static var testValue: Value { Value() }
     }
 }
 
@@ -110,7 +115,7 @@ extension Test.Snapshot {
         _ counter: Counter = Counter(),
         operation: () throws(E) -> T
     ) throws(E) -> T {
-        try Dependency.Scope.with({ $0[CounterKey.self] = counter }, operation: operation)
+        try Dependency.Scope.with({ $0[Counter.Key.self] = counter }, operation: operation)
     }
 
     /// Runs an async operation with a fresh counter.
@@ -123,6 +128,6 @@ extension Test.Snapshot {
         _ counter: Counter = Counter(),
         operation: () async throws(E) -> T
     ) async throws(E) -> T {
-        try await Dependency.Scope.with({ $0[CounterKey.self] = counter }, operation: operation)
+        try await Dependency.Scope.with({ $0[Counter.Key.self] = counter }, operation: operation)
     }
 }

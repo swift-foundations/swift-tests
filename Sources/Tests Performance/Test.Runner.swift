@@ -79,7 +79,7 @@ extension Test {
         ///   - concurrency: The concurrency mode.
         /// - Returns: The run result.
         public func run(_ plan: Plan, concurrency: Concurrency) async -> Result {
-            let sink = reporter.makeSink()
+            let sink = reporter.sink()
             let sender = sink.sender
 
             let startTime = Clock_Primitives.Clock.Continuous.now
@@ -149,7 +149,7 @@ extension Test {
                 if !isEnabled(traits) {
                     await sender.send(Test.Event(
                         id: node.id,
-                        kind: .testSkipped(disabledReason(traits)),
+                        kind: .testSkipped(reason(disabled: traits)),
                         elapsed: elapsed(since: startTime)
                     ))
                     return Counters(passed: 0, failed: 0, skipped: 1)
@@ -317,7 +317,7 @@ extension Test {
             let testResult: Test.Event.Result
             do {
                 try await Test.Expectation.Collector.$current.withValue(collector) {
-                    try await runWithTraits(entry, traits: traits)
+                    try await run(entry, traits: traits)
                 }
             } catch {
                 bodyThrew = true
@@ -400,7 +400,7 @@ extension Test {
         }
 
         /// Gets the disabled reason from a trait collection, if any.
-        private func disabledReason(_ traits: Test.Trait.Collection) -> Test.Text? {
+        private func reason(disabled traits: Test.Trait.Collection) -> Test.Text? {
             traits[Test.Trait.Enabled.self].flatMap { !$0.isEnabled ? $0.comment : nil }
         }
 
@@ -419,7 +419,7 @@ extension Test {
         }
 
         /// Runs an entry with trait handling via composable scope providers.
-        private func runWithTraits(_ entry: Plan.Entry, traits: Test.Trait.Collection) async throws(Error) {
+        private func run(_ entry: Plan.Entry, traits: Test.Trait.Collection) async throws(Error) {
             let providers = self.scopeProviders
                 .filter { $0.shouldActivate(traits) }
                 .sorted { $0.priority < $1.priority }

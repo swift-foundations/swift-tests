@@ -20,9 +20,9 @@ extension Tests {
     /// Example:
     /// ```swift
     /// let measurement = Tests.measure(iterations: 100) { operation() }
-    /// Tests.printPerformance("Operation Name", measurement)
+    /// Tests.report("Operation Name", measurement)
     /// ```
-    public static func printPerformance(
+    public static func report(
         _ name: Swift.String,
         _ measurement: Tests.Measurement,
         allocations: [Int]? = nil,
@@ -41,17 +41,13 @@ extension Tests {
             """
 
         if let allocations = allocations, !allocations.isEmpty {
-            let minAlloc = allocations.min() ?? 0
-            let maxAlloc = allocations.max() ?? 0
-            let avgAlloc = allocations.reduce(0, +) / allocations.count
-
             output += """
 
                    Allocations:
-                     Min:      \(minAlloc.formatted(.bytes))
+                     Min:      \((allocations.min() ?? 0).formatted(.bytes))
                      Median:   \(allocations.sorted()[allocations.count / 2].formatted(.bytes))
-                     Max:      \(maxAlloc.formatted(.bytes))
-                     Avg:      \(avgAlloc.formatted(.bytes))
+                     Max:      \((allocations.max() ?? 0).formatted(.bytes))
+                     Avg:      \((allocations.reduce(0, +) / allocations.count).formatted(.bytes))
                 """
         }
 
@@ -100,24 +96,21 @@ extension Tests {
     }
 
     /// Center text within a given width.
-    internal static func centerText(_ text: Swift.String, width: Int) -> Swift.String {
+    internal static func center(_ text: Swift.String, width: Int) -> Swift.String {
         let padding = width - text.count
         guard padding > 0 else { return text }
 
-        let leftPad = padding / 2
-        let rightPad = padding - leftPad
-
-        return Swift.String(repeating: " ", count: leftPad) + text
-            + Swift.String(repeating: " ", count: rightPad)
+        return Swift.String(repeating: " ", count: padding / 2) + text
+            + Swift.String(repeating: " ", count: padding - padding / 2)
     }
 }
 
 extension Tests {
     /// Print comparison report for multiple benchmarks
-    public static func printComparisonReport(_ comparisons: [Tests.Comparison]) {
+    public static func report(comparisons: [Tests.Comparison]) {
         let boxWidth = 58
         let title = "PERFORMANCE COMPARISON REPORT"
-        let centeredTitle = centerText(title, width: boxWidth)
+        let centeredTitle = center(title, width: boxWidth)
 
         print("\n╔══════════════════════════════════════════════════════════╗")
         print("║\(centeredTitle)║")

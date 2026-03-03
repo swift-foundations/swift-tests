@@ -104,7 +104,7 @@ extension Test.Snapshot.Storage {
     ///
     /// - Parameter path: Path to the snapshot file.
     /// - Returns: The file contents, or `nil` if the file doesn't exist.
-    public static func readReference(at path: File.Path) -> [UInt8]? {
+    public static func reference(at path: File.Path) -> [UInt8]? {
         let file = File(path)
         guard file.stat.exists else { return nil }
 
@@ -143,7 +143,7 @@ extension Test.Snapshot.Storage {
     ) throws(Test.Snapshot.Storage.Error) {
         // Ensure parent directory exists
         if let parent = path.parent {
-            try ensureDirectory(at: parent)
+            try ensure(directory: parent)
         }
 
         // Write atomically
@@ -159,9 +159,9 @@ extension Test.Snapshot.Storage {
 
     /// Ensures a directory exists, creating it if needed.
     ///
-    /// - Parameter path: The directory path.
+    /// - Parameter directory: The directory path.
     /// - Throws: `Storage.Error` on failure.
-    public static func ensureDirectory(at path: File.Path) throws(Test.Snapshot.Storage.Error) {
+    public static func ensure(directory path: File.Path) throws(Test.Snapshot.Storage.Error) {
         let dir = File.Directory(path)
 
         // If already exists, we're done
@@ -210,5 +210,3 @@ extension Test.Snapshot.Storage.Error: CustomStringConvertible {
     }
 }
 
-@available(*, deprecated, renamed: "Test.Snapshot.Storage.Error")
-public typealias StorageError = Test.Snapshot.Storage.Error

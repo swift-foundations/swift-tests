@@ -63,7 +63,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 
     // Check for sync snapshot support
     guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
-        return makeFailingExpectation(
+        return expectation(
             message: "Strategy does not support synchronous capture. Use async assertSnapshot.",
             fileID: fileID,
             filePath: filePath,
@@ -83,7 +83,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
     )
 
     if let failure {
-        return makeFailingExpectation(
+        return expectation(
             message: failure,
             fileID: fileID,
             filePath: filePath,
@@ -92,7 +92,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
         )
     }
 
-    return makePassingExpectation(
+    return expectation(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -145,7 +145,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 
         // Check for sync snapshot support
         guard let syncSnapshot = effectiveStrategy.syncSnapshot else {
-            return makeFailingExpectation(
+            return expectation(
                 message: "Strategy does not support synchronous capture. Use async assertSnapshot.",
                 fileID: fileID,
                 filePath: filePath,
@@ -165,7 +165,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
         )
 
         if let failure {
-            return makeFailingExpectation(
+            return expectation(
                 message: failure,
                 fileID: fileID,
                 filePath: filePath,
@@ -174,14 +174,14 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
             )
         }
 
-        return makePassingExpectation(
+        return expectation(
             fileID: fileID,
             filePath: filePath,
             line: line,
             column: column
         )
     } catch {
-        return makeFailingExpectation(
+        return expectation(
             message: "Failed to capture value: \(error)",
             fileID: fileID,
             filePath: filePath,
@@ -234,7 +234,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
     )
 
     if let failure {
-        return makeFailingExpectation(
+        return expectation(
             message: failure,
             fileID: fileID,
             filePath: filePath,
@@ -243,7 +243,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
         )
     }
 
-    return makePassingExpectation(
+    return expectation(
         fileID: fileID,
         filePath: filePath,
         line: line,
@@ -297,7 +297,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
         )
 
         if let failure {
-            return makeFailingExpectation(
+            return expectation(
                 message: failure,
                 fileID: fileID,
                 filePath: filePath,
@@ -306,14 +306,14 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
             )
         }
 
-        return makePassingExpectation(
+        return expectation(
             fileID: fileID,
             filePath: filePath,
             line: line,
             column: column
         )
     } catch {
-        return makeFailingExpectation(
+        return expectation(
             message: "Failed to capture value: \(error)",
             fileID: fileID,
             filePath: filePath,
@@ -493,7 +493,7 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
     function: Swift.String
 ) -> Swift.String? {
     // Resolve recording mode
-    let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
+    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
 
     // Get counter for unnamed snapshots
     let counterKey = Test.Snapshot.Counter.key(filePath: filePath, function: function)
@@ -530,7 +530,7 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
         )
     }
 
-    return resultToFailureMessage(result)
+    return failure(result)
 }
 
 /// Internal async verification.
@@ -543,7 +543,7 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
     function: Swift.String
 ) async -> Swift.String? {
     // Resolve recording mode
-    let mode = Test.Snapshot.Configuration.resolveRecording(explicit: recording)
+    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
 
     // Get counter for unnamed snapshots
     let counterKey = Test.Snapshot.Counter.key(filePath: filePath, function: function)
@@ -580,7 +580,7 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
         )
     }
 
-    return resultToFailureMessage(result)
+    return failure(result)
 }
 
 // MARK: - Core Logic
@@ -596,7 +596,7 @@ private func performSnapshot<Format: Sendable>(
     let pathString = Swift.String("\(path)")
 
     // Check if reference exists
-    let referenceBytes = Test.Snapshot.Storage.readReference(at: path)
+    let referenceBytes = Test.Snapshot.Storage.reference(at: path)
     let referenceExists = referenceBytes != nil
 
     switch mode {
@@ -711,7 +711,7 @@ private func compareSnapshot<Format: Sendable>(
 }
 
 /// Converts a snapshot result to a failure message.
-private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> Swift.String? {
+private func failure(_ result: Test.Snapshot.Result) -> Swift.String? {
     switch result {
     case .matched:
         return nil
@@ -739,7 +739,7 @@ private func resultToFailureMessage(_ result: Test.Snapshot.Result) -> Swift.Str
 
 // MARK: - Expectation Creation
 
-private func makePassingExpectation(
+private func expectation(
     fileID: Swift.String,
     filePath: Swift.String,
     line: Int,
@@ -751,7 +751,7 @@ private func makePassingExpectation(
     )
 }
 
-private func makeFailingExpectation(
+private func expectation(
     message: Swift.String,
     fileID: Swift.String,
     filePath: Swift.String,

@@ -67,7 +67,7 @@ extension Test.Trait.ScopeProvider {
                 testID: entry.id,
                 fingerprint: environment.fingerprint
             )
-            let recording = Tests.Baseline.Recording.fromEnvironment()
+            let recording = Tests.Baseline.Recording.current
 
             // Try to load existing baseline
             storedBaseline = Tests.Baseline.Storage.load(at: baselinePath)

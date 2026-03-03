@@ -52,9 +52,9 @@ extension Tests {
         }
 
         /// Print a formatted report of all benchmarks in the suite.
-        public func printReport(metric: Tests.Metric = .median) {
+        public func report(metric: Tests.Metric = .median) {
             let boxWidth = 58
-            let centeredTitle = Tests.centerText(name, width: boxWidth)
+            let centeredTitle = Tests.center(name, width: boxWidth)
 
             print("\n╔══════════════════════════════════════════════════════════╗")
             print("║\(centeredTitle)║")
@@ -64,19 +64,17 @@ extension Tests {
 
             for (name, measurement) in benchmarks {
                 let value = metric.extract(from: measurement)
-                let paddedName = padRight(name, toLength: maxNameLength)
+                let paddedName = pad(name, to: maxNameLength)
                 print("  \(paddedName)  \(value.formatted())")
             }
 
             print("\n╚══════════════════════════════════════════════════════════╝\n")
         }
 
-        private func padRight(_ string: Swift.String, toLength length: Int) -> Swift.String {
+        private func pad(_ string: Swift.String, to length: Int) -> Swift.String {
             if string.count >= length { return string }
             return string + Swift.String(repeating: " ", count: length - string.count)
         }
     }
 }
 
-@available(*, deprecated, renamed: "Tests.Suite")
-public typealias PerformanceSuite = Tests.Suite
