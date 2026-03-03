@@ -43,6 +43,12 @@ extension Tests {
         /// Allocation statistics per iteration. nil if allocation tracking was not enabled.
         public let allocations: [Memory.Allocation.Statistics]?
 
+        /// Stored baseline measurement, if loaded.
+        public let baseline: Tests.Measurement?
+
+        /// Comparison result between current and baseline.
+        public let comparison: Tests.Comparison?
+
         public init(
             testName: Swift.String,
             metric: Tests.Metric,
@@ -54,7 +60,9 @@ extension Tests {
             trend: Tests.Trend,
             threshold: Duration?,
             exceedanceFactor: Double?,
-            allocations: [Memory.Allocation.Statistics]?
+            allocations: [Memory.Allocation.Statistics]?,
+            baseline: Tests.Measurement? = nil,
+            comparison: Tests.Comparison? = nil
         ) {
             self.testName = testName
             self.metric = metric
@@ -67,6 +75,8 @@ extension Tests {
             self.threshold = threshold
             self.exceedanceFactor = exceedanceFactor
             self.allocations = allocations
+            self.baseline = baseline
+            self.comparison = comparison
         }
     }
 }

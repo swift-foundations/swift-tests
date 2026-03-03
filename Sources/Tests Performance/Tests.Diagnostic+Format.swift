@@ -76,6 +76,30 @@ extension Tests.Diagnostic {
         }
         lines.append("    Mann-Kendall Z: \(zStr) (\(trendLabel))")
 
+        // Baseline comparison
+        if let comparison = comparison {
+            lines.append("")
+            lines.append("  Baseline Comparison:")
+            lines.append("    Baseline: \(comparison.baselineValue.formatted())")
+            lines.append("    Current:  \(comparison.currentValue.formatted())")
+            let changePercent = (comparison.change * 100.0).formatted(.number.precision(2))
+            if comparison.isRegression {
+                let label = Console.Style.error.apply(
+                    to: "REGRESSION +\(changePercent)%", capability: cap
+                )
+                lines.append("    Change:   \(label)")
+            } else if comparison.isImprovement {
+                let label = Console.Style.success.apply(
+                    to: "IMPROVEMENT \(changePercent)%", capability: cap
+                )
+                lines.append("    Change:   \(label)")
+            } else {
+                lines.append("    Change:   NO CHANGE")
+            }
+        } else if baseline == nil, comparison == nil {
+            // No baseline section needed
+        }
+
         // Environment
         lines.append("")
         lines.append("  Environment:")
@@ -170,6 +194,15 @@ extension Tests.Diagnostic {
         json.append("    },")
         json.append("    \"os\": \(_jsonString(environment.osVersion))")
         json.append("  },")
+
+        // Baseline
+        if let comparison = comparison {
+            json.append("  \"baseline\": {")
+            json.append("    \"value\": \(comparison.baselineValue.inSeconds),")
+            json.append("    \"change\": \(comparison.change.formatted(.number.precision(4))),")
+            json.append("    \"is_regression\": \(comparison.isRegression)")
+            json.append("  },")
+        }
 
         // Raw durations
         let durationsStr = m.durations.map { "\($0.inSeconds.formatted(.number.precision(6)))" }.joined(separator: ", ")

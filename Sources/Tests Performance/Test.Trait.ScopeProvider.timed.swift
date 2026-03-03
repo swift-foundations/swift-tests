@@ -7,6 +7,7 @@
 
 import Clocks
 import Memory
+import File_System
 
 extension Test.Trait.ScopeProvider {
     /// Scope provider for timed benchmark measurement.
@@ -52,8 +53,54 @@ extension Test.Trait.ScopeProvider {
 
         let measurement = Test.Benchmark.Measurement(durations: durations)
 
-        // Build diagnostic
+        // Capture environment (needed for both diagnostics and baseline keying)
         let environment = Test.Environment.capture()
+
+        // Baseline comparison (if configured)
+        var storedBaseline: Tests.Measurement? = nil
+        var comparison: Tests.Comparison? = nil
+
+        if config.baselineTolerance != nil {
+            let root = Tests.Baseline.Storage.root()
+            let baselinePath = Tests.Baseline.Storage.path(
+                root: root,
+                testID: entry.id,
+                fingerprint: environment.fingerprint
+            )
+            let recording = Tests.Baseline.Recording.fromEnvironment()
+
+            // Try to load existing baseline
+            storedBaseline = Tests.Baseline.Storage.load(at: baselinePath)
+
+            if let baseline = storedBaseline {
+                // Build comparison
+                comparison = Tests.Comparison(
+                    name: entry.id.name,
+                    current: measurement,
+                    baseline: baseline,
+                    metric: config.metric
+                )
+
+                // Overwrite baseline if recording mode is .all
+                if recording == .all {
+                    try? Tests.Baseline.Storage.save(measurement, to: baselinePath)
+                }
+            } else {
+                // No baseline exists
+                switch recording {
+                case .normal, .all:
+                    // Save current measurement as the new baseline
+                    try? Tests.Baseline.Storage.save(measurement, to: baselinePath)
+                case .never:
+                    throw .baselineMissing(
+                        test: entry.id.name,
+                        path: Swift.String(baselinePath)
+                    )
+                }
+            }
+        }
+
+        // Build diagnostic
         let cv = measurement.batch.coefficientOfVariation
         let mad = measurement.batch.medianAbsoluteDeviation
         let outliers = measurement.batch.outlierCount()
@@ -78,7 +125,9 @@ extension Test.Trait.ScopeProvider {
             trend: trend,
             threshold: config.threshold,
             exceedanceFactor: factor,
-            allocations: allocationStats
+            allocations: allocationStats,
+            baseline: storedBaseline,
+            comparison: comparison
         )
 
         // Print results if configured
@@ -94,6 +143,20 @@ extension Test.Trait.ScopeProvider {
                 metric: config.metric,
                 expected: config.threshold!,
                 actual: metricValue
+            )
+        }
+
+        // Throw if baseline regression exceeded
+        if let comparison, let tolerance = config.baselineTolerance,
+            comparison.change > tolerance
+        {
+            throw .baselineRegressionDetected(
+                test: entry.id.name,
+                metric: config.metric,
+                baseline: comparison.baselineValue,
+                current: comparison.currentValue,
+                regression: comparison.change,
+                tolerance: tolerance
             )
         }
     }

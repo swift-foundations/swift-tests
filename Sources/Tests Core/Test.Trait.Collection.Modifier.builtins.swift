@@ -74,12 +74,16 @@ extension Test.Trait.Collection.Modifier {
     ///   - threshold: Optional performance budget.
     ///   - metric: Metric to check against threshold (default: .median).
     ///   - trackAllocations: Whether to track memory allocations per iteration (default: false).
+    ///   - baselineTolerance: Optional tolerance for baseline regression detection
+    ///     (e.g., `0.10` = 10%). When set, baselines are loaded, compared, and
+    ///     saved automatically.
     public static func timed(
         iterations: Int = 10,
         warmup: Int = 0,
         threshold: Duration? = nil,
         metric: Test.Benchmark.Metric = .median,
-        trackAllocations: Bool = false
+        trackAllocations: Bool = false,
+        baselineTolerance: Double? = nil
     ) -> Self {
         Self {
             $0[Test.Trait.Timed.self] = .init(
@@ -88,7 +92,8 @@ extension Test.Trait.Collection.Modifier {
                 printResults: true,
                 threshold: threshold,
                 metric: metric,
-                trackAllocations: trackAllocations
+                trackAllocations: trackAllocations,
+                baselineTolerance: baselineTolerance
             )
         }
     }

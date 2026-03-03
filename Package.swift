@@ -37,6 +37,7 @@ let package = Package(
         .package(path: "../swift-loader"),
         .package(path: "../../swift-primitives/swift-sample-primitives"),
         .package(path: "../swift-clocks"),
+        .package(path: "../swift-environment"),
         .package(path: "../swift-witnesses"),
         .package(url: "https://github.com/swiftlang/swift-syntax", "602.0.0"..<"603.0.0"),
     ],
@@ -97,6 +98,9 @@ let package = Package(
                 .product(name: "Formatting Primitives", package: "swift-formatting-primitives"),
                 .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
                 .product(name: "Clocks", package: "swift-clocks"),
+                .product(name: "File System", package: "swift-file-system"),
+                .product(name: "JSON", package: "swift-json"),
+                .product(name: "Environment", package: "swift-environment"),
             ]
         ),
 
