@@ -136,18 +136,7 @@ private final class InlineSnapshotSyntaxRewriter: SyntaxRewriter {
 /// Checks whether a function call is an inline snapshot macro or function call.
 private func isInlineSnapshotCall(_ node: FunctionCallExprSyntax) -> Bool {
     let callee = node.calledExpression.description.trimmingCharacters(in: .whitespaces)
-
-    // Macro expansion: #expectInlineSnapshot
-    if callee.contains("expectInlineSnapshot") || callee.contains("assertInlineSnapshot") {
-        return true
-    }
-
-    // Bridge function: Testing.__expectInlineSnapshot
-    if callee.contains("__expectInlineSnapshot") {
-        return true
-    }
-
-    return false
+    return callee.contains("__snapshotInline") || callee.contains("assertInlineSnapshot")
 }
 
 // MARK: - Snapshot Application
