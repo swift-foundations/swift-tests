@@ -47,7 +47,7 @@ public import File_System
 ///   - function: Test function name (captured automatically).
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertSnapshot<Value: Sendable, Format: Sendable>(
+public func assertSnapshot<Value, Format: Sendable>(
     capturing value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -127,7 +127,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 ///   - function: Test function name (captured automatically).
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+public func assertSnapshot<Value, Format: Sendable, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -210,7 +210,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 ///   - function: Test function name.
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertSnapshot<Value: Sendable, Format: Sendable>(
+public func assertSnapshot<Value, Format: Sendable>(
     capturing value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -271,7 +271,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable>(
 ///   - function: Test function name.
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+public func assertSnapshot<Value, Format: Sendable, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -339,7 +339,7 @@ public func assertSnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
-public func verifySnapshot<Value: Sendable, Format: Sendable>(
+public func verifySnapshot<Value, Format: Sendable>(
     capturing value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -376,7 +376,7 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
-public func verifySnapshot<Value: Sendable, Format: Sendable>(
+public func verifySnapshot<Value, Format: Sendable>(
     capturing value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -412,7 +412,7 @@ public func verifySnapshot<Value: Sendable, Format: Sendable>(
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
-public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+public func verifySnapshot<Value, Format: Sendable, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -454,7 +454,7 @@ public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 ///   - filePath: Source path.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message describing the failure.
-public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
+public func verifySnapshot<Value, Format: Sendable, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String? = nil,
@@ -483,9 +483,9 @@ public func verifySnapshot<Value: Sendable, Format: Sendable, E: Swift.Error>(
 // MARK: - Internal Implementation
 
 /// Internal sync verification.
-private func _verifySnapshot<Value: Sendable, Format: Sendable>(
+private func _verifySnapshot<Value, Format: Sendable>(
     of value: Value,
-    syncSnapshot: @Sendable (Value) -> Format,
+    syncSnapshot: (Value) -> Format,
     strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String?,
     record recording: Test.Snapshot.Recording?,
@@ -534,7 +534,7 @@ private func _verifySnapshot<Value: Sendable, Format: Sendable>(
 }
 
 /// Internal async verification.
-private func _verifySnapshot<Value: Sendable, Format: Sendable>(
+private func _verifySnapshot<Value, Format: Sendable>(
     of value: Value,
     strategy: Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String?,

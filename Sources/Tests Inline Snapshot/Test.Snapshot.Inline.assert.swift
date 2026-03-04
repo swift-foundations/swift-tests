@@ -49,7 +49,7 @@ public import Test_Primitives
 ///   - function: Test function name (captured automatically).
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertInlineSnapshot<Value: Sendable>(
+public func assertInlineSnapshot<Value>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
@@ -125,7 +125,7 @@ public func assertInlineSnapshot<Value: Sendable>(
 ///   - function: Test function name.
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
+public func assertInlineSnapshot<Value, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
@@ -206,7 +206,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
 ///   - function: Test function name.
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertInlineSnapshot<Value: Sendable>(
+public func assertInlineSnapshot<Value>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
@@ -268,7 +268,7 @@ public func assertInlineSnapshot<Value: Sendable>(
 ///   - function: Test function name.
 /// - Returns: The snapshot expectation result.
 @discardableResult
-public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
+public func assertInlineSnapshot<Value, E: Swift.Error>(
     of value: @autoclosure () throws(E) -> Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
@@ -337,7 +337,7 @@ public func assertInlineSnapshot<Value: Sendable, E: Swift.Error>(
 ///   - column: Source column.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message.
-public func verifyInlineSnapshot<Value: Sendable>(
+public func verifyInlineSnapshot<Value>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
@@ -379,7 +379,7 @@ public func verifyInlineSnapshot<Value: Sendable>(
 ///   - column: Source column.
 ///   - function: Test function name.
 /// - Returns: `nil` if the snapshot matches, or an error message.
-public func verifyInlineSnapshot<Value: Sendable>(
+public func verifyInlineSnapshot<Value>(
     of value: Value,
     as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording? = nil,
@@ -407,9 +407,9 @@ public func verifyInlineSnapshot<Value: Sendable>(
 // MARK: - Internal Implementation
 
 /// Internal sync verification for inline snapshots.
-private func _verifyInlineSnapshot<Value: Sendable>(
+private func _verifyInlineSnapshot<Value>(
     of value: Value,
-    syncSnapshot: @Sendable (Value) -> Swift.String,
+    syncSnapshot: (Value) -> Swift.String,
     strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording?,
     expected: (() -> Swift.String)?,
@@ -434,7 +434,7 @@ private func _verifyInlineSnapshot<Value: Sendable>(
 }
 
 /// Internal async verification for inline snapshots.
-private func _verifyInlineSnapshotAsync<Value: Sendable>(
+private func _verifyInlineSnapshotAsync<Value>(
     of value: Value,
     strategy: Test.Snapshot.Strategy<Value, Swift.String>,
     record recording: Test.Snapshot.Recording?,
@@ -460,7 +460,7 @@ private func _verifyInlineSnapshotAsync<Value: Sendable>(
 }
 
 /// Shared logic for processing an inline snapshot after capture.
-private func _processInlineSnapshot<Value: Sendable>(
+private func _processInlineSnapshot<Value>(
     actual: Swift.String,
     expected: (() -> Swift.String)?,
     strategy: Test.Snapshot.Strategy<Value, Swift.String>,
