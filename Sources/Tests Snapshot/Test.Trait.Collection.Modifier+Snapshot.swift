@@ -23,4 +23,19 @@ extension Test.Trait.Collection.Modifier {
             )
         }
     }
+
+    /// Creates a modifier that sets snapshot recording mode.
+    ///
+    /// Shorthand for `.snapshots(configuration: .init(recording: recording))`.
+    ///
+    /// ```swift
+    /// @Suite(.serialized, .snapshots(record: .missing))
+    /// struct MySnapshotTests { }
+    /// ```
+    ///
+    /// - Parameter recording: The recording mode to apply.
+    /// - Returns: A modifier that sets the snapshot recording mode.
+    public static func snapshots(record recording: Test.Snapshot.Recording) -> Self {
+        .snapshots(configuration: .init(recording: recording))
+    }
 }
