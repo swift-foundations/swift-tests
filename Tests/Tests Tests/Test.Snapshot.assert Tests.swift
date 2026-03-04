@@ -13,7 +13,7 @@ extension TestSnapshotAssertTests.Unit {
     @Test
     func `assertSnapshot registers passing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Test_Primitives.Test.Expectation.Collector.with(collector) {
             // .missing mode: no reference exists → records to /tmp/ → passes
             assertSnapshot(
                 capturing: "hello",
@@ -33,7 +33,7 @@ extension TestSnapshotAssertTests.Unit {
     @Test
     func `assertSnapshot registers failing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Test_Primitives.Test.Expectation.Collector.with(collector) {
             // .never mode: no reference exists → missingReference → fails
             assertSnapshot(
                 capturing: "hello",
@@ -53,7 +53,7 @@ extension TestSnapshotAssertTests.Unit {
     @Test
     func `assertSnapshot registers multiple expectations with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Test_Primitives.Test.Expectation.Collector.with(collector) {
             // Passes (records new snapshot in /tmp/)
             assertSnapshot(
                 capturing: "hello",

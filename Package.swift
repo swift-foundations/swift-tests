@@ -53,6 +53,7 @@ let package = Package(
                 .product(name: "ASCII Primitives", package: "swift-ascii-primitives"),
                 .product(name: "Test Primitives", package: "swift-test-primitives"),
                 .product(name: "Ownership Primitives", package: "swift-ownership-primitives"),
+                .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
                 .product(name: "Loader", package: "swift-loader"),
                 .product(name: "Witnesses", package: "swift-witnesses"),
                 .product(name: "Set Primitives", package: "swift-set-primitives"),

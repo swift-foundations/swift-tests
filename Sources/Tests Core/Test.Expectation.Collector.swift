@@ -6,21 +6,22 @@
 //
 
 public import Test_Primitives
+public import Dependency_Primitives
 import Synchronization
 
 extension Test.Expectation {
     /// Collects expectations recorded during a test body's execution.
     ///
-    /// The runner creates a `Collector` per test and injects it via `@TaskLocal`.
-    /// Assertion functions (`expect`, `assertSnapshot`, etc.) record each
-    /// expectation with the current collector. After the body returns, the
-    /// runner drains the collector to determine pass/fail.
+    /// The runner creates a `Collector` per test and injects it via
+    /// `Dependency.Scope`. Assertion functions (`expect`, `assertSnapshot`,
+    /// etc.) record each expectation with the current collector. After the
+    /// body returns, the runner drains the collector to determine pass/fail.
     ///
     /// ## Example
     ///
     /// ```swift
     /// let collector = Test.Expectation.Collector()
-    /// Test.Expectation.Collector.$current.withValue(collector) {
+    /// Test.Expectation.Collector.with(collector) {
     ///     expect(true)
     ///     expect(false)
     /// }
@@ -29,8 +30,17 @@ extension Test.Expectation {
     /// // results[1].isFailing == true
     /// ```
     public final class Collector: @unchecked Sendable {
-        /// The collector for the current task, if any.
-        @TaskLocal public static var current: Collector?
+
+        /// Dependency key for expectation collector injection.
+        public enum Key: Dependency.Key {
+            public static var liveValue: Collector? { nil }
+            public static var testValue: Collector? { nil }
+        }
+
+        /// The collector for the current scope, if any.
+        public static var current: Collector? {
+            Dependency.Scope.current[Key.self]
+        }
 
         private let _storage = Mutex<[Test.Expectation]>([])
 
@@ -58,5 +68,37 @@ extension Test.Expectation {
         public var hasFailures: Bool {
             _storage.withLock { $0.contains { $0.isFailing } }
         }
+    }
+}
+
+// MARK: - Scoped Collector
+
+extension Test.Expectation.Collector {
+    /// Runs an operation with the given collector.
+    ///
+    /// The collector is available via ``current`` within the operation.
+    ///
+    /// - Parameters:
+    ///   - collector: The collector to use.
+    ///   - operation: The operation to run.
+    /// - Returns: The operation's result.
+    public static func with<T, E: Swift.Error>(
+        _ collector: Test.Expectation.Collector,
+        operation: () throws(E) -> T
+    ) throws(E) -> T {
+        try Dependency.Scope.with({ $0[Key.self] = collector }, operation: operation)
+    }
+
+    /// Runs an async operation with the given collector.
+    ///
+    /// - Parameters:
+    ///   - collector: The collector to use.
+    ///   - operation: The async operation to run.
+    /// - Returns: The operation's result.
+    public static func with<T, E: Swift.Error>(
+        _ collector: Test.Expectation.Collector,
+        operation: () async throws(E) -> T
+    ) async throws(E) -> T {
+        try await Dependency.Scope.with({ $0[Key.self] = collector }, operation: operation)
     }
 }

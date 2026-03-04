@@ -14,7 +14,7 @@ extension TestSnapshotInlineAssertTests.Unit {
     @Test
     func `assertInlineSnapshot registers passing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Test_Primitives.Test.Expectation.Collector.with(collector) {
             assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "hello" })
         }
         let expectations = collector.drain()
@@ -27,7 +27,7 @@ extension TestSnapshotInlineAssertTests.Unit {
     @Test
     func `assertInlineSnapshot registers failing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Test_Primitives.Test.Expectation.Collector.with(collector) {
             assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "world" })
         }
         let expectations = collector.drain()
@@ -40,7 +40,7 @@ extension TestSnapshotInlineAssertTests.Unit {
     @Test
     func `assertInlineSnapshot registers multiple expectations with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        Test_Primitives.Test.Expectation.Collector.with(collector) {
             assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "hello" })
             assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "world" })
             assertInlineSnapshot(of: "foo", as: .lines, record: .never, matches: { "foo" })
@@ -57,7 +57,7 @@ extension TestSnapshotInlineAssertTests.Unit {
     @Test
     func `async assertInlineSnapshot registers with collector`() async {
         let collector = Test_Primitives.Test.Expectation.Collector()
-        await Test_Primitives.Test.Expectation.Collector.$current.withValue(collector) {
+        await Test_Primitives.Test.Expectation.Collector.with(collector) {
             await assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "hello" })
             await assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "world" })
         }
