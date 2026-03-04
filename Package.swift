@@ -16,6 +16,7 @@ let package = Package(
         .library(name: "Tests Snapshot", targets: ["Tests Snapshot"]),
         .library(name: "Tests Inline Snapshot", targets: ["Tests Inline Snapshot"]),
         .library(name: "Tests Performance", targets: ["Tests Performance"]),
+        .library(name: "Tests Reporter", targets: ["Tests Reporter"]),
         .library(name: "Tests", targets: ["Tests"]),
         .library(name: "Tests Apple Testing Bridge", targets: ["Tests Apple Testing Bridge"]),
         .library(name: "Tests Test Support", targets: ["Tests Test Support"]),
@@ -105,12 +106,25 @@ let package = Package(
             ]
         ),
 
+        // MARK: - Reporter
+
+        .target(
+            name: "Tests Reporter",
+            dependencies: [
+                "Tests Core",
+                .product(name: "Console", package: "swift-console"),
+                .product(name: "Kernel", package: "swift-kernel"),
+                .product(name: "Time Primitives", package: "swift-time-primitives"),
+            ]
+        ),
+
         // MARK: - Umbrella
 
         .target(
             name: "Tests",
             dependencies: [
                 "Tests Core",
+                "Tests Reporter",
                 "Tests Snapshot",
                 "Tests Performance",
             ]

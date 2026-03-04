@@ -10,8 +10,8 @@
 // ===----------------------------------------------------------------------===//
 
 //
-// Console reporter has moved to swift-test-reporters (Components layer).
-// Import "Test Reporters" for the full console reporter.
+// Console and JSON reporters are in the Tests Reporter target.
+// Import "Tests Reporter" (or "Tests" umbrella) for .console and .json(to:).
 //
 // This file provides only the null reporter for minimal dependencies.
 //
