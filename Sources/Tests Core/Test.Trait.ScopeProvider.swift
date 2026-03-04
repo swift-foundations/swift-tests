@@ -5,13 +5,15 @@
 //  A scope provider that wraps test execution.
 //
 
+public import Witness_Primitives
+
 extension Test.Trait {
     /// A scope provider that wraps test execution with trait-specific behavior.
     ///
     /// Scope providers replace the hardcoded execution chain in the runner.
     /// Each provider checks whether it should activate for a given trait collection,
     /// and if so, wraps the test execution with its behavior.
-    public struct ScopeProvider: Sendable {
+    public struct ScopeProvider: Sendable, Witness.`Protocol` {
         /// Unique identifier for this provider.
         public let id: Swift.String
 
