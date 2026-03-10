@@ -49,6 +49,9 @@ extension Tests {
         /// Comparison result between current and baseline.
         public let comparison: Tests.Comparison?
 
+        /// Cross-run trend analysis from historical records.
+        public let historyAnalysis: Tests.History.Analysis?
+
         public init(
             testName: Swift.String,
             metric: Test.Benchmark.Metric,
@@ -62,7 +65,8 @@ extension Tests {
             exceedanceFactor: Double?,
             allocations: [Memory.Allocation.Statistics]?,
             baseline: Test.Benchmark.Measurement? = nil,
-            comparison: Tests.Comparison? = nil
+            comparison: Tests.Comparison? = nil,
+            historyAnalysis: Tests.History.Analysis? = nil
         ) {
             self.testName = testName
             self.metric = metric
@@ -77,6 +81,7 @@ extension Tests {
             self.allocations = allocations
             self.baseline = baseline
             self.comparison = comparison
+            self.historyAnalysis = historyAnalysis
         }
     }
 }

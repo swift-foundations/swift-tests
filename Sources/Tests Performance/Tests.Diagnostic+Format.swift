@@ -100,6 +100,30 @@ extension Tests.Diagnostic {
             // No baseline section needed
         }
 
+        // History (cross-run trend)
+        if let history = historyAnalysis {
+            lines.append("")
+            lines.append("  History (\(history.recordCount) runs):")
+            let historyZStr = history.trend.z.formatted(.number.precision(2))
+            let historyTrendLabel: Swift.String
+            if history.trend.interpretation == .increasing {
+                historyTrendLabel = Console.Style.error.apply(
+                    to: "DEGRADING over time", capability: cap
+                )
+            } else if history.trend.interpretation == .decreasing {
+                historyTrendLabel = Console.Style.success.apply(
+                    to: "IMPROVING over time", capability: cap
+                )
+            } else {
+                historyTrendLabel = "STABLE across runs"
+            }
+            lines.append("    Cross-run Z:  \(historyZStr) (\(historyTrendLabel))")
+            lines.append("    Earliest:     \(history.earliestValue.formatted())")
+            lines.append("    Latest:       \(history.latestValue.formatted())")
+            let changePercent = (history.overallChange * 100.0).formatted(.number.precision(2))
+            lines.append("    Overall:      \(changePercent)%")
+        }
+
         // Environment
         lines.append("")
         lines.append("  Environment:")
@@ -201,6 +225,18 @@ extension Tests.Diagnostic {
             json.append("    \"value\": \(comparison.baselineValue.inSeconds),")
             json.append("    \"change\": \(comparison.change.formatted(.number.precision(4))),")
             json.append("    \"is_regression\": \(comparison.isRegression)")
+            json.append("  },")
+        }
+
+        // History
+        if let history = historyAnalysis {
+            json.append("  \"history\": {")
+            json.append("    \"record_count\": \(history.recordCount),")
+            json.append("    \"mann_kendall_z\": \(history.trend.z.formatted(.number.precision(2))),")
+            json.append("    \"interpretation\": \(_jsonString(history.trend.interpretation.rawValue)),")
+            json.append("    \"earliest_s\": \(history.earliestValue.inSeconds),")
+            json.append("    \"latest_s\": \(history.latestValue.inSeconds),")
+            json.append("    \"overall_change\": \(history.overallChange.formatted(.number.precision(4)))")
             json.append("  },")
         }
 

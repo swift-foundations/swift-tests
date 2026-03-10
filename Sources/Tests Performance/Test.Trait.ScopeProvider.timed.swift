@@ -56,12 +56,14 @@ extension Test.Trait.ScopeProvider {
         // Capture environment (needed for both diagnostics and baseline keying)
         let environment = Test.Environment.capture()
 
+        // Shared root for baselines and history
+        let root = Tests.Baseline.Storage.root()
+
         // Baseline comparison (if configured)
         var storedBaseline: Test.Benchmark.Measurement? = nil
         var comparison: Tests.Comparison? = nil
 
         if config.evaluation.baselineTolerance != nil {
-            let root = Tests.Baseline.Storage.root()
             let baselinePath = Tests.Baseline.Storage.path(
                 root: root,
                 testID: entry.id,
@@ -114,6 +116,33 @@ extension Test.Trait.ScopeProvider {
             nil
         }
 
+        // Run history: append record and analyze cross-run trend
+        var historyAnalysis: Tests.History.Analysis? = nil
+
+        if Tests.History.Storage.isEnabled {
+            let record = Tests.History.Record(
+                timestamp: _epochSeconds(),
+                testID: entry.id,
+                metric: config.evaluation.metric,
+                metricValue: metricValue,
+                measurement: measurement,
+                environment: environment,
+                coefficientOfVariation: cv,
+                outlierCount: outliers
+            )
+
+            // Append current record
+            try? Tests.History.Storage.append(record, root: root)
+
+            // Load full history (including the record we just appended)
+            let records = Tests.History.Storage.load(
+                root: root,
+                testID: entry.id,
+                fingerprint: environment.fingerprint
+            )
+            historyAnalysis = Tests.History.Analysis.analyze(records)
+        }
+
         let diagnostic = Tests.Diagnostic(
             testName: entry.id.name,
             metric: config.evaluation.metric,
@@ -127,7 +156,8 @@ extension Test.Trait.ScopeProvider {
             exceedanceFactor: factor,
             allocations: allocationStats,
             baseline: storedBaseline,
-            comparison: comparison
+            comparison: comparison,
+            historyAnalysis: historyAnalysis
         )
 
         // Print results if configured
@@ -160,4 +190,13 @@ extension Test.Trait.ScopeProvider {
             )
         }
     }
+}
+
+// MARK: - Timestamp
+
+import Kernel
+
+/// Returns current Unix epoch seconds via the platform's realtime clock.
+private func _epochSeconds() -> Double {
+    Kernel.Time.realtimeEpochSeconds()
 }
