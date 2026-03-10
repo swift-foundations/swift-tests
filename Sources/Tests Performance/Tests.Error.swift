@@ -23,7 +23,7 @@ extension Tests {
     /// including actual vs expected values and contextual information for debugging.
     public enum Error: Swift.Error, CustomStringConvertible {
         /// Performance threshold was exceeded in a trait-based test.
-        case thresholdExceeded(test: Swift.String, metric: Metric, expected: Duration, actual: Duration)
+        case thresholdExceeded(test: Swift.String, metric: Test.Benchmark.Metric, expected: Duration, actual: Duration)
 
         /// Memory allocation limit was exceeded during test execution.
         case allocationLimitExceeded(test: Swift.String, limit: Int, actual: Int)
@@ -35,11 +35,11 @@ extension Tests {
         case peakMemoryExceeded(test: Swift.String, limit: Int, actual: Int)
 
         /// Performance expectation assertion failed.
-        case performanceExpectationFailed(metric: Metric, threshold: Duration, actual: Duration)
+        case performanceExpectationFailed(metric: Test.Benchmark.Metric, threshold: Duration, actual: Duration)
 
         /// Performance regression was detected when comparing to a baseline.
         case regressionDetected(
-            metric: Metric,
+            metric: Test.Benchmark.Metric,
             baseline: Duration,
             current: Duration,
             regression: Double,

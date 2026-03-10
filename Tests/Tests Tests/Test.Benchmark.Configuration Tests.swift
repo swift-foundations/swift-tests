@@ -13,36 +13,39 @@ extension BenchmarkConfigurationTests.Unit {
     @Test
     func `default values match specification`() {
         let config = Test_Primitives.Test.Benchmark.Configuration()
-        #expect(config.iterations == 10)
-        #expect(config.warmup == 0)
-        #expect(config.printResults == true)
-        #expect(config.threshold == nil)
-        #expect(config.metric == .median)
+        #expect(config.iteration.count == 10)
+        #expect(config.iteration.warmup == 0)
+        #expect(config.evaluation.printResults == true)
+        #expect(config.evaluation.threshold == nil)
+        #expect(config.evaluation.metric == .median)
     }
 
     @Test
     func `custom init stores all values`() {
         let config = Test_Primitives.Test.Benchmark.Configuration(
-            iterations: 50,
-            warmup: 5,
-            printResults: false,
-            threshold: .milliseconds(100),
-            metric: .p95
+            iteration: .init(count: 50, warmup: 5),
+            evaluation: .init(
+                threshold: .milliseconds(100),
+                metric: .p95,
+                printResults: false
+            )
         )
-        #expect(config.iterations == 50)
-        #expect(config.warmup == 5)
-        #expect(config.printResults == false)
-        #expect(config.threshold == .milliseconds(100))
-        #expect(config.metric == .p95)
+        #expect(config.iteration.count == 50)
+        #expect(config.iteration.warmup == 5)
+        #expect(config.evaluation.printResults == false)
+        #expect(config.evaluation.threshold == .milliseconds(100))
+        #expect(config.evaluation.metric == .p95)
     }
 
     @Test
     func `Hashable equal configs hash equally`() {
         let a = Test_Primitives.Test.Benchmark.Configuration(
-            iterations: 10, warmup: 0, metric: .median
+            iteration: .init(count: 10, warmup: 0),
+            evaluation: .init(metric: .median)
         )
         let b = Test_Primitives.Test.Benchmark.Configuration(
-            iterations: 10, warmup: 0, metric: .median
+            iteration: .init(count: 10, warmup: 0),
+            evaluation: .init(metric: .median)
         )
         #expect(a.hashValue == b.hashValue)
     }
@@ -50,12 +53,20 @@ extension BenchmarkConfigurationTests.Unit {
     @Test
     func `Equatable configs`() {
         let a = Test_Primitives.Test.Benchmark.Configuration(
-            iterations: 25, warmup: 2, printResults: false,
-            threshold: .milliseconds(500), metric: .mean
+            iteration: .init(count: 25, warmup: 2),
+            evaluation: .init(
+                threshold: .milliseconds(500),
+                metric: .mean,
+                printResults: false
+            )
         )
         let b = Test_Primitives.Test.Benchmark.Configuration(
-            iterations: 25, warmup: 2, printResults: false,
-            threshold: .milliseconds(500), metric: .mean
+            iteration: .init(count: 25, warmup: 2),
+            evaluation: .init(
+                threshold: .milliseconds(500),
+                metric: .mean,
+                printResults: false
+            )
         )
         #expect(a == b)
     }
@@ -66,14 +77,20 @@ extension BenchmarkConfigurationTests.Unit {
 extension BenchmarkConfigurationTests.EdgeCase {
     @Test
     func `different configs are not equal`() {
-        let a = Test_Primitives.Test.Benchmark.Configuration(iterations: 10)
-        let b = Test_Primitives.Test.Benchmark.Configuration(iterations: 20)
+        let a = Test_Primitives.Test.Benchmark.Configuration(
+            iteration: .init(count: 10)
+        )
+        let b = Test_Primitives.Test.Benchmark.Configuration(
+            iteration: .init(count: 20)
+        )
         #expect(a != b)
     }
 
     @Test
     func `config without threshold`() {
-        let config = Test_Primitives.Test.Benchmark.Configuration(threshold: nil)
-        #expect(config.threshold == nil)
+        let config = Test_Primitives.Test.Benchmark.Configuration(
+            evaluation: .init(threshold: nil)
+        )
+        #expect(config.evaluation.threshold == nil)
     }
 }

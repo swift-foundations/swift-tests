@@ -24,7 +24,7 @@ extension Tests {
     /// ```
     public static func report(
         _ name: Swift.String,
-        _ measurement: Tests.Measurement,
+        _ measurement: Test.Benchmark.Measurement,
         allocations: [Int]? = nil,
         peakMemory: Int? = nil
     ) {

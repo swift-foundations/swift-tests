@@ -29,17 +29,17 @@ extension Test.Trait.ScopeProvider {
         let config = traits[Test.Trait.Timed.self]!
 
         // Warmup iterations
-        for _ in 0..<config.warmup {
+        for _ in 0..<config.iteration.warmup {
             try await operation()
         }
 
         // Measured iterations
         var durations: [Duration] = []
-        durations.reserveCapacity(config.iterations)
-        var allocationStats: [Memory.Allocation.Statistics]? = config.trackAllocations ? [] : nil
+        durations.reserveCapacity(config.iteration.count)
+        var allocationStats: [Memory.Allocation.Statistics]? = config.evaluation.trackAllocations ? [] : nil
 
-        for _ in 0..<config.iterations {
-            let before = config.trackAllocations
+        for _ in 0..<config.iteration.count {
+            let before = config.evaluation.trackAllocations
                 ? Memory.Allocation.Statistics.capture()
                 : nil
             let start = Clock_Primitives.Clock.Continuous.now
@@ -57,10 +57,10 @@ extension Test.Trait.ScopeProvider {
         let environment = Test.Environment.capture()
 
         // Baseline comparison (if configured)
-        var storedBaseline: Tests.Measurement? = nil
+        var storedBaseline: Test.Benchmark.Measurement? = nil
         var comparison: Tests.Comparison? = nil
 
-        if config.baselineTolerance != nil {
+        if config.evaluation.baselineTolerance != nil {
             let root = Tests.Baseline.Storage.root()
             let baselinePath = Tests.Baseline.Storage.path(
                 root: root,
@@ -78,7 +78,7 @@ extension Test.Trait.ScopeProvider {
                     name: entry.id.name,
                     current: measurement,
                     baseline: baseline,
-                    metric: config.metric
+                    metric: config.evaluation.metric
                 )
 
                 // Overwrite baseline if recording mode is .all
@@ -101,14 +101,14 @@ extension Test.Trait.ScopeProvider {
         }
 
         // Build diagnostic
-        let cv = measurement.batch.coefficientOfVariation
-        let mad = measurement.batch.medianAbsoluteDeviation
-        let outliers = measurement.batch.outlierCount()
-        let trend = Tests.Trend.mannKendall(measurement.durations)
+        let cv = measurement.coefficientOfVariation
+        let mad = measurement.medianAbsoluteDeviation
+        let outliers = measurement.outlierCount()
+        let trend = Test.Benchmark.Trend.mannKendall(measurement.durations)
 
-        let metricValue = config.metric.extract(from: measurement)
-        let exceeded = config.threshold.map { metricValue > $0 } ?? false
-        let factor: Double? = if let threshold = config.threshold, exceeded {
+        let metricValue = config.evaluation.metric.extract(from: measurement)
+        let exceeded = config.evaluation.threshold.map { metricValue > $0 } ?? false
+        let factor: Double? = if let threshold = config.evaluation.threshold, exceeded {
             metricValue.inSeconds / threshold.inSeconds
         } else {
             nil
@@ -116,14 +116,14 @@ extension Test.Trait.ScopeProvider {
 
         let diagnostic = Tests.Diagnostic(
             testName: entry.id.name,
-            metric: config.metric,
+            metric: config.evaluation.metric,
             measurement: measurement,
             environment: environment,
             coefficientOfVariation: cv,
             medianAbsoluteDeviation: mad,
             outlierCount: outliers,
             trend: trend,
-            threshold: config.threshold,
+            threshold: config.evaluation.threshold,
             exceedanceFactor: factor,
             allocations: allocationStats,
             baseline: storedBaseline,
@@ -131,7 +131,7 @@ extension Test.Trait.ScopeProvider {
         )
 
         // Print results if configured
-        if config.printResults {
+        if config.evaluation.printResults {
             print(diagnostic.formatted())
             print(diagnostic.jsonBlock())
         }
@@ -140,19 +140,19 @@ extension Test.Trait.ScopeProvider {
         if exceeded {
             throw .performanceThresholdExceeded(
                 test: entry.id.name,
-                metric: config.metric,
-                expected: config.threshold!,
+                metric: config.evaluation.metric,
+                expected: config.evaluation.threshold!,
                 actual: metricValue
             )
         }
 
         // Throw if baseline regression exceeded
-        if let comparison, let tolerance = config.baselineTolerance,
+        if let comparison, let tolerance = config.evaluation.baselineTolerance,
             comparison.change > tolerance
         {
             throw .baselineRegressionDetected(
                 test: entry.id.name,
-                metric: config.metric,
+                metric: config.evaluation.metric,
                 baseline: comparison.baselineValue,
                 current: comparison.currentValue,
                 regression: comparison.change,

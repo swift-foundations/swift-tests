@@ -1,14 +1,14 @@
 //
-//  Tests.Measurement+JSON.swift
+//  Test.Benchmark.Measurement+JSON.swift
 //  swift-tests
 //
-//  JSON.Serializable conformance for Tests.Measurement.
+//  JSON.Serializable conformance for Test.Benchmark.Measurement.
 //
 
 public import JSON
 import Time_Primitives
 
-extension Tests.Measurement: JSON.Serializable {
+extension Test.Benchmark.Measurement: JSON.Serializable {
     /// Serializes a measurement as a JSON object with a durations array.
     ///
     /// Format:

@@ -87,13 +87,13 @@ extension Test.Trait.Collection.Modifier {
     ) -> Self {
         Self {
             $0[Test.Trait.Timed.self] = .init(
-                iterations: iterations,
-                warmup: warmup,
-                printResults: true,
-                threshold: threshold,
-                metric: metric,
-                trackAllocations: trackAllocations,
-                baselineTolerance: baselineTolerance
+                iteration: .init(count: iterations, warmup: warmup),
+                evaluation: .init(
+                    threshold: threshold,
+                    metric: metric,
+                    baselineTolerance: baselineTolerance,
+                    trackAllocations: trackAllocations
+                )
             )
         }
     }

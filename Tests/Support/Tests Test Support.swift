@@ -2,14 +2,14 @@ public import Tests
 public import Test_Primitives
 import Synchronization
 
-// MARK: - Tests.Measurement Factory
+// MARK: - Test.Benchmark.Measurement Factory
 
-extension Tests.Measurement {
+extension Test_Primitives.Test.Benchmark.Measurement {
     /// Creates a measurement from millisecond integer values.
     ///
     /// Simplifies test data construction:
     /// ```swift
-    /// let measurement = Tests.Measurement.with([10, 20, 30, 40, 50])
+    /// let measurement = Test.Benchmark.Measurement.with([10, 20, 30, 40, 50])
     /// #expect(measurement.median == .milliseconds(30))
     /// ```
     public static func with(_ milliseconds: [Int]) -> Self {

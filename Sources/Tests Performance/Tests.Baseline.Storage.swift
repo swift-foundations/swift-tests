@@ -100,7 +100,7 @@ extension Tests.Baseline.Storage {
     ///
     /// - Parameter path: Path to the baseline JSON file.
     /// - Returns: The deserialized measurement, or `nil` if the file does not exist.
-    public static func load(at path: File.Path) -> Tests.Measurement? {
+    public static func load(at path: File.Path) -> Test.Benchmark.Measurement? {
         let file = File(path)
         guard file.stat.exists else { return nil }
 
@@ -108,7 +108,7 @@ extension Tests.Baseline.Storage {
             return try file.read.full { span in
                 let bytes: [UInt8] = span.withUnsafeBufferPointer { .init($0) }
                 let json = try JSON.parse(bytes)
-                return try Tests.Measurement(json: json)
+                return try Test.Benchmark.Measurement(json: json)
             }
         } catch {
             return nil
@@ -128,7 +128,7 @@ extension Tests.Baseline.Storage {
     ///   - path: The destination path.
     /// - Throws: `Storage.Error` on failure.
     public static func save(
-        _ measurement: Tests.Measurement,
+        _ measurement: Test.Benchmark.Measurement,
         to path: File.Path
     ) throws(Tests.Baseline.Storage.Error) {
         // Ensure parent directory exists

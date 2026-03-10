@@ -15,7 +15,7 @@ extension TestsDiagnosticTests.Format {
         exceeded: Bool = true
     ) -> Tests.Diagnostic {
         let durations: [Duration] = (0..<10).map { .seconds(10 + $0) }
-        let measurement = Tests.Measurement(durations: durations)
+        let measurement = Test.Benchmark.Measurement(durations: durations)
         let environment = Test.Environment.capture()
 
         return Tests.Diagnostic(
@@ -23,10 +23,10 @@ extension TestsDiagnosticTests.Format {
             metric: .median,
             measurement: measurement,
             environment: environment,
-            coefficientOfVariation: measurement.batch.coefficientOfVariation,
-            medianAbsoluteDeviation: measurement.batch.medianAbsoluteDeviation,
-            outlierCount: measurement.batch.outlierCount(),
-            trend: Tests.Trend.mannKendall(durations),
+            coefficientOfVariation: measurement.coefficientOfVariation,
+            medianAbsoluteDeviation: measurement.medianAbsoluteDeviation,
+            outlierCount: measurement.outlierCount(),
+            trend: Test.Benchmark.Trend.mannKendall(durations),
             threshold: exceeded ? .seconds(5) : nil,
             exceedanceFactor: exceeded ? 3.0 : nil,
             allocations: nil

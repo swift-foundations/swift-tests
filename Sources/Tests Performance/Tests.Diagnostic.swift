@@ -13,10 +13,10 @@ extension Tests {
         public let testName: Swift.String
 
         /// The metric that was checked (median, p95, etc.).
-        public let metric: Tests.Metric
+        public let metric: Test.Benchmark.Metric
 
         /// Full measurement with all individual durations and batch statistics.
-        public let measurement: Tests.Measurement
+        public let measurement: Test.Benchmark.Measurement
 
         /// Runtime and compile-time environment.
         public let environment: Test.Environment
@@ -31,7 +31,7 @@ extension Tests {
         public let outlierCount: Int?
 
         /// Temporal trend analysis result.
-        public let trend: Tests.Trend
+        public let trend: Test.Benchmark.Trend
 
         /// Configured threshold, or nil if no threshold was set.
         public let threshold: Duration?
@@ -44,24 +44,24 @@ extension Tests {
         public let allocations: [Memory.Allocation.Statistics]?
 
         /// Stored baseline measurement, if loaded.
-        public let baseline: Tests.Measurement?
+        public let baseline: Test.Benchmark.Measurement?
 
         /// Comparison result between current and baseline.
         public let comparison: Tests.Comparison?
 
         public init(
             testName: Swift.String,
-            metric: Tests.Metric,
-            measurement: Tests.Measurement,
+            metric: Test.Benchmark.Metric,
+            measurement: Test.Benchmark.Measurement,
             environment: Test.Environment,
             coefficientOfVariation: Double?,
             medianAbsoluteDeviation: Duration?,
             outlierCount: Int?,
-            trend: Tests.Trend,
+            trend: Test.Benchmark.Trend,
             threshold: Duration?,
             exceedanceFactor: Double?,
             allocations: [Memory.Allocation.Statistics]?,
-            baseline: Tests.Measurement? = nil,
+            baseline: Test.Benchmark.Measurement? = nil,
             comparison: Tests.Comparison? = nil
         ) {
             self.testName = testName

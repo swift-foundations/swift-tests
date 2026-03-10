@@ -16,7 +16,7 @@ extension Test.Plan {
     /// - Suite nodes: `body == nil`, provide trait inheritance to children
     /// - Test nodes: `body != nil`, executable with scope providers
     ///
-    /// `nil` values in `Tree.Keyed<String, Node?>` represent structural
+    /// `nil` values in `Tree<Node?>.Keyed<String>` represent structural
     /// intermediates — module boundaries or implicit nesting levels that
     /// were not explicitly registered as suites.
     public struct Node: Sendable {

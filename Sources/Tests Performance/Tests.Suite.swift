@@ -12,7 +12,7 @@ extension Tests {
     public struct Suite {
         /// Name of the performance suite for reporting.
         public let name: Swift.String
-        private var benchmarks: [(name: Swift.String, measurement: Tests.Measurement)] = []
+        private var benchmarks: [(name: Swift.String, measurement: Test.Benchmark.Measurement)] = []
 
         /// Creates a new performance suite with the given name.
         public init(name: Swift.String) {
@@ -52,7 +52,7 @@ extension Tests {
         }
 
         /// Print a formatted report of all benchmarks in the suite.
-        public func report(metric: Tests.Metric = .median) {
+        public func report(metric: Test.Benchmark.Metric = .median) {
             let boxWidth = 58
             let centeredTitle = Tests.center(name, width: boxWidth)
 

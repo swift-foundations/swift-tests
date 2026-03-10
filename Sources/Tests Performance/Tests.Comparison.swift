@@ -13,15 +13,15 @@ extension Tests {
     /// Performance comparison report between current and baseline measurements.
     public struct Comparison: Sendable {
         public let name: Swift.String
-        public let current: Tests.Measurement
-        public let baseline: Tests.Measurement
-        public let metric: Tests.Metric
+        public let current: Test.Benchmark.Measurement
+        public let baseline: Test.Benchmark.Measurement
+        public let metric: Test.Benchmark.Metric
 
         public init(
             name: Swift.String,
-            current: Tests.Measurement,
-            baseline: Tests.Measurement,
-            metric: Tests.Metric = .median
+            current: Test.Benchmark.Measurement,
+            baseline: Test.Benchmark.Measurement,
+            metric: Test.Benchmark.Metric = .median
         ) {
             self.name = name
             self.current = current

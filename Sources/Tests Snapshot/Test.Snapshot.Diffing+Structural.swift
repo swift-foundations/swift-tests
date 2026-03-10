@@ -52,7 +52,7 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
 
                 let oldTree = _jsonToKeyedTree(oldValue)
                 let newTree = _jsonToKeyedTree(newValue)
-                let treeDiff = Tree.Keyed.diff(from: oldTree, to: newTree)
+                let treeDiff = Tree<RFC_8259.Value>.Keyed<Swift.String>.diff(from: oldTree, to: newTree)
 
                 guard !treeDiff.isEmpty else { return nil }
 
