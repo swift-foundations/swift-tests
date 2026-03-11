@@ -69,8 +69,7 @@ struct ComplexitySmokeTests {
             warmup: 1,
             iterations: 3,
             printDiagnostic: false
-        ) { n in
-            await Task.yield()
+        ) { (n: Int) async in
             var sum = 0
             for i in 0..<n {
                 sum &+= i
