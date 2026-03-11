@@ -58,4 +58,30 @@ struct ComplexitySmokeTests {
         #expect(result.evidence.exponent.value > 0.5)
         #expect(result.evidence.exponent.value < 1.5)
     }
+
+    @Test
+    func `async linear scan is no worse than quadratic`() async throws {
+        let diagnostic = try await Tests.Complexity.analyze(
+            sizes: [
+                1_000, 3_000, 10_000, 30_000, 100_000,
+                300_000, 1_000_000, 3_000_000, 10_000_000, 30_000_000,
+            ],
+            warmup: 1,
+            iterations: 3,
+            printDiagnostic: false
+        ) { n in
+            await Task.yield()
+            var sum = 0
+            for i in 0..<n {
+                sum &+= i
+            }
+            _ = sum
+        }
+
+        let result = diagnostic.result
+        #expect(result.confidence != .inconclusive)
+        #expect(result.isNoWorseThan(.quadratic))
+        #expect(result.evidence.exponent.value > 0.5)
+        #expect(result.evidence.exponent.value < 1.5)
+    }
 }

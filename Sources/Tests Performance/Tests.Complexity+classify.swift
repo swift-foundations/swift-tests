@@ -6,13 +6,14 @@
 //
 
 public import Test_Primitives
+import Sample_Primitives
 
 extension Tests.Complexity {
     /// Interprets raw complexity evidence under a policy to produce a result.
     ///
-    /// Applies adequacy gates, monotonicity checks, fit quality thresholds,
-    /// separation analysis, and cross-validation to derive a confidence level
-    /// and best candidate classification.
+    /// Applies constant-time detection, adequacy gates, monotonicity checks,
+    /// fit quality thresholds, separation analysis, and cross-validation to
+    /// derive a confidence level and best candidate classification.
     ///
     /// All thresholds come from the ``Policy`` and are provisional.
     ///
@@ -24,6 +25,41 @@ extension Tests.Complexity {
         _ evidence: Test.Benchmark.Complexity.Evidence,
         under policy: Policy = .default
     ) -> Result {
+        // Constant-time detection (before gates).
+        // If data has no monotonic trend and very low variation across
+        // sizes, classify as constant regardless of OLS results.
+        if policy.constantCVThreshold > 0,
+           evidence.monotonicity.interpretation == .none,
+           evidence.metricCV < policy.constantCVThreshold,
+           evidence.points.count >= policy.minimumSizePoints,
+           Self.hasScaleRange(evidence, policy: policy)
+        {
+            let constantCandidate = evidence.candidates
+                .first { $0.complexity == .constant }
+                ?? Test.Benchmark.Complexity.CandidateFit(
+                    complexity: .constant,
+                    regression: Sample.Regression.Fit(
+                        slope: 0, intercept: 0, rSquared: 0, meanSquaredError: 0
+                    ),
+                    effectiveExponent: 0
+                )
+            let confidence: Confidence
+            if evidence.metricCV < policy.constantCVThreshold * 0.2 {
+                confidence = .high
+            } else if evidence.metricCV < policy.constantCVThreshold * 0.5 {
+                confidence = .medium
+            } else {
+                confidence = .low
+            }
+            return Result(
+                evidence: evidence,
+                best: constantCandidate,
+                confidence: confidence,
+                ambiguousWith: [],
+                reasons: []
+            )
+        }
+
         var reasons: [InconclusiveReason] = []
 
         // Gate 1: Minimum size points.
@@ -32,14 +68,8 @@ extension Tests.Complexity {
         }
 
         // Gate 2: Scale range.
-        if let first = evidence.points.first,
-           let last = evidence.points.last,
-           first.size > 0
-        {
-            let scaleRange = Double(last.size) / Double(first.size)
-            if scaleRange < policy.minimumScaleRange {
-                reasons.append(.insufficientScaleRange)
-            }
+        if !Self.hasScaleRange(evidence, policy: policy) {
+            reasons.append(.insufficientScaleRange)
         }
 
         // Gate 3: Monotonicity.
@@ -103,19 +133,25 @@ extension Tests.Complexity {
             confidence = .low
         }
 
-        // Cross-validation: exponent vs discrete winner.
-        if let theoretical = best.complexity.theoreticalExponent {
-            let deviation = Swift.abs(
-                evidence.exponent.value - theoretical
-            )
-            if deviation > policy.exponentConsistencyTolerance {
-                switch confidence {
-                case .high: confidence = .medium
-                case .medium: confidence = .low
-                case .low, .inconclusive: break
-                }
-                reasons.append(.inconsistentSignals)
+        // Cross-validation: observed exponent vs effective exponent of
+        // the discrete winner. Uses proportional tolerance so that
+        // sublinear classes (small effective exponent) have tight
+        // cross-validation, while superlinear classes accommodate
+        // proportionally more noise.
+        let tolerance = Swift.max(
+            policy.exponentConsistencyTolerance,
+            0.3 * Swift.abs(best.effectiveExponent)
+        )
+        let deviation = Swift.abs(
+            evidence.exponent.value - best.effectiveExponent
+        )
+        if deviation > tolerance {
+            switch confidence {
+            case .high: confidence = .medium
+            case .medium: confidence = .low
+            case .low, .inconclusive: break
             }
+            reasons.append(.inconsistentSignals)
         }
 
         return Result(
@@ -125,5 +161,18 @@ extension Tests.Complexity {
             ambiguousWith: ambiguous,
             reasons: reasons
         )
+    }
+
+    // MARK: - Private
+
+    private static func hasScaleRange(
+        _ evidence: Test.Benchmark.Complexity.Evidence,
+        policy: Policy
+    ) -> Bool {
+        guard let first = evidence.points.first,
+              let last = evidence.points.last,
+              first.size > 0
+        else { return false }
+        return Double(last.size) / Double(first.size) >= policy.minimumScaleRange
     }
 }

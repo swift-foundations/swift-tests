@@ -97,10 +97,10 @@ extension Tests.Complexity.Diagnostic {
         }
 
         // Doubling ratios
-        if !evidence.doublingRatios.isEmpty {
+        if !evidence.growthRatios.isEmpty {
             lines.append("")
-            lines.append("  Doubling Ratios:")
-            let ratioStrs = evidence.doublingRatios.map {
+            lines.append("  Growth Ratios:")
+            let ratioStrs = evidence.growthRatios.map {
                 $0.formatted(.number.precision(2))
             }
             lines.append("    [\(ratioStrs.joined(separator: ", "))]")
@@ -204,8 +204,8 @@ extension Tests.Complexity.Diagnostic {
         json.append("  ],")
 
         // Doubling ratios
-        let ratioStr = evidence.doublingRatios.map { $0.formatted(.number.precision(3)) }.joined(separator: ", ")
-        json.append("  \"doubling_ratios\": [\(ratioStr)],")
+        let ratioStr = evidence.growthRatios.map { $0.formatted(.number.precision(3)) }.joined(separator: ", ")
+        json.append("  \"growth_ratios\": [\(ratioStr)],")
 
         // Baseline
         if let comparison = baselineComparison {

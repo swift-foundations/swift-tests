@@ -123,13 +123,24 @@ extension TestsComplexityTests.Classify {
     @Test
     func `insufficient scale range yields inconclusive`() {
         let evidence = TestsComplexityTests.linearEvidence(
-            sizes: [100, 110, 120, 130]
+            sizes: [100, 110, 120, 130, 140]
         )
 
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.confidence == .inconclusive)
         #expect(result.reasons.contains(.insufficientScaleRange))
+    }
+
+    @Test
+    func `minimum size points succeeds with clean data`() {
+        // Exactly 5 points (the default minimum) with clear quadratic data.
+        let sizes = [100, 1_000, 10_000, 100_000, 1_000_000]
+        let evidence = TestsComplexityTests.quadraticEvidence(sizes: sizes)
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .quadratic)
+        #expect(result.confidence != .inconclusive)
     }
 }
 
@@ -211,9 +222,13 @@ extension TestsComplexityTests.Sizes {
 extension TestsComplexityTests.EdgeCase {
 
     @Test
-    func `constant data is not misclassified`() {
-        // T(n) = constant, regardless of n.
-        let sizes = [100, 1_000, 10_000, 100_000]
+    func `constant data classified as constant`() {
+        // T(n) = constant, regardless of n. Uses enough points for
+        // Mann-Kendall and scale range requirements.
+        let sizes = [
+            100, 300, 1_000, 3_000, 10_000,
+            30_000, 100_000, 300_000, 1_000_000, 3_000_000,
+        ]
         let points: [(size: Int, metric: Duration)] = sizes.map { n in
             (size: n, metric: Duration.milliseconds(50))
         }
@@ -224,12 +239,55 @@ extension TestsComplexityTests.EdgeCase {
         )
         let result = Tests.Complexity.classify(evidence)
 
-        // Constant data should either classify as constant or be inconclusive
-        // (non-monotone gate may trigger since durations are identical).
-        if let best = result.best {
-            #expect(best.complexity == .constant)
-        } else {
-            #expect(result.confidence == .inconclusive)
+        #expect(result.best?.complexity == .constant)
+        #expect(result.confidence == .high)
+    }
+
+    @Test
+    func `near-constant data with low noise classified as constant`() {
+        // T(n) = 50ms ± small noise (CV ≈ 3%).
+        let sizes = [
+            100, 300, 1_000, 3_000, 10_000,
+            30_000, 100_000, 300_000, 1_000_000, 3_000_000,
+        ]
+        // Deterministic slight variation per size.
+        let durations: [Duration] = [49, 51, 48, 52, 50, 49, 51, 48, 52, 50]
+            .map { Duration.milliseconds($0) }
+
+        let points: [(size: Int, metric: Duration)] = zip(sizes, durations)
+            .map { (size: $0, metric: $1) }
+
+        let evidence = SUT.Benchmark.Complexity.evidence(
+            from: points,
+            classes: [.constant, .logarithmic, .linear, .quadratic]
+        )
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .constant)
+        #expect(result.confidence != .inconclusive)
+    }
+
+    @Test
+    func `constant detection disabled when CV threshold is zero`() {
+        let sizes = [
+            100, 300, 1_000, 3_000, 10_000,
+            30_000, 100_000, 300_000, 1_000_000, 3_000_000,
+        ]
+        let points: [(size: Int, metric: Duration)] = sizes.map { n in
+            (size: n, metric: Duration.milliseconds(50))
         }
+
+        let evidence = SUT.Benchmark.Complexity.evidence(
+            from: points,
+            classes: [.constant, .logarithmic, .linear, .quadratic]
+        )
+        var policy = Tests.Complexity.Policy.default
+        policy.constantCVThreshold = 0
+
+        let result = Tests.Complexity.classify(evidence, under: policy)
+
+        // With constant detection disabled, the non-monotone gate fires.
+        #expect(result.confidence == .inconclusive)
+        #expect(result.reasons.contains(.nonMonotone))
     }
 }

@@ -59,19 +59,45 @@ extension ComplexityCalibrationTests.PowerLaw {
         let evidence = ComplexityCalibrationTests.evidence { _ in 0.005 }
         let result = Tests.Complexity.classify(evidence)
 
-        // Constant data has no monotonic increase, so non-monotone gate fires.
-        #expect(result.confidence == .inconclusive)
-        #expect(result.reasons.contains(.nonMonotone))
+        // Constant data detected via CV-based pathway (metricCV ≈ 0).
+        #expect(result.best?.complexity == .constant)
+        #expect(result.confidence == .high)
     }
 
     @Test
-    func `O(sqrt n) square root`() {
+    func `O(sqrt n) square root with default policy flags inconsistency`() {
         let evidence = ComplexityCalibrationTests.evidence { n in 1e-6 * n.squareRoot() }
         let result = Tests.Complexity.classify(evidence)
 
-        // squareRoot is excluded from default policy candidates, so the
-        // best candidate among the defaults should be logarithmic (closest fit).
-        #expect(result.best != nil)
+        // Exponent ≈ 0.5 but best discrete candidate is logarithmic or linear.
+        // The effective exponent of the winner diverges from the observed 0.5,
+        // so cross-validation should flag inconsistentSignals.
+        #expect(abs(evidence.exponent.value - 0.5) < 0.1)
+        if let best = result.best {
+            let hasInconsistency = result.reasons.contains(.inconsistentSignals)
+            let isLowConfidence = result.confidence == .low || result.confidence == .medium
+            #expect(hasInconsistency || isLowConfidence)
+        }
+    }
+
+    @Test
+    func `O(sqrt n) with squareRoot in candidates classifies correctly`() {
+        // Evidence must be constructed with squareRoot in the candidate set.
+        let classesWithSqrt = ComplexityCalibrationTests.classes + [.squareRoot]
+        let points: [(size: Int, metric: Duration)] = ComplexityCalibrationTests.sizes.map { n in
+            (size: n, metric: Duration.seconds(1e-6 * Double(n).squareRoot()))
+        }
+        let evidence = SUT.Benchmark.Complexity.evidence(
+            from: points,
+            classes: classesWithSqrt
+        )
+        var policy = Tests.Complexity.Policy.default
+        policy.candidateClasses.append(.squareRoot)
+
+        let result = Tests.Complexity.classify(evidence, under: policy)
+
+        // With squareRoot in the candidate set, it should be selected.
+        #expect(result.best?.complexity == .squareRoot)
         #expect(result.confidence != .inconclusive)
         #expect(abs(evidence.exponent.value - 0.5) < 0.1)
     }
@@ -176,7 +202,7 @@ extension ComplexityCalibrationTests.Ambiguity {
     func `exponent cross-validation detects mismatch`() {
         // Data that follows n^1.5 — between linear and quadratic.
         // The discrete best candidate will be one of them, but the
-        // continuous exponent (1.5) won't match either's theoretical
+        // continuous exponent (1.5) won't match either's effective
         // exponent, triggering inconsistentSignals.
         let evidence = ComplexityCalibrationTests.evidence { n in
             1e-10 * n * n.squareRoot()
@@ -190,5 +216,27 @@ extension ComplexityCalibrationTests.Ambiguity {
             let isLowConfidence = result.confidence == .low || result.confidence == .medium
             #expect(hasInconsistency || isLowConfidence)
         }
+    }
+
+    @Test(arguments: [0.05, 0.10, 0.15, 0.20, 0.25])
+    func `quadratic classification robust to noise`(noiseLevel: Double) {
+        // Quadratic data with increasing noise levels.
+        // Uses deterministic LCG noise for reproducibility.
+        var seed: UInt64 = 42
+        let evidence = ComplexityCalibrationTests.evidence { n in
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            let jitter = 1.0 + noiseLevel * (Double(seed >> 33) / Double(UInt32.max) - 0.5)
+            return 1e-12 * n * n * jitter
+        }
+        let result = Tests.Complexity.classify(evidence)
+
+        // Up to ~15% noise should still classify as quadratic.
+        // Above that, classification may degrade but should not crash.
+        if noiseLevel <= 0.15 {
+            #expect(result.best?.complexity == .quadratic)
+            #expect(result.confidence != .inconclusive)
+        }
+        // At all noise levels, the exponent should be near 2.0.
+        #expect(abs(evidence.exponent.value - 2.0) < 0.5 + noiseLevel)
     }
 }
