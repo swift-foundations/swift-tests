@@ -26,5 +26,15 @@ extension Tests.Complexity {
 
         /// Cannot determine complexity from the available evidence.
         case inconclusive
+
+        /// Ordinal ranking for comparison (higher is better).
+        internal var order: Int {
+            switch self {
+            case .high: 3
+            case .medium: 2
+            case .low: 1
+            case .inconclusive: 0
+            }
+        }
     }
 }
