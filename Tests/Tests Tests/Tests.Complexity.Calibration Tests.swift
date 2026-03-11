@@ -1,0 +1,194 @@
+//
+//  Tests.Complexity.Calibration Tests.swift
+//  swift-tests
+//
+//  Calibration suite: validates classification thresholds against
+//  synthetic workloads with known complexity classes.
+//
+
+import Testing
+import Tests_Test_Support
+import Real_Primitives
+
+fileprivate typealias SUT = Test_Primitives.Test
+
+/// Calibration suite for complexity classification thresholds.
+///
+/// Each test constructs synthetic timing data for a known complexity
+/// class and verifies that the default policy classifies it correctly.
+/// These tests validate the provisional threshold values and catch
+/// regressions if thresholds are tuned.
+@Suite
+struct ComplexityCalibrationTests {
+
+    @Suite struct PowerLaw {}
+    @Suite struct NonPowerLaw {}
+    @Suite struct Ambiguity {}
+}
+
+// MARK: - Sizes
+
+extension ComplexityCalibrationTests {
+    /// 10 points spanning 4.5 orders of magnitude.
+    static let sizes = [
+        100, 300, 1_000, 3_000, 10_000,
+        30_000, 100_000, 300_000, 1_000_000, 3_000_000,
+    ]
+
+    fileprivate static let classes: [SUT.Benchmark.Complexity.Class] = [
+        .constant, .logarithmic, .linear, .linearithmic, .quadratic, .cubic,
+    ]
+
+    fileprivate static func evidence(
+        _ transform: (Double) -> Double
+    ) -> SUT.Benchmark.Complexity.Evidence {
+        let points: [(size: Int, metric: Duration)] = sizes.map { n in
+            let seconds = transform(Double(n))
+            return (size: n, metric: Duration.seconds(seconds))
+        }
+        return SUT.Benchmark.Complexity.evidence(from: points, classes: classes)
+    }
+}
+
+// MARK: - Power Law Classes
+
+extension ComplexityCalibrationTests.PowerLaw {
+
+    @Test
+    func `O(1) constant`() {
+        let evidence = ComplexityCalibrationTests.evidence { _ in 0.005 }
+        let result = Tests.Complexity.classify(evidence)
+
+        // Constant data has no monotonic increase, so non-monotone gate fires.
+        #expect(result.confidence == .inconclusive)
+        #expect(result.reasons.contains(.nonMonotone))
+    }
+
+    @Test
+    func `O(sqrt n) square root`() {
+        let evidence = ComplexityCalibrationTests.evidence { n in 1e-6 * n.squareRoot() }
+        let result = Tests.Complexity.classify(evidence)
+
+        // squareRoot is excluded from default policy candidates, so the
+        // best candidate among the defaults should be logarithmic (closest fit).
+        #expect(result.best != nil)
+        #expect(result.confidence != .inconclusive)
+        #expect(abs(evidence.exponent.value - 0.5) < 0.1)
+    }
+
+    @Test
+    func `O(n) linear`() {
+        let evidence = ComplexityCalibrationTests.evidence { n in 1e-8 * n }
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .linear)
+        #expect(result.confidence != .inconclusive)
+        #expect(abs(evidence.exponent.value - 1.0) < 0.1)
+    }
+
+    @Test
+    func `O(n squared) quadratic`() {
+        let evidence = ComplexityCalibrationTests.evidence { n in 1e-12 * n * n }
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .quadratic)
+        #expect(result.confidence != .inconclusive)
+        #expect(abs(evidence.exponent.value - 2.0) < 0.1)
+    }
+
+    @Test
+    func `O(n cubed) cubic`() {
+        let evidence = ComplexityCalibrationTests.evidence { n in 1e-17 * n * n * n }
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .cubic)
+        #expect(result.confidence != .inconclusive)
+        #expect(abs(evidence.exponent.value - 3.0) < 0.1)
+    }
+}
+
+// MARK: - Non-Power-Law Classes
+
+extension ComplexityCalibrationTests.NonPowerLaw {
+
+    @Test
+    func `O(log n) logarithmic`() {
+        let evidence = ComplexityCalibrationTests.evidence { n in
+            1e-4 * Double.math.log2(n)
+        }
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .logarithmic)
+        #expect(result.confidence != .inconclusive)
+    }
+
+    @Test
+    func `O(n log n) linearithmic`() {
+        let evidence = ComplexityCalibrationTests.evidence { n in
+            1e-9 * n * Double.math.log2(n)
+        }
+        let result = Tests.Complexity.classify(evidence)
+
+        // Linearithmic may classify as linear or linearithmic —
+        // both are acceptable due to the inherent ambiguity.
+        #expect(result.best != nil)
+        #expect(result.confidence != .inconclusive)
+        #expect(
+            result.isCompatible(with: .linearithmic)
+                || result.isCompatible(with: .linear)
+        )
+    }
+}
+
+// MARK: - Ambiguity Cases
+
+extension ComplexityCalibrationTests.Ambiguity {
+
+    @Test
+    func `linear vs linearithmic ambiguity is reported`() {
+        // Pure linear data — linearithmic should appear as ambiguous
+        // since log factor grows slowly.
+        let evidence = ComplexityCalibrationTests.evidence { n in 1e-8 * n }
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .linear)
+        // The framework honestly reports that linearithmic is also plausible.
+        #expect(result.ambiguousWith.contains(.linearithmic))
+    }
+
+    @Test
+    func `noisy data with 5 percent jitter still classifies`() {
+        // Quadratic with deterministic pseudo-noise.
+        var seed: UInt64 = 42
+        let evidence = ComplexityCalibrationTests.evidence { n in
+            // Simple LCG for deterministic "noise".
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            let noise = 1.0 + 0.05 * (Double(seed >> 33) / Double(UInt32.max) - 0.5)
+            return 1e-12 * n * n * noise
+        }
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(result.best?.complexity == .quadratic)
+        #expect(result.confidence != .inconclusive)
+    }
+
+    @Test
+    func `exponent cross-validation detects mismatch`() {
+        // Data that follows n^1.5 — between linear and quadratic.
+        // The discrete best candidate will be one of them, but the
+        // continuous exponent (1.5) won't match either's theoretical
+        // exponent, triggering inconsistentSignals.
+        let evidence = ComplexityCalibrationTests.evidence { n in
+            1e-10 * n * n.squareRoot()
+        }
+        let result = Tests.Complexity.classify(evidence)
+
+        #expect(abs(evidence.exponent.value - 1.5) < 0.1)
+        // Expect either a downgraded confidence or inconsistentSignals reason.
+        if result.best != nil {
+            let hasInconsistency = result.reasons.contains(.inconsistentSignals)
+            let isLowConfidence = result.confidence == .low || result.confidence == .medium
+            #expect(hasInconsistency || isLowConfidence)
+        }
+    }
+}
