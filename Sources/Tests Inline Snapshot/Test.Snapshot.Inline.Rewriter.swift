@@ -311,7 +311,7 @@ private func extractIndentation(from node: some SyntaxProtocol) -> Swift.String 
 /// - `\#(` starts interpolation
 ///
 /// This function returns the minimum hash count that avoids all conflicts.
-private func hashCount(for value: Swift.String) -> Int {
+func hashCount(for value: Swift.String) -> Int {
     var needed = 0
 
     // Track consecutive quotes to detect """ sequences
@@ -321,7 +321,27 @@ private func hashCount(for value: Swift.String) -> Int {
     // Whether we've seen 3+ consecutive quotes in current run
     var inTripleQuote = false
 
+    // Track \#...# sequences for escape/interpolation prevention.
+    // -1 means not after a backslash; >= 0 counts consecutive #'s.
+    var hashesAfterBackslash = -1
+
     for character in value {
+        // When tracking a \#...# sequence, accumulate hashes.
+        if hashesAfterBackslash >= 0 {
+            if character == "#" {
+                hashesAfterBackslash += 1
+                // \#^N in an N-hash literal is an escape prefix → need N+1
+                needed = max(needed, hashesAfterBackslash + 1)
+                consecutiveQuotes = 0
+                inTripleQuote = false
+                hashesAfterTripleQuote = 0
+                continue
+            } else {
+                // Sequence ended; fall through to normal processing.
+                hashesAfterBackslash = -1
+            }
+        }
+
         switch character {
         case "\"":
             consecutiveQuotes += 1
@@ -336,10 +356,9 @@ private func hashCount(for value: Swift.String) -> Int {
             // """#...# with N hashes means we need N+1 hashes in our delimiter
             needed = max(needed, hashesAfterTripleQuote + 1)
         case "\\":
-            // Backslash followed by #^n( starts interpolation in a
-            // #^n"""..#^n""" literal. Count trailing hashes after \.
-            // For simplicity, if the value contains \ we need at least 1 hash
-            // so that \( is not interpolation. (In #"""..#""", only \#( is.)
+            // Any backslash needs at least 1 hash so \n, \t, \(, etc.
+            // are not interpreted as escape sequences.
+            hashesAfterBackslash = 0
             needed = max(needed, 1)
             consecutiveQuotes = 0
             inTripleQuote = false
