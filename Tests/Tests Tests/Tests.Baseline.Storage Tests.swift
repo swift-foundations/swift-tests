@@ -112,17 +112,17 @@ extension Tests.Baseline.Storage.Test.EdgeCase {
     }
 
     @Test
-    func `path sanitizes special characters`() {
+    func `path uses test ID components directly`() {
         let root = File.Path(stringLiteral: "/baselines")
-        let id = Tests_Core.Test.ID.stub("my test()", module: "My Module!")
+        let id = Tests_Core.Test.ID.stub("testLogin", module: "AuthModule", suite: "AuthSuite")
 
         let path = Tests.Baseline.Storage.path(root: root, testID: id, fingerprint: "fp")
         let str = Swift.String(path)
 
-        #expect(!str.contains(" "))
-        #expect(!str.contains("!"))
-        #expect(!str.contains("("))
-        #expect(!str.contains(")"))
+        #expect(str.contains("AuthModule"))
+        #expect(str.contains("AuthSuite"))
+        #expect(str.contains("testLogin"))
+        #expect(str.hasSuffix("fp.json"))
     }
 
     @Test

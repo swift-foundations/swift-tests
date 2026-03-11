@@ -92,7 +92,7 @@ extension Tests.Complexity.Baseline {
         key: Swift.String
     ) -> File.Path {
         let baseRoot = root ?? Tests.Baseline.Storage.root()
-        return baseRoot / "complexity" / "\(_sanitize(key)).json"
+        return baseRoot / "complexity" / "\(key).json"
     }
 
     /// Loads a stored complexity baseline, or `nil` if none exists.
@@ -139,20 +139,4 @@ extension Tests.Complexity.Baseline {
         }
     }
 
-    // MARK: - Helpers
-
-    private static func _sanitize(_ component: Swift.String) -> Swift.String {
-        var result = ""
-        result.reserveCapacity(component.count)
-        for char in component {
-            if char.isLetter || char.isNumber || char == "_" || char == "-" {
-                result.append(char)
-            } else {
-                result.append("-")
-            }
-        }
-        return result
-            .split(separator: "-", omittingEmptySubsequences: true)
-            .joined(separator: "-")
-    }
 }

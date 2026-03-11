@@ -90,16 +90,15 @@ extension SnapshotStorageTests.Unit {
 
 extension SnapshotStorageTests.EdgeCase {
     @Test
-    func `path with special characters in name sanitizes`() {
+    func `path with named snapshot uses name as identifier`() {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/Tests.swift",
             function: "testExample()",
-            name: "hello world/test",
+            name: "userProfile",
             counter: 1,
             pathExtension: "txt"
         )
         let pathString = Swift.String(path)
-        // Spaces and slashes become hyphens, collapsed
-        #expect(pathString.contains("hello-world-test"))
+        #expect(pathString.contains("testExample.userProfile.txt"))
     }
 }

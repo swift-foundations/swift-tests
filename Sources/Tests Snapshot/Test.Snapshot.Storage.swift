@@ -55,41 +55,22 @@ extension Test.Snapshot.Storage {
         // Build filename: <function>.<counter|name>.<ext>
         let identifier: Swift.String
         if let name = name {
-            identifier = sanitizePathComponent(name)
+            identifier = name
         } else {
             identifier = Swift.String(counter)
         }
 
         // Clean function name (remove parentheses and parameters)
-        let cleanFunction = sanitizeFunctionName(function)
+        let cleanFunction = functionName(function)
 
         let filename = "\(cleanFunction).\(identifier).\(pathExtension)"
         return snapshotDir / filename
     }
 
-    /// Sanitizes a string for use as a path component.
+    /// Extracts the function name without parentheses and parameters.
     ///
-    /// Replaces non-alphanumeric characters with hyphens.
-    private static func sanitizePathComponent(_ string: Swift.String) -> Swift.String {
-        var result = ""
-        result.reserveCapacity(string.count)
-        for char in string {
-            if char.isLetter || char.isNumber || char == "_" || char == "-" {
-                result.append(char)
-            } else {
-                result.append("-")
-            }
-        }
-        // Remove leading/trailing hyphens and collapse multiple hyphens
-        return result
-            .split(separator: "-", omittingEmptySubsequences: true)
-            .joined(separator: "-")
-    }
-
-    /// Cleans a function name for use in filenames.
-    ///
-    /// Removes parentheses and parameters: `testFoo(bar:)` → `testFoo`
-    private static func sanitizeFunctionName(_ function: Swift.String) -> Swift.String {
+    /// `testFoo(bar:)` → `testFoo`
+    private static func functionName(_ function: Swift.String) -> Swift.String {
         if let parenIndex = function.firstIndex(of: "(") {
             return Swift.String(function[..<parenIndex])
         }

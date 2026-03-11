@@ -39,35 +39,21 @@ extension Tests.History.Storage {
         var result = root
 
         // module
-        result = result / _sanitize(testID.module)
+        result = result / testID.module
 
         // suite (if present)
         if let suite = testID.suite {
             for component in suite.split(separator: ".") {
-                result = result / _sanitize(Swift.String(component))
+                result = result / Swift.String(component)
             }
         }
 
         // test name
-        result = result / _sanitize(testID.name)
+        result = result / testID.name
 
         return result / "\(fingerprint).jsonl"
     }
 
-    private static func _sanitize(_ component: Swift.String) -> Swift.String {
-        var result = ""
-        result.reserveCapacity(component.count)
-        for char in component {
-            if char.isLetter || char.isNumber || char == "_" || char == "-" {
-                result.append(char)
-            } else {
-                result.append("-")
-            }
-        }
-        return result
-            .split(separator: "-", omittingEmptySubsequences: true)
-            .joined(separator: "-")
-    }
 }
 
 // MARK: - Configuration

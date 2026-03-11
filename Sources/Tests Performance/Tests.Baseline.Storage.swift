@@ -62,35 +62,21 @@ extension Tests.Baseline.Storage {
         var result = root
 
         // module
-        result = result / sanitize(testID.module)
+        result = result / testID.module
 
         // suite (if present)
         if let suite = testID.suite {
             for component in suite.split(separator: ".") {
-                result = result / sanitize(Swift.String(component))
+                result = result / Swift.String(component)
             }
         }
 
         // test name
-        result = result / sanitize(testID.name)
+        result = result / testID.name
 
         return result / "\(fingerprint).json"
     }
 
-    private static func sanitize(_ component: Swift.String) -> Swift.String {
-        var result = ""
-        result.reserveCapacity(component.count)
-        for char in component {
-            if char.isLetter || char.isNumber || char == "_" || char == "-" {
-                result.append(char)
-            } else {
-                result.append("-")
-            }
-        }
-        return result
-            .split(separator: "-", omittingEmptySubsequences: true)
-            .joined(separator: "-")
-    }
 }
 
 // MARK: - Read Operations
