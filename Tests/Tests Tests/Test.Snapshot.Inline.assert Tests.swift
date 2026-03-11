@@ -2,20 +2,20 @@ import Testing
 import Tests_Inline_Snapshot
 import Tests_Test_Support
 
-@Suite("Test.Snapshot.Inline.assert")
-struct TestSnapshotInlineAssertTests {
+@Suite("snapshot (inline)")
+struct TestSnapshotInlineTests {
     @Suite struct Unit {}
 }
 
 // MARK: - Unit
 
-extension TestSnapshotInlineAssertTests.Unit {
+extension TestSnapshotInlineTests.Unit {
 
     @Test
-    func `assertInlineSnapshot registers passing expectation with collector`() {
+    func `snapshot registers passing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
         Test_Primitives.Test.Expectation.Collector.with(collector) {
-            assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "hello" })
+            snapshot(as: .lines, record: .never, { "hello" }, matches: { "hello" })
         }
         let expectations = collector.drain()
         #expect(expectations.count == 1)
@@ -25,10 +25,10 @@ extension TestSnapshotInlineAssertTests.Unit {
     }
 
     @Test
-    func `assertInlineSnapshot registers failing expectation with collector`() {
+    func `snapshot registers failing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
         Test_Primitives.Test.Expectation.Collector.with(collector) {
-            assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "world" })
+            snapshot(as: .lines, record: .never, { "hello" }, matches: { "world" })
         }
         let expectations = collector.drain()
         #expect(expectations.count == 1)
@@ -38,12 +38,12 @@ extension TestSnapshotInlineAssertTests.Unit {
     }
 
     @Test
-    func `assertInlineSnapshot registers multiple expectations with collector`() {
+    func `snapshot registers multiple expectations with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
         Test_Primitives.Test.Expectation.Collector.with(collector) {
-            assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "hello" })
-            assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "world" })
-            assertInlineSnapshot(of: "foo", as: .lines, record: .never, matches: { "foo" })
+            snapshot(as: .lines, record: .never, { "hello" }, matches: { "hello" })
+            snapshot(as: .lines, record: .never, { "hello" }, matches: { "world" })
+            snapshot(as: .lines, record: .never, { "foo" }, matches: { "foo" })
         }
         let expectations = collector.drain()
         #expect(expectations.count == 3)
@@ -55,11 +55,11 @@ extension TestSnapshotInlineAssertTests.Unit {
     }
 
     @Test
-    func `async assertInlineSnapshot registers with collector`() async {
+    func `async snapshot registers with collector`() async {
         let collector = Test_Primitives.Test.Expectation.Collector()
         await Test_Primitives.Test.Expectation.Collector.with(collector) {
-            await assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "hello" })
-            await assertInlineSnapshot(of: "hello", as: .lines, record: .never, matches: { "world" })
+            await snapshot(as: .lines, record: .never, { "hello" }, matches: { "hello" })
+            await snapshot(as: .lines, record: .never, { "hello" }, matches: { "world" })
         }
         let expectations = collector.drain()
         #expect(expectations.count == 2)

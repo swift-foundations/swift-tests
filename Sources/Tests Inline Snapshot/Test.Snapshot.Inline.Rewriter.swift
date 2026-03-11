@@ -116,89 +116,37 @@ extension Test.Snapshot.Inline.Rewriter {
                 return super.visit(node)
             }
 
-            guard isInlineSnapshotCall(node) else {
+            guard isSnapshotCall(node) else {
                 return super.visit(node)
             }
 
             entryIndex += 1
 
-            let updated = applyInlineSnapshot(to: node, value: entry.actual)
+            let updated = applySnapshotFunction(to: node, value: entry.actual)
             return super.visit(updated)
         }
 
-        override func visit(_ node: MacroExpansionExprSyntax) -> ExprSyntax {
-            guard entryIndex < entries.count else {
-                return super.visit(node)
-            }
-
-            let entry = entries[entryIndex]
-            let location = node.startLocation(converter: locationConverter)
-
-            guard location.line == entry.line else {
-                return super.visit(node)
-            }
-
-            guard isMacroSnapshotCall(node) else {
-                return super.visit(node)
-            }
-
-            entryIndex += 1
-
-            let updated = applyMacroSnapshot(to: node, value: entry.actual)
-            return super.visit(updated)
-        }
-    }
+}
 }
 
 // MARK: - Call Site Detection
 
-/// Checks whether a function call is an inline snapshot function call.
-private func isInlineSnapshotCall(_ node: FunctionCallExprSyntax) -> Bool {
-    let callee = node.calledExpression.trimmedDescription
-    return callee.contains("__snapshotInline") || callee.contains("assertInlineSnapshot")
+/// Checks whether a function call is a `snapshot(as:)` call.
+private func isSnapshotCall(_ node: FunctionCallExprSyntax) -> Bool {
+    node.calledExpression.trimmedDescription == "snapshot"
 }
 
-/// Checks whether a macro expansion is a snapshot macro call.
-private func isMacroSnapshotCall(_ node: MacroExpansionExprSyntax) -> Bool {
-    node.macroName.text == "snapshot"
-}
+// MARK: - Snapshot Application
 
-// MARK: - Snapshot Application (Function Calls)
-
-/// Applies the inline snapshot value to a function call site.
+/// Applies the inline snapshot value to a `snapshot(as:)` function call site.
 ///
-/// For `assertInlineSnapshot` / `__snapshotInline` calls, the expected
-/// value goes in the first trailing closure.
-private func applyInlineSnapshot(
+/// For `snapshot(as:) { value } matches: { expected }`, the expected value
+/// goes in a `matches:` additional trailing closure. The first trailing
+/// closure (value) is preserved.
+private func applySnapshotFunction(
     to node: FunctionCallExprSyntax,
     value: Swift.String
 ) -> FunctionCallExprSyntax {
-    let indent = extractIndentation(from: node)
-    let closureExpr = buildSnapshotClosure(value: value, indent: indent)
-
-    var updated = node
-    if node.trailingClosure != nil {
-        updated = updated.with(\.trailingClosure, nil)
-    }
-    if let rightParen = updated.rightParen {
-        updated = updated.with(\.rightParen, rightParen.with(\.trailingTrivia, []))
-    }
-
-    updated = updated.with(\.trailingClosure, closureExpr)
-    return updated
-}
-
-// MARK: - Snapshot Application (Macro Calls)
-
-/// Applies the inline snapshot value to a `#snapshot` macro call site.
-///
-/// For `#snapshot(as:) { value }`, the expected value goes in a `matches:`
-/// additional trailing closure. The first trailing closure (value) is
-/// preserved.
-private func applyMacroSnapshot(
-    to node: MacroExpansionExprSyntax,
-    value: Swift.String
-) -> MacroExpansionExprSyntax {
     let indent = extractIndentation(from: node)
     let closureExpr = buildSnapshotClosure(value: value, indent: indent)
 

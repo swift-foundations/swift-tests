@@ -39,55 +39,59 @@ public func verifyFacetedSnapshot<Value: Sendable>(
     column: Int = #column,
     function: Swift.String = #function
 ) -> Swift.String? {
+    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+
     // Verify primary strategy against file-based reference.
-    let primaryFailure = verifySnapshot(
-        capturing: value,
-        as: faceted.primary,
-        named: name,
-        record: recording,
+    guard let syncSnapshot = faceted.primary.syncSnapshot else {
+        return "[primary] Strategy does not support synchronous capture."
+    }
+    let primaryActual = syncSnapshot(value)
+    let primaryName = name ?? "primary"
+
+    if let failure = Test.Snapshot.Storage.resolve(
+        actual: primaryActual,
+        strategy: faceted.primary,
+        name: primaryName,
+        mode: mode,
         filePath: filePath,
         function: function
-    )
-
-    if let primaryFailure {
-        return "[primary] \(primaryFailure)"
+    ) {
+        return "[primary] \(failure)"
     }
 
     // Verify each facet.
     for (facetName, facetStrategy) in faceted.facets {
+        guard let syncFacet = facetStrategy.syncSnapshot else {
+            return "[\(facetName)] Strategy does not support synchronous capture."
+        }
+        let facetActual = syncFacet(value)
+
         if let expectedClosure = matches[facetName] {
             // Inline verification for this facet.
-            let facetFailure = verifyInlineSnapshot(
-                of: value,
-                as: facetStrategy,
-                record: recording,
-                matches: expectedClosure,
+            if let failure = Test.Snapshot.Inline.resolve(
+                actual: facetActual,
+                strategy: facetStrategy,
+                expected: expectedClosure,
+                mode: mode,
                 filePath: filePath,
                 line: line,
                 column: column,
                 function: function
-            )
-            if let facetFailure {
-                return "[\(facetName)] \(facetFailure)"
+            ) {
+                return "[\(facetName)] \(failure)"
             }
         } else {
             // File-based verification with facet name suffix.
-            let facetFullName: Swift.String
-            if let name {
-                facetFullName = "\(name).\(facetName)"
-            } else {
-                facetFullName = facetName
-            }
-            let facetFailure = verifySnapshot(
-                capturing: value,
-                as: facetStrategy,
-                named: facetFullName,
-                record: recording,
+            let facetFullName = name.map { "\($0).\(facetName)" } ?? facetName
+            if let failure = Test.Snapshot.Storage.resolve(
+                actual: facetActual,
+                strategy: facetStrategy,
+                name: facetFullName,
+                mode: mode,
                 filePath: filePath,
                 function: function
-            )
-            if let facetFailure {
-                return "[\(facetName)] \(facetFailure)"
+            ) {
+                return "[\(facetName)] \(failure)"
             }
         }
     }
@@ -121,55 +125,53 @@ public func verifyFacetedSnapshot<Value: Sendable>(
     column: Int = #column,
     function: Swift.String = #function
 ) async -> Swift.String? {
+    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+
     // Verify primary strategy against file-based reference.
-    let primaryFailure = await verifySnapshot(
-        capturing: value,
-        as: faceted.primary,
-        named: name,
-        record: recording,
+    let primaryActual = await faceted.primary.capture(value)
+    let primaryName = name ?? "primary"
+
+    if let failure = Test.Snapshot.Storage.resolve(
+        actual: primaryActual,
+        strategy: faceted.primary,
+        name: primaryName,
+        mode: mode,
         filePath: filePath,
         function: function
-    )
-
-    if let primaryFailure {
-        return "[primary] \(primaryFailure)"
+    ) {
+        return "[primary] \(failure)"
     }
 
     // Verify each facet.
     for (facetName, facetStrategy) in faceted.facets {
+        let facetActual = await facetStrategy.capture(value)
+
         if let expectedClosure = matches[facetName] {
             // Inline verification for this facet.
-            let facetFailure = await verifyInlineSnapshot(
-                of: value,
-                as: facetStrategy,
-                record: recording,
-                matches: expectedClosure,
+            if let failure = Test.Snapshot.Inline.resolve(
+                actual: facetActual,
+                strategy: facetStrategy,
+                expected: expectedClosure,
+                mode: mode,
                 filePath: filePath,
                 line: line,
                 column: column,
                 function: function
-            )
-            if let facetFailure {
-                return "[\(facetName)] \(facetFailure)"
+            ) {
+                return "[\(facetName)] \(failure)"
             }
         } else {
             // File-based verification with facet name suffix.
-            let facetFullName: Swift.String
-            if let name {
-                facetFullName = "\(name).\(facetName)"
-            } else {
-                facetFullName = facetName
-            }
-            let facetFailure = await verifySnapshot(
-                capturing: value,
-                as: facetStrategy,
-                named: facetFullName,
-                record: recording,
+            let facetFullName = name.map { "\($0).\(facetName)" } ?? facetName
+            if let failure = Test.Snapshot.Storage.resolve(
+                actual: facetActual,
+                strategy: facetStrategy,
+                name: facetFullName,
+                mode: mode,
                 filePath: filePath,
                 function: function
-            )
-            if let facetFailure {
-                return "[\(facetName)] \(facetFailure)"
+            ) {
+                return "[\(facetName)] \(failure)"
             }
         }
     }

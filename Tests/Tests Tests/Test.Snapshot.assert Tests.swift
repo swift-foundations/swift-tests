@@ -1,24 +1,26 @@
 import Testing
+import Tests_Inline_Snapshot
 import Tests_Test_Support
 
-@Suite("Test.Snapshot.assert")
-struct TestSnapshotAssertTests {
+@Suite("snapshot (file-backed)")
+struct TestSnapshotFileTests {
     @Suite struct Unit {}
 }
 
 // MARK: - Unit
 
-extension TestSnapshotAssertTests.Unit {
+extension TestSnapshotFileTests.Unit {
 
     @Test
-    func `assertSnapshot registers passing expectation with collector`() {
+    func `snapshot registers passing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
         Test_Primitives.Test.Expectation.Collector.with(collector) {
             // .missing mode: no reference exists → records to /tmp/ → passes
-            assertSnapshot(
-                capturing: "hello",
+            snapshot(
                 as: .lines,
+                named: "passing",
                 record: .missing,
+                { "hello" },
                 filePath: "/tmp/swift-tests-unit/SnapshotPassingTest.swift",
                 function: "passingTest()"
             )
@@ -31,14 +33,15 @@ extension TestSnapshotAssertTests.Unit {
     }
 
     @Test
-    func `assertSnapshot registers failing expectation with collector`() {
+    func `snapshot registers failing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
         Test_Primitives.Test.Expectation.Collector.with(collector) {
             // .never mode: no reference exists → missingReference → fails
-            assertSnapshot(
-                capturing: "hello",
+            snapshot(
                 as: .lines,
+                named: "failing",
                 record: .never,
+                { "hello" },
                 filePath: "/tmp/nonexistent-path/SnapshotFailingTest.swift",
                 function: "failingTest()"
             )
@@ -51,22 +54,24 @@ extension TestSnapshotAssertTests.Unit {
     }
 
     @Test
-    func `assertSnapshot registers multiple expectations with collector`() {
+    func `snapshot registers multiple expectations with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
         Test_Primitives.Test.Expectation.Collector.with(collector) {
             // Passes (records new snapshot in /tmp/)
-            assertSnapshot(
-                capturing: "hello",
+            snapshot(
                 as: .lines,
+                named: "multi-pass",
                 record: .missing,
+                { "hello" },
                 filePath: "/tmp/swift-tests-unit/SnapshotMultipleTest.swift",
                 function: "multipleTest()"
             )
             // Fails (no reference with .never mode)
-            assertSnapshot(
-                capturing: "world",
+            snapshot(
                 as: .lines,
+                named: "multi-fail",
                 record: .never,
+                { "world" },
                 filePath: "/tmp/nonexistent-path/SnapshotMultipleFail.swift",
                 function: "multipleFail()"
             )
