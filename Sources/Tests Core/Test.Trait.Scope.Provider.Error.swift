@@ -14,23 +14,8 @@ extension Test.Trait.Scope.Provider {
         /// Test exceeded its configured time limit.
         case timeLimitExceeded(limit: Duration)
 
-        /// Performance metric exceeded the configured threshold.
-        case thresholdExceeded(
-            test: Swift.String,
-            metric: Test.Benchmark.Metric,
-            expected: Duration,
-            actual: Duration
-        )
-
-        /// Performance regression exceeded the configured baseline tolerance.
-        case regressionDetected(
-            test: Swift.String,
-            metric: Test.Benchmark.Metric,
-            baseline: Duration,
-            current: Duration,
-            regression: Double,
-            tolerance: Double
-        )
+        /// A benchmark operation failed.
+        case benchmarkFailed(Test.Benchmark.Error)
 
         /// No stored baseline exists and recording mode is `.never`.
         case baselineMissing(

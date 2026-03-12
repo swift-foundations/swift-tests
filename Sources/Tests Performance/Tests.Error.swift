@@ -19,11 +19,10 @@ public import Dependency_Primitives
 extension Tests {
     /// Errors thrown during performance testing operations.
     ///
-    /// These errors provide detailed information about performance violations,
-    /// including actual vs expected values and contextual information for debugging.
+    /// Composes leaf errors from domain-specific error types.
     public enum Error: Swift.Error, CustomStringConvertible {
-        /// Performance threshold was exceeded in a trait-based test.
-        case thresholdExceeded(test: Swift.String, metric: Test.Benchmark.Metric, expected: Duration, actual: Duration)
+        /// A benchmark operation failed.
+        case benchmarkFailed(Test.Benchmark.Error)
 
         /// Memory allocation limit was exceeded during test execution.
         case allocationLimitExceeded(test: Swift.String, limit: Int, actual: Int)
@@ -34,26 +33,10 @@ extension Tests {
         /// Peak memory limit was exceeded during test execution.
         case peakMemoryExceeded(test: Swift.String, limit: Int, actual: Int)
 
-        /// Performance expectation assertion failed.
-        case performanceExpectationFailed(metric: Test.Benchmark.Metric, threshold: Duration, actual: Duration)
-
-        /// Performance regression was detected when comparing to a baseline.
-        case regressionDetected(
-            metric: Test.Benchmark.Metric,
-            baseline: Duration,
-            current: Duration,
-            regression: Double,
-            tolerance: Double
-        )
-
         public var description: Swift.String {
             switch self {
-            case .thresholdExceeded(let test, let metric, let expected, let actual):
-                return """
-                    Performance threshold exceeded in '\(test)':
-                    Expected \(metric): < \(expected.formatted())
-                    Actual \(metric): \(actual.formatted())
-                    """
+            case .benchmarkFailed(let error):
+                return error.description
 
             case .allocationLimitExceeded(let test, let limit, let actual):
                 return """
@@ -76,29 +59,6 @@ extension Tests {
                     Limit: \(limit.formatted(.bytes))
                     Actual peak: \(actual.formatted(.bytes))
                     Exceeded by: \((actual - limit).formatted(.bytes))
-                    """
-
-            case .performanceExpectationFailed(let metric, let threshold, let actual):
-                return """
-                    Performance expectation failed:
-                    Expected \(metric) < \(threshold.formatted())
-                    Actual: \(actual.formatted())
-                    Exceeded by: \((actual - threshold).formatted())
-                    """
-
-            case .regressionDetected(
-                let metric,
-                let baseline,
-                let current,
-                let regression,
-                let tolerance
-            ):
-                return """
-                    Performance regression detected:
-                    Baseline \(metric): \(baseline.formatted())
-                    Current \(metric): \(current.formatted())
-                    Regression: \(regression.formatted(.percent.precision(1)))
-                    Tolerance: \(tolerance.formatted(.percent.precision(1)))
                     """
             }
         }

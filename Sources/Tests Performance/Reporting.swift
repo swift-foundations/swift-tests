@@ -69,32 +69,6 @@ extension Tests {
     /// Console capability detection (cached).
     internal static let consoleCapability = Console.Capability.detect()
 
-    /// Predefined styles for test output.
-    internal enum OutputStyle {
-        case red
-        case green
-        case yellow
-        case blue
-        case bold
-        case dim
-
-        var style: Console.Style {
-            switch self {
-            case .red: return .error
-            case .green: return .success
-            case .yellow: return .warning
-            case .blue: return .info
-            case .bold: return .bold
-            case .dim: return .dim
-            }
-        }
-
-        /// Apply style to text using detected capability.
-        static func styled(_ text: Swift.String, _ style: OutputStyle) -> Swift.String {
-            style.style.apply(to: text, capability: consoleCapability)
-        }
-    }
-
     /// Center text within a given width.
     internal static func center(_ text: Swift.String, width: Int) -> Swift.String {
         let padding = width - text.count
@@ -127,7 +101,7 @@ extension Tests {
 
         let summaryText =
             "Summary: \(improvements) improvements, \(neutral) neutral, \(regressions) regressions"
-        let summaryColored = OutputStyle.styled(summaryText, .bold)
+        let summaryColored = Console.Style.bold.apply(to: summaryText, capability: consoleCapability)
         print(summaryColored)
         print("╚══════════════════════════════════════════════════════════╝\n")
     }

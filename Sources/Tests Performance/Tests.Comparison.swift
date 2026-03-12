@@ -8,6 +8,7 @@
 public import Formatting_Primitives
 public import Time_Primitives
 public import Sample_Primitives
+import Console
 
 extension Tests {
     /// Performance comparison report between current and baseline measurements.
@@ -54,16 +55,12 @@ extension Tests {
             let changeSymbol = isRegression ? "↑" : "↓"
             let changeEmoji = isRegression ? "🔴" : "🟢"
 
-            let nameColored =
-                isRegression
-                ? Tests.OutputStyle.styled(name, .red)
-                : Tests.OutputStyle.styled(name, .green)
+            let nameColored = (isRegression ? Console.Style.error : .success)
+                .apply(to: name, capability: Tests.consoleCapability)
 
             let changeText = "\(changeSymbol) \(abs(change).formatted(.percent.precision(1)))"
-            let changeColored =
-                isRegression
-                ? Tests.OutputStyle.styled(changeText, .red)
-                : Tests.OutputStyle.styled(changeText, .green)
+            let changeColored = (isRegression ? Console.Style.error : .success)
+                .apply(to: changeText, capability: Tests.consoleCapability)
 
             return """
                 \(changeEmoji) \(nameColored)
