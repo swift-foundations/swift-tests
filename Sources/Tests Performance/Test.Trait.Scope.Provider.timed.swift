@@ -1,5 +1,5 @@
 //
-//  Test.Trait.ScopeProvider.timed.swift
+//  Test.Trait.Scope.Provider.timed.swift
 //  swift-tests
 //
 //  Scope provider for timed benchmark execution.
@@ -9,7 +9,7 @@ import Clocks
 import Memory
 import File_System
 
-extension Test.Trait.ScopeProvider {
+extension Test.Trait.Scope.Provider {
     /// Scope provider for timed benchmark measurement.
     public static var timed: Self {
         Self(
@@ -168,7 +168,7 @@ extension Test.Trait.ScopeProvider {
 
         // Throw if threshold exceeded
         if exceeded {
-            throw .performanceThresholdExceeded(
+            throw .thresholdExceeded(
                 test: entry.id.name,
                 metric: config.evaluation.metric,
                 expected: config.evaluation.threshold!,
@@ -180,7 +180,7 @@ extension Test.Trait.ScopeProvider {
         if let comparison, let tolerance = config.evaluation.baselineTolerance,
             comparison.change > tolerance
         {
-            throw .baselineRegressionDetected(
+            throw .regressionDetected(
                 test: entry.id.name,
                 metric: config.evaluation.metric,
                 baseline: comparison.baselineValue,

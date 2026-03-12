@@ -32,12 +32,12 @@ extension Test.Reporter {
     /// - No accidental sink duplication
     public struct Sink: ~Copyable, Sendable {
         /// The underlying implementation.
-        private let _impl: any SinkImplementation
+        private let _impl: any Implementation
 
         /// Creates a sink from an implementation.
         ///
         /// - Parameter impl: The sink implementation.
-        public init(_ impl: consuming some SinkImplementation) {
+        public init(_ impl: consuming some Implementation) {
             self._impl = impl
         }
 
@@ -85,9 +85,9 @@ extension Test.Reporter {
         /// await sink.finish()
         /// ```
         public struct Sender: Sendable {
-            private let _impl: any SinkImplementation
+            private let _impl: any Implementation
 
-            fileprivate init(_impl: any SinkImplementation) {
+            fileprivate init(_impl: any Implementation) {
                 self._impl = _impl
             }
 
@@ -101,42 +101,3 @@ extension Test.Reporter {
     }
 }
 
-// MARK: - SinkImplementation Protocol
-
-extension Test.Reporter {
-    /// Protocol for sink implementations.
-    ///
-    /// Implement this protocol to create custom event sinks.
-    /// Implementations must be `Sendable` for use in concurrent contexts.
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// final class JSONFileSink: Test.Reporter.SinkImplementation, @unchecked Sendable {
-    ///     private let fileHandle: FileHandle
-    ///
-    ///     init(path: Swift.String) throws {
-    ///         self.fileHandle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
-    ///     }
-    ///
-    ///     func send(_ event: Test.Event) async {
-    ///         let data = try! JSONEncoder().encode(event)
-    ///         fileHandle.write(data)
-    ///         fileHandle.write("\n".data(using: .utf8)!)
-    ///     }
-    ///
-    ///     func finish() async {
-    ///         fileHandle.closeFile()
-    ///     }
-    /// }
-    /// ```
-    public protocol SinkImplementation: Sendable {
-        /// Receives an event.
-        ///
-        /// - Parameter event: The event to process.
-        func send(_ event: Test.Event) async
-
-        /// Finishes the sink, performing any cleanup.
-        func finish() async
-    }
-}

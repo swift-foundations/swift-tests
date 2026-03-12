@@ -393,7 +393,7 @@ extension Test.Snapshot.Storage {
 
 // MARK: - Diff Formatting
 
-extension Test.Snapshot.DiffResult {
+extension Test.Snapshot.Diff.Result {
     /// Formats this diff result with a prefix message.
     fileprivate func message(prefix: Swift.String) -> Swift.String {
         var result = prefix + "\n" + summary

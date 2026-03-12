@@ -1,11 +1,11 @@
 //
-//  Test.Trait.ScopeProvider.builtins.swift
+//  Test.Trait.Scope.Provider.builtins.swift
 //  swift-tests
 //
 //  Built-in scope providers for core traits.
 //
 
-extension Test.Trait.ScopeProvider {
+extension Test.Trait.Scope.Provider {
     /// Scope provider for time limit enforcement.
     public static var timeLimit: Self {
         Self(
@@ -29,7 +29,7 @@ extension Test.Trait.ScopeProvider {
 
 // MARK: - Scope Implementations
 
-extension Test.Trait.ScopeProvider {
+extension Test.Trait.Scope.Provider {
     @Sendable
     private static func _timeLimitScope(
         _ entry: Test.Plan.Entry,
@@ -71,7 +71,7 @@ extension Test.Trait.ScopeProvider {
 
 // MARK: - Timeout
 
-extension Test.Trait.ScopeProvider {
+extension Test.Trait.Scope.Provider {
     /// Sentinel error for timeout detection inside `withThrowingTaskGroup`.
     ///
     /// `withThrowingTaskGroup` uses untyped throws, so we throw this private

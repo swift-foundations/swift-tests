@@ -42,7 +42,7 @@ extension Tests_Core.Test.Plan.Entry {
 // MARK: - Spy Sink
 
 /// A sink that captures all events for test assertions.
-public final class SpySink: Tests_Core.Test.Reporter.SinkImplementation, @unchecked Sendable {
+public final class SpySink: Tests_Core.Test.Reporter.Sink.Implementation, @unchecked Sendable {
     private let _events = Mutex<[Test_Primitives.Test.Event]>([])
 
     public init() {}

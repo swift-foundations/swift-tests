@@ -21,7 +21,7 @@ extension Tests.Complexity {
         public let evidence: Test.Benchmark.Complexity.Evidence
 
         /// The best discrete candidate, or `nil` if inconclusive.
-        public let best: Test.Benchmark.Complexity.CandidateFit?
+        public let best: Test.Benchmark.Complexity.Candidate.Fit?
 
         /// How much to trust the classification.
         public let confidence: Confidence
@@ -35,7 +35,7 @@ extension Tests.Complexity {
 
         public init(
             evidence: Test.Benchmark.Complexity.Evidence,
-            best: Test.Benchmark.Complexity.CandidateFit?,
+            best: Test.Benchmark.Complexity.Candidate.Fit?,
             confidence: Confidence,
             ambiguousWith: [Test.Benchmark.Complexity.Class],
             reasons: [InconclusiveReason]

@@ -33,7 +33,7 @@ extension Test.Reporter {
 
 extension Test.Reporter {
     /// Console sink implementation with thread-safe counters.
-    private final class Terminal: SinkImplementation, @unchecked Sendable {
+    private final class Terminal: Sink.Implementation, @unchecked Sendable {
         private let capability: Console.Capability
         private let _counts = Mutex((passed: 0, failed: 0, skipped: 0, issues: 0))
 

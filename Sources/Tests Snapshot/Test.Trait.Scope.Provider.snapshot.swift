@@ -1,5 +1,5 @@
 //
-//  Test.Trait.ScopeProvider.snapshot.swift
+//  Test.Trait.Scope.Provider.snapshot.swift
 //  swift-tests
 //
 //  Scope provider for snapshot configuration injection.
@@ -7,7 +7,7 @@
 
 import Dependency_Primitives
 
-extension Test.Trait.ScopeProvider {
+extension Test.Trait.Scope.Provider {
     /// Scope provider that injects snapshot configuration into the dependency scope.
     public static var snapshot: Self {
         Self(

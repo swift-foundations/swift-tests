@@ -36,7 +36,7 @@ extension Tests.Complexity {
         {
             let constantCandidate = evidence.candidates
                 .first { $0.complexity == .constant }
-                ?? Test.Benchmark.Complexity.CandidateFit(
+                ?? Test.Benchmark.Complexity.Candidate.Fit(
                     complexity: .constant,
                     regression: Sample.Regression.Fit(
                         slope: 0, intercept: 0, rSquared: 0, meanSquaredError: 0

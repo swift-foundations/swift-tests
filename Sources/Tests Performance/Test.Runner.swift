@@ -45,7 +45,7 @@ extension Test {
         public let reporter: Reporter
 
         /// Scope providers that wrap test execution.
-        public var scopeProviders: [Test.Trait.ScopeProvider] = [.timed, .timeLimit, .exclusive]
+        public var scopeProviders: [Test.Trait.Scope.Provider] = [.timed, .timeLimit, .exclusive]
 
         /// Actions to execute after all tests complete but before the reporter finishes.
         ///
@@ -537,5 +537,5 @@ extension Test.Runner {
 
 extension Test.Runner {
     /// Errors thrown during test execution.
-    public typealias Error = Test.Trait.ScopeProvider.Error
+    public typealias Error = Test.Trait.Scope.Provider.Error
 }

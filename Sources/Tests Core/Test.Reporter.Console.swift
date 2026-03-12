@@ -35,7 +35,7 @@ extension Test.Reporter {
 
 extension Test.Reporter {
     /// Null sink that discards all events.
-    private final class NullSink: SinkImplementation, @unchecked Sendable {
+    private final class NullSink: Sink.Implementation, @unchecked Sendable {
         func send(_ event: Test.Event) async {}
         func finish() async {}
     }

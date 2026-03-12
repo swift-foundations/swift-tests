@@ -1,5 +1,5 @@
 //
-//  Test.Trait.ScopeProvider.swift
+//  Test.Trait.Scope.Provider.swift
 //  swift-tests
 //
 //  A scope provider that wraps test execution.
@@ -7,13 +7,13 @@
 
 public import Witness_Primitives
 
-extension Test.Trait {
+extension Test.Trait.Scope {
     /// A scope provider that wraps test execution with trait-specific behavior.
     ///
     /// Scope providers replace the hardcoded execution chain in the runner.
     /// Each provider checks whether it should activate for a given trait collection,
     /// and if so, wraps the test execution with its behavior.
-    public struct ScopeProvider: Sendable, Witness.`Protocol` {
+    public struct Provider: Sendable, Witness.`Protocol` {
         /// Unique identifier for this provider.
         public let id: Swift.String
 

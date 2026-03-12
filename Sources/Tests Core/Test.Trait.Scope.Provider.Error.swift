@@ -1,11 +1,11 @@
 //
-//  Test.Trait.ScopeProvider.Error.swift
+//  Test.Trait.Scope.Provider.Error.swift
 //  swift-tests
 //
 //  Typed error for scope provider execution.
 //
 
-extension Test.Trait.ScopeProvider {
+extension Test.Trait.Scope.Provider {
     /// Errors thrown during scope-provided test execution.
     public enum Error: Swift.Error, Sendable {
         /// The test body threw an error.
@@ -15,7 +15,7 @@ extension Test.Trait.ScopeProvider {
         case timeLimitExceeded(limit: Duration)
 
         /// Performance metric exceeded the configured threshold.
-        case performanceThresholdExceeded(
+        case thresholdExceeded(
             test: Swift.String,
             metric: Test.Benchmark.Metric,
             expected: Duration,
@@ -23,7 +23,7 @@ extension Test.Trait.ScopeProvider {
         )
 
         /// Performance regression exceeded the configured baseline tolerance.
-        case baselineRegressionDetected(
+        case regressionDetected(
             test: Swift.String,
             metric: Test.Benchmark.Metric,
             baseline: Duration,
