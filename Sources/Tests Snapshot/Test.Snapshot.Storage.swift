@@ -16,14 +16,20 @@ extension Test.Snapshot {
     ///
     /// ## Path Convention
     ///
-    /// Snapshots are stored relative to the test file:
+    /// Snapshots are stored flat relative to the test file:
     /// ```
-    /// <testDir>/.snapshots/<subdirectory>/<function>.<counter|name>.<ext>
+    /// <testDir>/.snapshots/<name>.<ext>
     /// ```
     ///
-    /// The subdirectory defaults to the test file stem (e.g., `UserTests`
-    /// from `UserTests.swift`) but can be overridden to a suite name via
-    /// ``Test.Snapshot.Configuration/subdirectory``.
+    /// When no `name` is provided, the function name and counter are used:
+    /// ```
+    /// <testDir>/.snapshots/<function>.<counter>.<ext>
+    /// ```
+    ///
+    /// An optional ``Test.Snapshot.Configuration/subdirectory`` adds grouping:
+    /// ```
+    /// <testDir>/.snapshots/<subdirectory>/<name>.<ext>
+    /// ```
     ///
     /// The base directory defaults to `.snapshots` but can be overridden
     /// via ``Test.Snapshot.Configuration/snapshotDirectory``.
@@ -42,7 +48,7 @@ extension Test.Snapshot.Storage {
     ///   - counter: Counter for unnamed snapshots in the same test.
     ///   - pathExtension: File extension for the snapshot.
     ///   - snapshotDirectory: Custom snapshot directory. When `nil`, defaults to `.snapshots`.
-    ///   - subdirectory: Custom subdirectory name. When `nil`, uses the test file stem.
+    ///   - subdirectory: Optional subdirectory within the snapshot directory.
     /// - Returns: The computed snapshot file path.
     public static func path(
         testFilePath: Swift.String,
@@ -57,29 +63,23 @@ extension Test.Snapshot.Storage {
         let testPath: File.Path = File.Path(stringLiteral: testFilePath)
         let testDir = testPath.parent ?? testPath
 
-        // Subdirectory: explicit name or file stem fallback
-        let groupName = subdirectory.map(Swift.String.init) ?? testPath.stem ?? "Unknown"
-
-        // Build snapshot directory: <base>/<groupName>/
-        let snapshotDir: File.Path
-        if let snapshotDirectory {
-            snapshotDir = snapshotDirectory / groupName
-        } else {
-            snapshotDir = testDir / ".snapshots" / groupName
+        // Build snapshot directory: <base>/ or <base>/<subdirectory>/
+        var snapshotDir = snapshotDirectory ?? (testDir / ".snapshots")
+        if let subdirectory {
+            snapshotDir = snapshotDir / Swift.String(subdirectory)
         }
 
-        // Build filename: <function>.<counter|name>.<ext>
-        let identifier: Swift.String
-        if let name = name {
-            identifier = name
+        // Build filename
+        let filename: Swift.String
+        if let name {
+            // Named: <name>.<ext>
+            filename = "\(name).\(pathExtension)"
         } else {
-            identifier = Swift.String(counter)
+            // Unnamed: <function>.<counter>.<ext>
+            let cleanFunction = functionName(function)
+            filename = "\(cleanFunction).\(counter).\(pathExtension)"
         }
 
-        // Clean function name (remove parentheses and parameters)
-        let cleanFunction = functionName(function)
-
-        let filename = "\(cleanFunction).\(identifier).\(pathExtension)"
         return snapshotDir / filename
     }
 

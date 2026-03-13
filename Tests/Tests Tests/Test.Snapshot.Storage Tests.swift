@@ -12,15 +12,16 @@ struct SnapshotStorageTests {
 
 extension SnapshotStorageTests.Unit {
     @Test
-    func `path creates .snapshots directory component`() {
+    func `path is flat under .snapshots by default`() {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/MyTests.swift",
             function: "testExample()",
-            name: nil,
-            counter: 1,
+            name: "my-snapshot",
+            counter: 0,
             pathExtension: "json"
         )
-        #expect(Swift.String(path).contains(".snapshots"))
+        let pathString = Swift.String(path)
+        #expect(pathString == "/path/to/.snapshots/my-snapshot.json")
     }
 
     @Test
@@ -29,92 +30,53 @@ extension SnapshotStorageTests.Unit {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/MyTests.swift",
             function: "testExample()",
-            name: nil,
-            counter: 1,
+            name: "my-snapshot",
+            counter: 0,
             pathExtension: "json",
             snapshotDirectory: customDir
         )
-        let pathString = Swift.String(path)
-        #expect(pathString.contains("/custom/snapshots/MyTests"))
-        #expect(!pathString.contains(".snapshots"))
+        #expect(Swift.String(path) == "/custom/snapshots/my-snapshot.json")
     }
 
     @Test
-    func `path uses test file stem as subdirectory`() {
-        let path = Test_Primitives.Test.Snapshot.Storage.path(
-            testFilePath: "/path/to/UserTests.swift",
-            function: "testJSON()",
-            name: nil,
-            counter: 1,
-            pathExtension: "json"
-        )
-        #expect(Swift.String(path).contains("UserTests"))
-    }
-
-    @Test
-    func `path uses custom subdirectory when provided`() throws {
+    func `path uses subdirectory when provided`() throws {
         let sub = try File.Path.Component("PDF.Test.Snapshot")
         let path = Test_Primitives.Test.Snapshot.Storage.path(
-            testFilePath: "/path/to/Snapshot Tests.swift",
+            testFilePath: "/path/to/Tests.swift",
             function: "testExample()",
-            name: nil,
-            counter: 1,
-            pathExtension: "txt",
+            name: "my-snapshot",
+            counter: 0,
+            pathExtension: "pdf",
             subdirectory: sub
         )
         let pathString = Swift.String(path)
-        #expect(pathString.contains("PDF.Test.Snapshot"))
-        #expect(!pathString.contains("Snapshot Tests"))
+        #expect(pathString == "/path/to/.snapshots/PDF.Test.Snapshot/my-snapshot.pdf")
     }
 
     @Test
-    func `path strips parentheses from function name`() {
+    func `unnamed path uses function and counter`() {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/Tests.swift",
             function: "testFoo(bar:)",
             name: nil,
-            counter: 1,
+            counter: 3,
             pathExtension: "txt"
         )
         let pathString = Swift.String(path)
-        #expect(pathString.contains("testFoo"))
-        #expect(!pathString.contains("("))
+        #expect(pathString == "/path/to/.snapshots/testFoo.3.txt")
     }
 
     @Test
-    func `path uses counter when name is nil`() {
+    func `named path uses name directly without function prefix`() {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/Tests.swift",
             function: "testExample()",
-            name: nil,
-            counter: 3,
-            pathExtension: "json"
-        )
-        #expect(Swift.String(path).contains(".3."))
-    }
-
-    @Test
-    func `path uses name when provided`() {
-        let path = Test_Primitives.Test.Snapshot.Storage.path(
-            testFilePath: "/path/to/Tests.swift",
-            function: "testExample()",
-            name: "custom-name",
+            name: "user-profile",
             counter: 1,
             pathExtension: "json"
         )
-        #expect(Swift.String(path).contains("custom-name"))
-    }
-
-    @Test
-    func `path uses correct extension`() {
-        let path = Test_Primitives.Test.Snapshot.Storage.path(
-            testFilePath: "/path/to/Tests.swift",
-            function: "testExample()",
-            name: nil,
-            counter: 1,
-            pathExtension: "json"
-        )
-        #expect(Swift.String(path).hasSuffix(".json"))
+        let pathString = Swift.String(path)
+        #expect(pathString == "/path/to/.snapshots/user-profile.json")
     }
 }
 
@@ -122,15 +84,17 @@ extension SnapshotStorageTests.Unit {
 
 extension SnapshotStorageTests.EdgeCase {
     @Test
-    func `path with named snapshot uses name as identifier`() {
+    func `subdirectory combined with custom snapshot directory`() throws {
+        let sub = try File.Path.Component("MyType")
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/Tests.swift",
             function: "testExample()",
-            name: "userProfile",
-            counter: 1,
-            pathExtension: "txt"
+            name: "output",
+            counter: 0,
+            pathExtension: "txt",
+            snapshotDirectory: File.Path("/custom"),
+            subdirectory: sub
         )
-        let pathString = Swift.String(path)
-        #expect(pathString.contains("testExample.userProfile.txt"))
+        #expect(Swift.String(path) == "/custom/MyType/output.txt")
     }
 }
