@@ -52,6 +52,22 @@ extension SnapshotStorageTests.Unit {
     }
 
     @Test
+    func `path uses custom subdirectory when provided`() throws {
+        let sub = try File.Path.Component("PDF.Test.Snapshot")
+        let path = Test_Primitives.Test.Snapshot.Storage.path(
+            testFilePath: "/path/to/Snapshot Tests.swift",
+            function: "testExample()",
+            name: nil,
+            counter: 1,
+            pathExtension: "txt",
+            subdirectory: sub
+        )
+        let pathString = Swift.String(path)
+        #expect(pathString.contains("PDF.Test.Snapshot"))
+        #expect(!pathString.contains("Snapshot Tests"))
+    }
+
+    @Test
     func `path strips parentheses from function name`() {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/Tests.swift",

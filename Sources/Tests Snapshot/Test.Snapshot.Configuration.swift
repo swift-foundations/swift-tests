@@ -39,17 +39,35 @@ extension Test.Snapshot {
         /// Custom snapshot directory (nil = `.snapshots` relative to test file).
         public var snapshotDirectory: File.Path?
 
+        /// Custom subdirectory name within the snapshot directory.
+        ///
+        /// Replaces the default file-stem-based grouping. Use this to group
+        /// snapshots by suite name instead of by source file name.
+        ///
+        /// For example, setting `subdirectory: "PDF.Test.Snapshot"` produces:
+        /// ```
+        /// .snapshots/PDF.Test.Snapshot/<function>.<name>.<ext>
+        /// ```
+        /// instead of the default:
+        /// ```
+        /// .snapshots/Snapshot Tests/<function>.<name>.<ext>
+        /// ```
+        public var subdirectory: File.Path.Component?
+
         /// Creates a configuration.
         ///
         /// - Parameters:
         ///   - recording: The recording mode.
         ///   - snapshotDirectory: Custom directory for snapshots.
+        ///   - subdirectory: Custom subdirectory name (nil = test file stem).
         public init(
             recording: Recording = .missing,
-            snapshotDirectory: File.Path? = nil
+            snapshotDirectory: File.Path? = nil,
+            subdirectory: File.Path.Component? = nil
         ) {
             self.recording = recording
             self.snapshotDirectory = snapshotDirectory
+            self.subdirectory = subdirectory
         }
 
         /// Default configuration.
