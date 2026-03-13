@@ -36,7 +36,7 @@ extension Test.Snapshot {
         /// Default recording mode.
         public var recording: Recording
 
-        /// Custom snapshot directory (nil = alongside tests).
+        /// Custom snapshot directory (nil = `.snapshots` relative to test file).
         public var snapshotDirectory: File.Path?
 
         /// Creates a configuration.

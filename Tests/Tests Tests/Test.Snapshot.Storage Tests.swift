@@ -12,7 +12,7 @@ struct SnapshotStorageTests {
 
 extension SnapshotStorageTests.Unit {
     @Test
-    func `path creates __Snapshots__ directory component`() {
+    func `path creates .snapshots directory component`() {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
             testFilePath: "/path/to/MyTests.swift",
             function: "testExample()",
@@ -20,7 +20,23 @@ extension SnapshotStorageTests.Unit {
             counter: 1,
             pathExtension: "json"
         )
-        #expect(Swift.String(path).contains("__Snapshots__"))
+        #expect(Swift.String(path).contains(".snapshots"))
+    }
+
+    @Test
+    func `path uses custom snapshot directory when provided`() {
+        let customDir = File.Path("/custom/snapshots")
+        let path = Test_Primitives.Test.Snapshot.Storage.path(
+            testFilePath: "/path/to/MyTests.swift",
+            function: "testExample()",
+            name: nil,
+            counter: 1,
+            pathExtension: "json",
+            snapshotDirectory: customDir
+        )
+        let pathString = Swift.String(path)
+        #expect(pathString.contains("/custom/snapshots/MyTests"))
+        #expect(!pathString.contains(".snapshots"))
     }
 
     @Test

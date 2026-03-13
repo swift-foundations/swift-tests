@@ -92,12 +92,14 @@ public func snapshot<Value>(
 
     let actual = syncSnapshot(value())
     let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+    let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
 
     let failure: Swift.String?
     if let name {
         failure = Test.Snapshot.Storage.resolve(
             actual: actual, strategy: effective, name: name, mode: mode,
-            filePath: filePath, function: function
+            filePath: filePath, function: function,
+            snapshotDirectory: snapshotDir
         )
     } else {
         failure = Test.Snapshot.Inline.resolve(
@@ -144,12 +146,14 @@ public func snapshot<Value>(
 
     let actual = await effective.capture(value())
     let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+    let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
 
     let failure: Swift.String?
     if let name {
         failure = Test.Snapshot.Storage.resolve(
             actual: actual, strategy: effective, name: name, mode: mode,
-            filePath: filePath, function: function
+            filePath: filePath, function: function,
+            snapshotDirectory: snapshotDir
         )
     } else {
         failure = Test.Snapshot.Inline.resolve(
@@ -197,10 +201,12 @@ public func snapshot<Value, Format: Sendable>(
 
     let actual = syncSnapshot(value())
     let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+    let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
 
     let failure = Test.Snapshot.Storage.resolve(
         actual: actual, strategy: effective, name: name, mode: mode,
-        filePath: filePath, function: function
+        filePath: filePath, function: function,
+        snapshotDirectory: snapshotDir
     )
 
     if let failure {
@@ -234,10 +240,12 @@ public func snapshot<Value, Format: Sendable>(
 
     let actual = await effective.capture(value())
     let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+    let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
 
     let failure = Test.Snapshot.Storage.resolve(
         actual: actual, strategy: effective, name: name, mode: mode,
-        filePath: filePath, function: function
+        filePath: filePath, function: function,
+        snapshotDirectory: snapshotDir
     )
 
     if let failure {
@@ -321,14 +329,16 @@ extension Test.Snapshot.Storage {
         name: Swift.String,
         mode: Test.Snapshot.Recording,
         filePath: Swift.String,
-        function: Swift.String
+        function: Swift.String,
+        snapshotDirectory: File.Path? = nil
     ) -> Swift.String? {
         let snapshotPath = path(
             testFilePath: filePath,
             function: function,
             name: name,
             counter: 0,
-            pathExtension: strategy.pathExtension ?? ""
+            pathExtension: strategy.pathExtension ?? "",
+            snapshotDirectory: snapshotDirectory
         )
         let actualBytes = strategy.diffing.toBytes(actual)
         let referenceBytes = reference(at: snapshotPath)
