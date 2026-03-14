@@ -16,7 +16,7 @@ extension Tests.Diagnostic {
                 to: "PERFORMANCE THRESHOLD EXCEEDED", capability: cap
             )
             lines.append(header)
-            lines.append("  Test:     \(testName)")
+            lines.append("  Test:     \(qualifiedName)")
             lines.append("  Metric:   \(metric)")
             lines.append("  Expected: < \(threshold!.formatted())")
             lines.append("  Actual:   \(metric.extract(from: m).formatted())")
@@ -27,7 +27,7 @@ extension Tests.Diagnostic {
                 to: "PERFORMANCE MEASUREMENT", capability: cap
             )
             lines.append(header)
-            lines.append("  Test:     \(testName)")
+            lines.append("  Test:     \(qualifiedName)")
             lines.append("  Metric:   \(metric)")
             lines.append("  Value:    \(metric.extract(from: m).formatted())")
         }
@@ -163,6 +163,10 @@ extension Tests.Diagnostic {
         json.append("<!-- PERFORMANCE_DIAGNOSTIC_BEGIN -->")
         json.append("{")
         json.append("  \"test\": \(_jsonString(testName)),")
+        if let suiteName {
+            json.append("  \"suite\": \(_jsonString(suiteName)),")
+        }
+        json.append("  \"qualified_name\": \(_jsonString(qualifiedName)),")
         json.append("  \"status\": \(exceedanceFactor != nil ? "\"THRESHOLD_EXCEEDED\"" : "\"PASS\""),")
         json.append("  \"metric\": \(_jsonString("\(metric)")),")
 

@@ -103,6 +103,12 @@ extension Test {
             // Emit run ended
             await sender.send(Test.Event(kind: .runEnded, elapsed: elapsed(since: startTime)))
 
+            // Print performance summary if any timed tests ran
+            let diagnostics = Tests.Diagnostic.Collector.shared.drain()
+            if !diagnostics.isEmpty {
+                Tests.Diagnostic.summary(diagnostics)
+            }
+
             // Execute post-run actions (e.g., inline snapshot write-back)
             for action in postRunActions {
                 await action()

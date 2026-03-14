@@ -9,8 +9,14 @@ extension Tests {
     /// everything an AI agent or developer needs to diagnose a performance
     /// regression without further computation.
     public struct Diagnostic: Sendable {
-        /// Test name for identification.
+        /// Test function name.
         public let testName: Swift.String
+
+        /// Suite name, if any (dot-separated for nested suites).
+        public let suiteName: Swift.String?
+
+        /// Fully qualified name: `Module.Suite.name` or `Module.name`.
+        public let qualifiedName: Swift.String
 
         /// The metric that was checked (median, p95, etc.).
         public let metric: Test.Benchmark.Metric
@@ -54,6 +60,8 @@ extension Tests {
 
         public init(
             testName: Swift.String,
+            suiteName: Swift.String? = nil,
+            qualifiedName: Swift.String? = nil,
             metric: Test.Benchmark.Metric,
             measurement: Test.Benchmark.Measurement,
             environment: Test.Environment,
@@ -69,6 +77,8 @@ extension Tests {
             historyAnalysis: Tests.History.Analysis? = nil
         ) {
             self.testName = testName
+            self.suiteName = suiteName
+            self.qualifiedName = qualifiedName ?? testName
             self.metric = metric
             self.measurement = measurement
             self.environment = environment
