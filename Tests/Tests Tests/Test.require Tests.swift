@@ -40,8 +40,7 @@ extension TestRequireTests.Runner {
         _ = await runner.run(plan)
 
         let expectationEvents = spy.events.filter {
-            if case .expectationChecked = $0.kind { return true }
-            return false
+            $0.kind == .expectationChecked
         }
         #expect(!expectationEvents.isEmpty,
             ".expectationChecked should be emitted for require()")
@@ -60,10 +59,8 @@ extension TestRequireTests.Runner {
         _ = await runner.run(plan)
 
         let expectationFailedIssues = spy.events.filter {
-            if case .issueRecorded(let issue) = $0.kind,
-               case .expectationFailed = issue.kind {
-                return true
-            }
+            guard $0.kind == .issueRecorded, let issue = $0.issue else { return false }
+            if case .expectationFailed = issue.kind { return true }
             return false
         }
         #expect(!expectationFailedIssues.isEmpty,
@@ -83,10 +80,8 @@ extension TestRequireTests.Runner {
         _ = await runner.run(plan)
 
         let errorCaughtIssues = spy.events.filter {
-            if case .issueRecorded(let issue) = $0.kind,
-               case .errorCaught = issue.kind {
-                return true
-            }
+            guard $0.kind == .issueRecorded, let issue = $0.issue else { return false }
+            if case .errorCaught = issue.kind { return true }
             return false
         }
         #expect(errorCaughtIssues.isEmpty,
@@ -108,10 +103,8 @@ extension TestRequireTests.Runner {
         _ = await runner.run(plan)
 
         let errorCaughtIssues = spy.events.filter {
-            if case .issueRecorded(let issue) = $0.kind,
-               case .errorCaught = issue.kind {
-                return true
-            }
+            guard $0.kind == .issueRecorded, let issue = $0.issue else { return false }
+            if case .errorCaught = issue.kind { return true }
             return false
         }
         #expect(!errorCaughtIssues.isEmpty,
@@ -133,10 +126,7 @@ extension TestRequireTests.Runner {
         #expect(result.allPassed)
 
         let expectationEvents = spy.events.filter {
-            if case .expectationChecked(let exp) = $0.kind {
-                return exp.isPassing
-            }
-            return false
+            $0.kind == .expectationChecked && ($0.expectation?.isPassing ?? false)
         }
         #expect(!expectationEvents.isEmpty,
             "Passing require should emit .expectationChecked")

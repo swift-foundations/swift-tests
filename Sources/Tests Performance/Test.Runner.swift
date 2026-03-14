@@ -155,8 +155,9 @@ extension Test {
                 if !isEnabled(traits) {
                     await sender.send(Test.Event(
                         id: node.id,
-                        kind: .testSkipped(reason(disabled: traits)),
-                        elapsed: elapsed(since: startTime)
+                        kind: .testSkipped,
+                        elapsed: elapsed(since: startTime),
+                        reason: reason(disabled: traits)
                     ))
                     return Counters(passed: 0, failed: 0, skipped: 1)
                 }
@@ -183,8 +184,9 @@ extension Test {
 
                     await sender.send(Test.Event(
                         id: node.id,
-                        kind: .testEnded(counters.failed > 0 ? .failed : .passed),
-                        elapsed: elapsed(since: startTime)
+                        kind: .testEnded,
+                        elapsed: elapsed(since: startTime),
+                        result: counters.failed > 0 ? .failed : .passed
                     ))
 
                     return counters
@@ -339,14 +341,15 @@ extension Test {
                 if !isRequirementFailure {
                     await sender.send(Test.Event(
                         id: node.id,
-                        kind: .issueRecorded(Test.Issue(
+                        kind: .issueRecorded,
+                        elapsed: elapsed(since: startTime),
+                        issue: Test.Issue(
                             kind: .errorCaught(
                                 type: Swift.String(describing: type(of: error)),
                                 description: Test.Text(Swift.String(describing: error))
                             ),
                             sourceLocation: entry.id.sourceLocation
-                        )),
-                        elapsed: elapsed(since: startTime)
+                        )
                     ))
                 }
             }
@@ -357,18 +360,20 @@ extension Test {
             for expectation in expectations {
                 await sender.send(Test.Event(
                     id: node.id,
-                    kind: .expectationChecked(expectation),
-                    elapsed: elapsed(since: startTime)
+                    kind: .expectationChecked,
+                    elapsed: elapsed(since: startTime),
+                    expectation: expectation
                 ))
 
                 if expectation.isFailing {
                     await sender.send(Test.Event(
                         id: node.id,
-                        kind: .issueRecorded(Test.Issue(
+                        kind: .issueRecorded,
+                        elapsed: elapsed(since: startTime),
+                        issue: Test.Issue(
                             kind: .expectationFailed(expectation.id),
                             sourceLocation: expectation.expression.sourceLocation
-                        )),
-                        elapsed: elapsed(since: startTime)
+                        )
                     ))
                 }
             }
@@ -381,8 +386,9 @@ extension Test {
 
             await sender.send(Test.Event(
                 id: node.id,
-                kind: .testEnded(testResult),
-                elapsed: elapsed(since: startTime)
+                kind: .testEnded,
+                elapsed: elapsed(since: startTime),
+                result: testResult
             ))
 
             return testResult == .passed

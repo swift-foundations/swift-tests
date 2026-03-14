@@ -51,11 +51,11 @@ extension Test.Reporter {
                     print("  ▶ \(id.fullyQualifiedName)")
                 }
 
-            case .testEnded(let result):
+            case .testEnded:
                 if let id = event.id {
                     let symbol: Swift.String
                     let style: Console.Style
-                    switch result {
+                    switch event.result {
                     case .passed:
                         symbol = "✓"
                         style = .success
@@ -68,6 +68,9 @@ extension Test.Reporter {
                         symbol = "○"
                         style = .dim
                         _counts.withLock { $0.skipped += 1 }
+                    case nil:
+                        symbol = "?"
+                        style = .dim
                     }
 
                     var message = "  \(style.apply(to: symbol, capability: capability)) \(id.name)"
@@ -77,25 +80,27 @@ extension Test.Reporter {
                     print(message)
                 }
 
-            case .testSkipped(let reason):
+            case .testSkipped:
                 _counts.withLock { $0.skipped += 1 }
                 if let id = event.id {
                     var message = "  \(dimmed("○")) \(id.name)\(dimmed(" (skipped)"))"
-                    if let reason {
+                    if let reason = event.reason {
                         message += dimmed(": \(render(reason))")
                     }
                     print(message)
                 }
 
-            case .issueRecorded(let issue):
+            case .issueRecorded:
                 _counts.withLock { $0.issues += 1 }
-                print("    \(Console.Style.warning.apply(to: "⚠", capability: capability)) \(issue.kind)")
-                if let context = issue.context {
-                    indented(render(context), indent: "      ")
+                if let issue = event.issue {
+                    print("    \(Console.Style.warning.apply(to: "⚠", capability: capability)) \(issue.kind)")
+                    if let context = issue.context {
+                        indented(render(context), indent: "      ")
+                    }
                 }
 
-            case .expectationChecked(let expectation):
-                if expectation.isFailing {
+            case .expectationChecked:
+                if let expectation = event.expectation, expectation.isFailing {
                     print("    \(Console.Style.error.apply(to: "✗", capability: capability)) \(expectation.expression.sourceCode)")
 
                     // Source location
@@ -152,13 +157,10 @@ extension Test.Reporter {
                     ))
                 }
 
-            case .planCreated:
+            case .planCreated, .caseStarted, .caseEnded:
                 break
 
-            case .caseStarted, .caseEnded:
-                break
-
-            case .custom:
+            default:
                 break
             }
         }

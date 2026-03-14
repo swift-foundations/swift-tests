@@ -60,8 +60,7 @@ extension TestRunnerTests.Expectations {
         #expect(result.hasFailures)
 
         let expectationEvents = spy.events.filter {
-            if case .expectationChecked = $0.kind { return true }
-            return false
+            $0.kind == .expectationChecked
         }
         #expect(expectationEvents.count == 3, "All 3 expectations should be reported")
     }
@@ -99,8 +98,7 @@ extension TestRunnerTests.Events {
         _ = await runner.run(plan)
 
         let expectationEvents = spy.events.filter {
-            if case .expectationChecked = $0.kind { return true }
-            return false
+            $0.kind == .expectationChecked
         }
         #expect(!expectationEvents.isEmpty, ".expectationChecked events should be emitted")
     }
@@ -118,8 +116,7 @@ extension TestRunnerTests.Events {
         _ = await runner.run(plan)
 
         let issueEvents = spy.events.filter {
-            if case .issueRecorded = $0.kind { return true }
-            return false
+            $0.kind == .issueRecorded
         }
         #expect(!issueEvents.isEmpty, ".issueRecorded should be emitted for failures")
     }

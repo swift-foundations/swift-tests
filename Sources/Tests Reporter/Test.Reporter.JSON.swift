@@ -83,7 +83,15 @@ extension Test.Reporter {
 
         private func json(from event: Test.Event) -> Swift.String {
             var json = "{"
-            json += "\"kind\": \"\(event.kind)\""
+            json += "\"kind\": \"\(event.kind.rawValue)\""
+
+            if let id = event.id {
+                json += ", \"test_id\": \"\(id.fullyQualifiedName)\""
+            }
+
+            if let result = event.result {
+                json += ", \"result\": \"\(result)\""
+            }
 
             if let duration = event.elapsed {
                 let nanoseconds = duration.components.attoseconds / 1_000_000_000
