@@ -161,6 +161,9 @@ extension Test.Reporter {
                 break
 
             default:
+                // L3 performance kinds (.performanceDiagnostic, .performanceSummary)
+                // and any future extensible kinds are handled by the runner or
+                // higher-layer reporters.
                 break
             }
         }

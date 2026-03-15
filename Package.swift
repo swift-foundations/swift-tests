@@ -115,6 +115,7 @@ let package = Package(
                 "Tests Core",
                 .product(name: "Console", package: "swift-console"),
                 .product(name: "Kernel", package: "swift-kernel"),
+                .product(name: "JSON", package: "swift-json"),
                 .product(name: "Time Primitives", package: "swift-time-primitives"),
             ]
         ),

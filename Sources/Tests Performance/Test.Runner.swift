@@ -10,6 +10,7 @@ import Tree_Keyed_Primitives
 import Clocks
 import Dependency_Primitives
 import Standard_Library_Extensions
+import JSON
 
 extension Test {
     /// Executes test plans and reports results.
@@ -88,6 +89,13 @@ extension Test {
             await sender.send(Test.Event(kind: .runStarted, elapsed: .zero))
             await sender.send(Test.Event(kind: .planCreated, elapsed: elapsed(since: startTime)))
 
+            // Emit structured plan record
+            await sender.send(Test.Event(
+                kind: .planRecord,
+                elapsed: elapsed(since: startTime),
+                payload: Self.planJSON(plan).serialize()
+            ))
+
             // Walk the tree
             let counters: Counters
             if let root = plan.tree.root {
@@ -103,11 +111,36 @@ extension Test {
             // Emit run ended
             await sender.send(Test.Event(kind: .runEnded, elapsed: elapsed(since: startTime)))
 
-            // Print performance summary if any timed tests ran
+            // Emit performance diagnostics as events
             let diagnostics = Tests.Diagnostic.Collector.shared.drain()
+            for diagnostic in diagnostics {
+                // Console output (runner coordinates all printing)
+                print(diagnostic.formatted())
+
+                // Emit structured event with JSON payload
+                await sender.send(Test.Event(
+                    kind: .performanceDiagnostic,
+                    elapsed: elapsed(since: startTime),
+                    payload: diagnostic.jsonBlock()
+                ))
+            }
+
+            // Emit summary if any timed tests ran
             if !diagnostics.isEmpty {
                 Tests.Diagnostic.summary(diagnostics)
+
+                await sender.send(Test.Event(
+                    kind: .performanceSummary,
+                    elapsed: elapsed(since: startTime)
+                ))
             }
+
+            // Emit structured summary record
+            await sender.send(Test.Event(
+                kind: .summaryRecord,
+                elapsed: elapsed(since: startTime),
+                payload: Self.summaryJSON(counters, elapsed: elapsed(since: startTime)).serialize()
+            ))
 
             // Execute post-run actions (e.g., inline snapshot write-back)
             for action in postRunActions {
@@ -461,6 +494,50 @@ extension Test {
 
             try await chain()
         }
+    }
+}
+
+// MARK: - Structured Records
+
+extension Test.Runner {
+    /// Serializes the test plan as a JSON record.
+    fileprivate static func planJSON(_ plan: Test.Plan) -> JSON {
+        let git = Test.Git.capture()
+        let env = Test.Environment.capture()
+
+        let tests: [JSON] = plan.entries.map { entry in
+            .object([
+                ("id", .string(entry.id.fullyQualifiedName)),
+                ("module", .string(entry.id.module)),
+                ("suite", entry.id.suite.map { .string($0) } ?? .null),
+                ("name", .string(entry.id.name)),
+            ])
+        }
+
+        return .object([
+            ("git", .object([
+                ("sha", git.sha.map { .string($0) } ?? .null),
+                ("branch", git.branch.map { .string($0) } ?? .null),
+                ("dirty", git.dirty.map { .bool($0) } ?? .null),
+            ])),
+            ("environment", env.json),
+            ("tests", .array(tests)),
+            ("counts", .object([
+                ("discovered", .number(plan.count)),
+            ])),
+        ])
+    }
+
+    /// Serializes the run summary as a JSON record.
+    private static func summaryJSON(_ counters: Counters, elapsed: Duration) -> JSON {
+        .object([
+            ("duration_seconds", .number(elapsed.inSeconds)),
+            ("counts", .object([
+                ("passed", .number(counters.passed)),
+                ("failed", .number(counters.failed)),
+                ("skipped", .number(counters.skipped)),
+            ])),
+        ])
     }
 }
 
