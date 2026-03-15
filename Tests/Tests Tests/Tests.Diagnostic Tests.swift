@@ -20,6 +20,7 @@ extension TestsDiagnosticTests.Format {
 
         return Tests.Diagnostic(
             testName: "example test",
+            qualifiedName: "TestModule.ExampleSuite.example test",
             metric: .median,
             measurement: measurement,
             environment: environment,

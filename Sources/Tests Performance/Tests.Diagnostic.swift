@@ -61,7 +61,7 @@ extension Tests {
         public init(
             testName: Swift.String,
             suiteName: Swift.String? = nil,
-            qualifiedName: Swift.String? = nil,
+            qualifiedName: Swift.String,
             metric: Test.Benchmark.Metric,
             measurement: Test.Benchmark.Measurement,
             environment: Test.Environment,
@@ -78,7 +78,7 @@ extension Tests {
         ) {
             self.testName = testName
             self.suiteName = suiteName
-            self.qualifiedName = qualifiedName ?? testName
+            self.qualifiedName = qualifiedName
             self.metric = metric
             self.measurement = measurement
             self.environment = environment

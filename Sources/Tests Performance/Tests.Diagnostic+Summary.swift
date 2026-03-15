@@ -20,14 +20,16 @@ extension Tests.Diagnostic {
 
         let sorted = diagnostics.sorted { $0.qualifiedName < $1.qualifiedName }
         let cap = Tests.consoleCapability
+        let format: Time.Format = .duration.precision(3)
+
+        // Strip common module prefix for compact display
+        let displayNames = _stripCommonPrefix(sorted.map(\.qualifiedName))
 
         // Column widths
         let nameWidth = max(
-            sorted.map(\.qualifiedName.count).max() ?? 0,
+            displayNames.map(\.count).max() ?? 0,
             4 // "Test"
         )
-        let medianWidth = 12
-        let minWidth = 12
 
         // Header
         let header = Console.Style.bold.apply(to: "PERFORMANCE SUMMARY", capability: cap)
@@ -39,11 +41,11 @@ extension Tests.Diagnostic {
         print("|\(_line(nameWidth))|------------|------------|")
 
         // Rows
-        for diagnostic in sorted {
+        for (diagnostic, displayName) in zip(sorted, displayNames) {
             let m = diagnostic.measurement
-            let name = _pad(diagnostic.qualifiedName, to: nameWidth)
-            let median = _right(m.median.formatted(), width: medianWidth - 2)
-            let min = _right(m.min.formatted(), width: minWidth - 2)
+            let name = _pad(displayName, to: nameWidth)
+            let median = _right(m.median.formatted(format), width: 10)
+            let min = _right(m.min.formatted(format), width: 10)
             print("| \(name) | \(median) | \(min) |")
         }
 
@@ -62,5 +64,26 @@ extension Tests.Diagnostic {
 
     private static func _line(_ width: Int) -> Swift.String {
         Swift.String(repeating: "-", count: width + 2)
+    }
+
+    /// Strips the longest common dot-separated prefix from all names.
+    ///
+    /// `["M.A._10", "M.A._20", "M.B._10"]` → `["A._10", "A._20", "B._10"]`
+    private static func _stripCommonPrefix(_ names: [Swift.String]) -> [Swift.String] {
+        guard let first = names.first else { return names }
+        let parts = first.split(separator: ".")
+        var shared = 0
+        for i in 0..<parts.count {
+            let prefix = parts[0...i].joined(separator: ".")
+            let dotPrefix = prefix + "."
+            if names.allSatisfy({ $0.hasPrefix(dotPrefix) }) {
+                shared = i + 1
+            } else {
+                break
+            }
+        }
+        guard shared > 0 else { return names }
+        let dropLength = parts[0..<shared].joined(separator: ".").count + 1 // +1 for trailing dot
+        return names.map { Swift.String($0.dropFirst(dropLength)) }
     }
 }
