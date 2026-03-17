@@ -5,6 +5,8 @@
 //  Snapshot modifier factory for macro-declared snapshot configuration.
 //
 
+import Dependency_Primitives
+
 extension Test.Trait.Collection.Modifier {
     /// Creates a modifier that sets snapshot configuration on the trait collection.
     ///
@@ -17,11 +19,19 @@ extension Test.Trait.Collection.Modifier {
     /// - Parameter configuration: The snapshot configuration to apply.
     /// - Returns: A modifier that sets the snapshot recording mode.
     public static func snapshots(configuration: Test.Snapshot.Configuration) -> Self {
-        Self { collection in
-            collection[Test.Trait.Snapshot.self] = Test.Trait.Snapshot(
-                recording: configuration.recording
-            )
-        }
+        Self(
+            apply: { collection in
+                collection[Test.Trait.Snapshot.self] = Test.Trait.Snapshot(
+                    recording: configuration.recording
+                )
+            },
+            provideScope: { function in
+                try await Dependency.Scope.with(
+                    { $0[Test.Snapshot.Configuration.Key.self] = configuration },
+                    operation: function
+                )
+            }
+        )
     }
 
     /// Creates a modifier that sets snapshot recording mode.

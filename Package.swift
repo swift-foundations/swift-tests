@@ -80,6 +80,7 @@ let package = Package(
             name: "Tests Inline Snapshot",
             dependencies: [
                 "Tests Snapshot",
+                "Tests Apple Testing Bridge",
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
