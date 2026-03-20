@@ -59,28 +59,20 @@ extension Test.Snapshot.Storage {
         snapshotDirectory: File.Path? = nil,
         subdirectory: File.Path.Component? = nil
     ) -> File.Path {
-        // Parse test file path to get directory and filename
         let testPath: File.Path = File.Path(stringLiteral: testFilePath)
         let testDir = testPath.parent ?? testPath
 
-        // Build snapshot directory: <base>/ or <base>/<subdirectory>/
         var snapshotDir = snapshotDirectory ?? (testDir / ".snapshots")
         if let subdirectory {
-            snapshotDir = snapshotDir / Swift.String(subdirectory)
+            snapshotDir = snapshotDir / subdirectory
         }
 
-        // Build filename
-        let filename: Swift.String
         if let name {
-            // Named: <name>.<ext>
-            filename = "\(name).\(pathExtension)"
+            return snapshotDir / "\(name).\(pathExtension)"
         } else {
-            // Unnamed: <function>.<counter>.<ext>
             let cleanFunction = functionName(function)
-            filename = "\(cleanFunction).\(counter).\(pathExtension)"
+            return snapshotDir / "\(cleanFunction).\(counter).\(pathExtension)"
         }
-
-        return snapshotDir / filename
     }
 
     /// Extracts the function name without parentheses and parameters.
@@ -148,7 +140,7 @@ extension Test.Snapshot.Storage {
             try File(path).write.atomic(contentsOf: bytes)
         } catch {
             throw Test.Snapshot.Storage.Error.writeFailed(
-                path: Swift.String(path),
+                path: path,
                 underlying: Swift.String(describing: error)
             )
         }
@@ -171,7 +163,7 @@ extension Test.Snapshot.Storage {
             try dir.create.recursive()
         } catch {
             throw Test.Snapshot.Storage.Error.directoryCreationFailed(
-                path: Swift.String(path),
+                path: path,
                 underlying: Swift.String(describing: error)
             )
         }
@@ -184,13 +176,13 @@ extension Test.Snapshot.Storage {
     /// Errors that can occur during snapshot storage operations.
     public enum Error: Swift.Error, Sendable {
         /// Failed to read a snapshot file.
-        case readFailed(path: Swift.String, underlying: Swift.String)
+        case readFailed(path: File.Path, underlying: Swift.String)
 
         /// Failed to write a snapshot file.
-        case writeFailed(path: Swift.String, underlying: Swift.String)
+        case writeFailed(path: File.Path, underlying: Swift.String)
 
         /// Failed to create the snapshot directory.
-        case directoryCreationFailed(path: Swift.String, underlying: Swift.String)
+        case directoryCreationFailed(path: File.Path, underlying: Swift.String)
     }
 }
 

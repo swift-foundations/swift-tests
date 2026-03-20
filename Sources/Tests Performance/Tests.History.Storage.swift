@@ -36,22 +36,15 @@ extension Tests.History.Storage {
         testID: Test.ID,
         fingerprint: Swift.String
     ) -> File.Path {
-        var result = root
+        var result = root / "\(testID.module)"
 
-        // module
-        result = result / testID.module
-
-        // suite (if present)
         if let suite = testID.suite {
             for component in suite.split(separator: ".") {
-                result = result / Swift.String(component)
+                result = result / "\(component)"
             }
         }
 
-        // test name
-        result = result / testID.name
-
-        return result / "\(fingerprint).jsonl"
+        return result / "\(testID.name)" / "\(fingerprint).jsonl"
     }
 
 }
@@ -123,7 +116,7 @@ extension Tests.History.Storage {
             try File(filePath).write.append(line)
         } catch {
             throw .writeFailed(
-                path: Swift.String(describing: filePath),
+                path: filePath,
                 underlying: Swift.String(describing: error)
             )
         }
@@ -144,7 +137,7 @@ extension Tests.History.Storage {
             try dir.create.recursive()
         } catch {
             throw .directoryCreationFailed(
-                path: Swift.String(describing: path),
+                path: path,
                 underlying: Swift.String(describing: error)
             )
         }

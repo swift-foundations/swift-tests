@@ -121,7 +121,7 @@ extension Tests.Complexity.Baseline {
                     try dir.create.recursive()
                 } catch {
                     throw Tests.Baseline.Storage.Error.directoryCreationFailed(
-                        path: Swift.String(describing: parent),
+                        path: parent,
                         underlying: Swift.String(describing: error)
                     )
                 }
@@ -133,7 +133,7 @@ extension Tests.Complexity.Baseline {
             try File(path).write.atomic(contentsOf: bytes)
         } catch {
             throw Tests.Baseline.Storage.Error.writeFailed(
-                path: Swift.String(describing: path),
+                path: path,
                 underlying: Swift.String(describing: error)
             )
         }

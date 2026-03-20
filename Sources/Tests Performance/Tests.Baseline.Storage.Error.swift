@@ -5,20 +5,22 @@
 //  Typed errors for baseline storage operations.
 //
 
+public import File_System_Primitives
+
 extension Tests.Baseline.Storage {
     /// Errors that can occur during baseline storage operations.
     public enum Error: Swift.Error, Sendable {
         /// Failed to read a baseline file.
-        case readFailed(path: Swift.String, underlying: Swift.String)
+        case readFailed(path: File.Path, underlying: Swift.String)
 
         /// Failed to write a baseline file.
-        case writeFailed(path: Swift.String, underlying: Swift.String)
+        case writeFailed(path: File.Path, underlying: Swift.String)
 
         /// Failed to create the baseline directory.
-        case directoryCreationFailed(path: Swift.String, underlying: Swift.String)
+        case directoryCreationFailed(path: File.Path, underlying: Swift.String)
 
         /// No baseline exists and recording mode forbids creation.
-        case baselineMissing(path: Swift.String)
+        case baselineMissing(path: File.Path)
     }
 }
 

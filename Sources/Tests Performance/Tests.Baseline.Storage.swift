@@ -59,22 +59,15 @@ extension Tests.Baseline.Storage {
         testID: Test.ID,
         fingerprint: Swift.String
     ) -> File.Path {
-        var result = root
+        var result = root / "\(testID.module)"
 
-        // module
-        result = result / testID.module
-
-        // suite (if present)
         if let suite = testID.suite {
             for component in suite.split(separator: ".") {
-                result = result / Swift.String(component)
+                result = result / "\(component)"
             }
         }
 
-        // test name
-        result = result / testID.name
-
-        return result / "\(fingerprint).json"
+        return result / "\(testID.name)" / "\(fingerprint).json"
     }
 
 }
@@ -128,7 +121,7 @@ extension Tests.Baseline.Storage {
             try File(path).write.atomic(contentsOf: bytes)
         } catch {
             throw Tests.Baseline.Storage.Error.writeFailed(
-                path: Swift.String(describing: path),
+                path: path,
                 underlying: Swift.String(describing: error)
             )
         }
@@ -145,7 +138,7 @@ extension Tests.Baseline.Storage {
             try dir.create.recursive()
         } catch {
             throw Tests.Baseline.Storage.Error.directoryCreationFailed(
-                path: Swift.String(describing: path),
+                path: path,
                 underlying: Swift.String(describing: error)
             )
         }
