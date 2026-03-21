@@ -36,25 +36,25 @@ extension Test.__TestContentKind {
 
     /// A test declaration ('test').
     public static let test = fourCC(
-        ASCII.GraphicCharacters.t,
-        ASCII.GraphicCharacters.e,
-        ASCII.GraphicCharacters.s,
-        ASCII.GraphicCharacters.t
+        ASCII.Character.Graphic.t,
+        ASCII.Character.Graphic.e,
+        ASCII.Character.Graphic.s,
+        ASCII.Character.Graphic.t
     )
 
     /// A suite declaration ('suit').
     public static let suite = fourCC(
-        ASCII.GraphicCharacters.s,
-        ASCII.GraphicCharacters.u,
-        ASCII.GraphicCharacters.i,
-        ASCII.GraphicCharacters.t
+        ASCII.Character.Graphic.s,
+        ASCII.Character.Graphic.u,
+        ASCII.Character.Graphic.i,
+        ASCII.Character.Graphic.t
     )
 
     /// An exit test declaration ('exit').
     public static let exitTest = fourCC(
-        ASCII.GraphicCharacters.e,
-        ASCII.GraphicCharacters.x,
-        ASCII.GraphicCharacters.i,
-        ASCII.GraphicCharacters.t
+        ASCII.Character.Graphic.e,
+        ASCII.Character.Graphic.x,
+        ASCII.Character.Graphic.i,
+        ASCII.Character.Graphic.t
     )
 }
