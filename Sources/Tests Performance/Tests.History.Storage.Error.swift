@@ -5,7 +5,7 @@
 //  Errors from history file operations.
 //
 
-public import File_System_Primitives
+public import File_System_Core
 
 extension Tests.History.Storage {
     /// Errors from history storage operations.
