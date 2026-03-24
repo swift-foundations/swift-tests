@@ -105,7 +105,7 @@ extension Test.Reporter {
         private func write(to path: Swift.String, bytes: [UInt8]) {
             do {
                 let descriptor = try Kernel.Path.scope(path) { pathView in
-                    try ISO_9945.Kernel.File.Open.open(
+                    try Kernel.File.Open.open(
                         path: pathView,
                         mode: .write,
                         options: [.create, .truncate],
