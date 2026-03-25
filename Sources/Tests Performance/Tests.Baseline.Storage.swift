@@ -8,6 +8,7 @@
 public import File_System
 import JSON
 import Environment
+public import IO
 
 extension Tests.Baseline {
     /// Handles baseline file I/O.
@@ -95,6 +96,25 @@ extension Tests.Baseline.Storage {
     }
 }
 
+// MARK: - Read Operations (Async)
+
+extension Tests.Baseline.Storage {
+    /// Loads a stored baseline measurement, or `nil` if no baseline exists.
+    ///
+    /// Async variant - runs blocking I/O on a dedicated thread pool.
+    ///
+    /// - Parameter path: Path to the baseline JSON file.
+    /// - Returns: The deserialized measurement, or `nil` if the file does not exist.
+    public static func load(
+        at path: File.Path
+    ) async throws(IO.Lane.Error) -> Test.Benchmark.Measurement? {
+        let path = path
+        return try await IO.run { () -> Test.Benchmark.Measurement? in
+            load(at: path)
+        }
+    }
+}
+
 // MARK: - Write Operations
 
 extension Tests.Baseline.Storage {
@@ -124,6 +144,24 @@ extension Tests.Baseline.Storage {
                 path: path,
                 underlying: Swift.String(describing: error)
             )
+        }
+    }
+
+    /// Saves a measurement as a baseline.
+    ///
+    /// Async variant - runs blocking I/O on a dedicated thread pool.
+    ///
+    /// - Parameters:
+    ///   - measurement: The measurement to store.
+    ///   - path: The destination path.
+    public static func save(
+        _ measurement: Test.Benchmark.Measurement,
+        to path: File.Path
+    ) async throws(IO.Failure.Work<IO.Lane.Error, Tests.Baseline.Storage.Error>) {
+        let measurement = measurement
+        let path = path
+        try await IO.run { () throws(Tests.Baseline.Storage.Error) in
+            try save(measurement, to: path)
         }
     }
 

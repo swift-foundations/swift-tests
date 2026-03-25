@@ -8,6 +8,7 @@
 
 public import File_System
 public import JSON
+public import IO
 
 // MARK: - JSON Serializable
 
@@ -139,4 +140,33 @@ extension Tests.Complexity.Baseline {
         }
     }
 
+}
+
+// MARK: - File I/O (Async)
+
+extension Tests.Complexity.Baseline {
+    /// Loads a stored complexity baseline, or `nil` if none exists.
+    ///
+    /// Async variant - runs blocking I/O on a dedicated thread pool.
+    public static func load(
+        at path: File.Path
+    ) async throws(IO.Lane.Error) -> Tests.Complexity.Baseline? {
+        let path = path
+        return try await IO.run { () -> Tests.Complexity.Baseline? in
+            load(at: path)
+        }
+    }
+
+    /// Saves this baseline to disk. Creates parent directories as needed.
+    ///
+    /// Async variant - runs blocking I/O on a dedicated thread pool.
+    public func save(
+        to path: File.Path
+    ) async throws(IO.Failure.Work<IO.Lane.Error, Tests.Baseline.Storage.Error>) {
+        let baseline = self
+        let path = path
+        try await IO.run { () throws(Tests.Baseline.Storage.Error) in
+            try baseline.save(to: path)
+        }
+    }
 }

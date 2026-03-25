@@ -8,6 +8,7 @@
 public import File_System
 import JSON
 import Environment
+public import IO
 
 extension Tests.History {
     /// Handles history file I/O.
@@ -163,6 +164,28 @@ extension Tests.History.Storage {
     }
 }
 
+// MARK: - Append (Async)
+
+extension Tests.History.Storage {
+    /// Appends a record to the history file.
+    ///
+    /// Async variant - runs blocking I/O on a dedicated thread pool.
+    ///
+    /// - Parameters:
+    ///   - record: The record to append.
+    ///   - root: The benchmark root directory.
+    public static func append(
+        _ record: Tests.History.Record,
+        root: File.Path
+    ) async throws(IO.Failure.Work<IO.Lane.Error, Error>) {
+        let record = record
+        let root = root
+        try await IO.run { () throws(Error) in
+            try append(record, root: root)
+        }
+    }
+}
+
 // MARK: - Load
 
 extension Tests.History.Storage {
@@ -212,5 +235,44 @@ extension Tests.History.Storage {
             records.append(record)
         }
         return records
+    }
+}
+
+// MARK: - Load (Async)
+
+extension Tests.History.Storage {
+    /// Loads all history records from a JSONL file.
+    ///
+    /// Async variant - runs blocking I/O on a dedicated thread pool.
+    ///
+    /// - Parameter path: Path to the history JSONL file.
+    /// - Returns: All successfully parsed records, in file order.
+    public static func load(
+        at path: File.Path
+    ) async throws(IO.Lane.Error) -> [Tests.History.Record] {
+        let path = path
+        return try await IO.run { () -> [Tests.History.Record] in
+            load(at: path)
+        }
+    }
+
+    /// Loads history records for a specific test and environment.
+    ///
+    /// Async variant - runs blocking I/O on a dedicated thread pool.
+    ///
+    /// - Parameters:
+    ///   - root: The benchmark root directory.
+    ///   - testID: The test identifier.
+    ///   - fingerprint: The environment fingerprint.
+    /// - Returns: All history records.
+    public static func load(
+        root: File.Path,
+        testID: Test.ID,
+        fingerprint: Swift.String
+    ) async throws(IO.Lane.Error) -> [Tests.History.Record] {
+        let filePath = path(root: root, testID: testID, fingerprint: fingerprint)
+        return try await IO.run { () -> [Tests.History.Record] in
+            load(at: filePath)
+        }
     }
 }

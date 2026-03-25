@@ -35,6 +35,7 @@ let package = Package(
         .package(path: "../swift-memory"),
         .package(path: "../swift-console"),
         .package(path: "../swift-file-system"),
+        .package(path: "../swift-io"),
         .package(path: "../swift-json"),
         .package(path: "../swift-loader"),
         .package(path: "../../swift-primitives/swift-sample-primitives"),
@@ -105,6 +106,7 @@ let package = Package(
                 .product(name: "File System", package: "swift-file-system"),
                 .product(name: "JSON", package: "swift-json"),
                 .product(name: "Environment", package: "swift-environment"),
+                .product(name: "IO", package: "swift-io"),
             ]
         ),
 
