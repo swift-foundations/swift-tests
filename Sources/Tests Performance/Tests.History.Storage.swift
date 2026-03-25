@@ -176,8 +176,8 @@ extension Tests.History.Storage {
 
         do {
             return try file.read.full { span in
-                let content = span.withUnsafeBufferPointer {
-                    Swift.String(decoding: $0, as: UTF8.self)
+                let content = unsafe span.withUnsafeBufferPointer {
+                    unsafe Swift.String(decoding: $0, as: UTF8.self)
                 }
                 return _parseJSONL(content)
             }

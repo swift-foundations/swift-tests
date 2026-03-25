@@ -59,13 +59,13 @@ extension Test {
 
 /// Reads the trimmed contents of a file, or nil if unavailable.
 private func _read(_ path: Swift.String) -> Swift.String? {
-    guard let file = fopen(path, "r") else { return nil }
-    defer { fclose(file) }
+    guard let file = unsafe fopen(path, "r") else { return nil }
+    defer { unsafe fclose(file) }
 
     var buffer = [CChar](repeating: 0, count: 256)
-    guard fgets(&buffer, Int32(buffer.count), file) != nil else { return nil }
+    guard unsafe fgets(&buffer, Int32(buffer.count), file) != nil else { return nil }
 
-    var result = Swift.String(cString: buffer)
+    var result = unsafe Swift.String(cString: buffer)
 
     // Trim trailing whitespace/newlines
     while let last = result.unicodeScalars.last,

@@ -102,7 +102,7 @@ extension Tests.Complexity.Baseline {
 
         do {
             return try file.read.full { span in
-                let bytes: [UInt8] = span.withUnsafeBufferPointer { .init($0) }
+                let bytes: [UInt8] = unsafe span.withUnsafeBufferPointer { .init($0) }
                 return try Tests.Complexity.Baseline(jsonBytes: bytes)
             }
         } catch {

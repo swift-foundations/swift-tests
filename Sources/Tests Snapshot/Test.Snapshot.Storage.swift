@@ -99,7 +99,7 @@ extension Test.Snapshot.Storage {
 
         do {
             return try file.read.full { span in
-                span.withUnsafeBufferPointer { Array($0) }
+                unsafe span.withUnsafeBufferPointer { Array($0) }
             }
         } catch {
             return nil

@@ -85,7 +85,7 @@ extension Tests.Baseline.Storage {
 
         do {
             return try file.read.full { span in
-                let bytes: [UInt8] = span.withUnsafeBufferPointer { .init($0) }
+                let bytes: [UInt8] = unsafe span.withUnsafeBufferPointer { .init($0) }
                 let json = try JSON.parse(bytes)
                 return try Test.Benchmark.Measurement(json: json)
             }

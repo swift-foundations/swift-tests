@@ -166,6 +166,10 @@ extension Test.Reporter {
                 // higher-layer reporters.
                 break
             }
+
+            // Flush stdout so progress is visible immediately when piped
+            // (SwiftPM's test harness makes stdout fully buffered)
+            Console.Output.flush()
         }
 
         func finish() async {}
