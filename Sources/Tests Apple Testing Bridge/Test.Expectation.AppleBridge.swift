@@ -48,7 +48,7 @@ extension Test_Primitives.Test.Expectation {
 /// Tests Core resolves this symbol at runtime using `Loader.Symbol.lookup`.
 /// When the bridge module is linked, the symbol is found and the bridge
 /// installs automatically on first failure — no manual `Bridge.install()` needed.
-@_cdecl("_swift_tests_bridge_install")
+@c(_swift_tests_bridge_install)
 func _installBridge() {
     Test_Primitives.Test.Expectation.Bridge.install()
 }
