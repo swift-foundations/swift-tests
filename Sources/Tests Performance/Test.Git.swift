@@ -65,7 +65,7 @@ private func _read(_ path: Swift.String) -> Swift.String? {
     var buffer = [CChar](repeating: 0, count: 256)
     guard unsafe fgets(&buffer, Int32(buffer.count), file) != nil else { return nil }
 
-    var result = unsafe Swift.String(cString: buffer)
+    var result = Swift.String(decoding: buffer.prefix(while: { $0 != 0 }).map({ UInt8(bitPattern: $0) }), as: UTF8.self)
 
     // Trim trailing whitespace/newlines
     while let last = result.unicodeScalars.last,

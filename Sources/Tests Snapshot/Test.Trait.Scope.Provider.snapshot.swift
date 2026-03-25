@@ -26,21 +26,9 @@ extension Test.Trait.Scope.Provider {
     ) async throws(Error) {
         let snapshot = traits[Test.Trait.Snapshot.self]!
         let config = Test.Snapshot.Configuration(recording: snapshot.recording)
-        // WORKAROUND: Dependency.Scope.with uses rethrows which doesn't
-        // narrow to typed throws. Catch boundary converts back.
-        // WHEN TO REMOVE: When rethrows supports typed throw inference.
-        do {
-            try await Dependency.Scope.with(
-                { $0[Test.Snapshot.Configuration.Key.self] = config },
-                operation: operation
-            )
-        } catch let error as Error {
-            throw error
-        } catch {
-            throw .bodyFailed(.caught(
-                type: Swift.String(describing: type(of: error)),
-                description: Swift.String(describing: error)
-            ))
-        }
+        try await Dependency.Scope.with(
+            { $0[Test.Snapshot.Configuration.Key.self] = config },
+            operation: operation
+        )
     }
 }

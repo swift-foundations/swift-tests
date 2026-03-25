@@ -6,7 +6,7 @@
 //
 
 public import File_System
-public import JSON
+import JSON
 import Environment
 
 extension Tests.History {

@@ -60,11 +60,11 @@ public func withSerialExecutor<E: Swift.Error>(
 /// - Warning: Only use this in tests. Do not use in production code.
 public var _useSerialExecutor: Bool {
     get {
-        guard let pointer = _taskEnqueueHookPointer else { return false }
+        guard let pointer = unsafe _taskEnqueueHookPointer else { return false }
         return unsafe pointer.pointee != nil
     }
     set {
-        guard let pointer = _taskEnqueueHookPointer else { return }
+        guard let pointer = unsafe _taskEnqueueHookPointer else { return }
         unsafe pointer.pointee =
             newValue
             ? { job, _ in MainActor.shared.enqueue(job) }

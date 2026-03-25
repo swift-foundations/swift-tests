@@ -9,10 +9,10 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Binary_Primitives
-public import Formatting_Primitives
-public import Memory
-public import Dependency_Primitives
+import Binary_Primitives
+import Formatting_Primitives
+import Memory
+import Dependency_Primitives
 
 // MARK: - Error Types
 

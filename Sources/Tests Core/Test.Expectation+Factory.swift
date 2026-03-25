@@ -56,7 +56,7 @@ extension Test.Expectation {
     ///
     /// Thread-safe: `static let` guarantees exactly-once initialization.
     private static let _resolveBridge: Void = {
-        guard externalFailureHandler == nil else { return }
+        guard unsafe externalFailureHandler == nil else { return }
         guard let symbol = try? unsafe Loader.Symbol.lookup(
             name: "_swift_tests_bridge_install",
             in: .default
@@ -80,7 +80,7 @@ extension Test.Expectation {
     ) {
         guard Collector.current == nil else { return }
         _ = _resolveBridge
-        externalFailureHandler?(message, location)
+        unsafe externalFailureHandler?(message, location)
     }
 }
 

@@ -45,7 +45,7 @@ extension Test.Snapshot {
         ///
         /// Call between test runs to ensure fresh numbering.
         public func reset() {
-            _ = lock.withLock { _ in
+            lock.withLock { _ in
                 counts.removeAll()
             }
         }

@@ -5,7 +5,7 @@
 //  Comparison between current complexity result and stored baseline.
 //
 
-public import Test_Primitives
+import Test_Primitives
 
 extension Tests.Complexity.Baseline {
     /// Comparison between a stored baseline and the current analysis result.
