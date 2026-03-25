@@ -172,7 +172,7 @@ private func applySnapshotFunction(
     // Append to additional trailing closures.
     updated = updated.with(
         \.additionalTrailingClosures,
-        updated.additionalTrailingClosures.appending(matchesElement)
+        MultipleTrailingClosureElementListSyntax(updated.additionalTrailingClosures + [matchesElement])
     )
 
     return updated

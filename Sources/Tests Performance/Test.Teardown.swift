@@ -34,13 +34,13 @@ extension Test {
 
         /// Registers an action to run after all tests complete.
         public static func register(_ action: @Sendable @escaping () async -> Void) {
-            actions.append(action)
+            unsafe actions.append(action)
         }
 
         /// Executes and removes all registered teardown actions.
         public static func drain() async {
-            for action in actions { await action() }
-            actions.removeAll()
+            for action in unsafe actions { await action() }
+            unsafe actions.removeAll()
         }
     }
 }
