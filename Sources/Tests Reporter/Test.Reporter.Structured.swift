@@ -61,8 +61,6 @@ extension Test.Reporter {
                         permissions: .standard
                     )
                 }
-                defer { try? Kernel.Close.close(descriptor) }
-
                 var remaining = lines[...]
                 while !remaining.isEmpty {
                     let written = try unsafe remaining.withUnsafeBytes { buffer in
