@@ -57,7 +57,7 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
                 guard !treeDiff.isEmpty else { return nil }
 
                 // Build structural operations (format-agnostic)
-                let structuralOps: [Test.Snapshot.Diff.Result.StructuralOperation] =
+                let structuralOps: [Test.Snapshot.Diff.Result.Operation] =
                     treeDiff.operations.compactMap { op in
                         switch op {
                         case .added(let path, let value):
