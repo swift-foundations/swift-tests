@@ -9,6 +9,7 @@ public import File_System
 import JSON
 import Environment
 public import IO
+public import IO_Executor
 
 extension Tests.Baseline {
     /// Handles baseline file I/O.
