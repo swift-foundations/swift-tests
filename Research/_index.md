@@ -2,6 +2,7 @@
 
 | Document | Topic | Date | Status |
 |----------|-------|------|--------|
+| [audit](audit.md) | Naming + implementation audit (46 violations) + modularization MOD-001 through MOD-014 | 2026-04-08 | ACTIVE |
 | [atexit-sigbus-inline-snapshot-writeback](atexit-sigbus-inline-snapshot-writeback.md) | atexit SIGBUS crash from inline snapshot write-back under Swift Testing runner | 2026-03-03 | IN_PROGRESS |
 | [rich-performance-diagnostics](rich-performance-diagnostics.md) | Rich diagnostic output for AI-actionable performance regression analysis | 2026-03-03 | PARTIALLY IMPLEMENTED |
 | [serial-executor-foundation-removal](serial-executor-foundation-removal.md) | Removing Foundation dependency from SerialExecutor | 2026-02-26 | RECOMMENDATION |
