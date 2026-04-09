@@ -9,7 +9,6 @@
 public import File_System
 public import JSON
 public import IO
-public import IO_Executor
 
 // MARK: - JSON Serializable
 
@@ -151,9 +150,9 @@ extension Tests.Complexity.Baseline {
     /// Async variant - runs blocking I/O on a dedicated thread pool.
     public static func load(
         at path: File.Path
-    ) async throws(IO.Lane.Error) -> Tests.Complexity.Baseline? {
+    ) async throws(IO.Blocking.Error) -> Tests.Complexity.Baseline? {
         let path = path
-        return try await IO.run { () -> Tests.Complexity.Baseline? in
+        return try await IO.Blocking.shared.run { () -> Tests.Complexity.Baseline? in
             load(at: path)
         }
     }
@@ -163,10 +162,10 @@ extension Tests.Complexity.Baseline {
     /// Async variant - runs blocking I/O on a dedicated thread pool.
     public func save(
         to path: File.Path
-    ) async throws(IO.Failure.Work<IO.Lane.Error, Tests.Baseline.Storage.Error>) {
+    ) async throws(Either<IO.Blocking.Error, Tests.Baseline.Storage.Error>) {
         let baseline = self
         let path = path
-        try await IO.run { () throws(Tests.Baseline.Storage.Error) in
+        try await IO.Blocking.shared.run { () throws(Tests.Baseline.Storage.Error) in
             try baseline.save(to: path)
         }
     }

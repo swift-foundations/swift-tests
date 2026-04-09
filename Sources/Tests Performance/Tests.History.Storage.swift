@@ -9,7 +9,6 @@ public import File_System
 import JSON
 import Environment
 public import IO
-public import IO_Executor
 
 extension Tests.History {
     /// Handles history file I/O.
@@ -178,10 +177,10 @@ extension Tests.History.Storage {
     public static func append(
         _ record: Tests.History.Record,
         root: File.Path
-    ) async throws(IO.Failure.Work<IO.Lane.Error, Error>) {
+    ) async throws(Either<IO.Blocking.Error, Error>) {
         let record = record
         let root = root
-        try await IO.run { () throws(Error) in
+        try await IO.Blocking.shared.run { () throws(Error) in
             try append(record, root: root)
         }
     }
@@ -250,9 +249,9 @@ extension Tests.History.Storage {
     /// - Returns: All successfully parsed records, in file order.
     public static func load(
         at path: File.Path
-    ) async throws(IO.Lane.Error) -> [Tests.History.Record] {
+    ) async throws(IO.Blocking.Error) -> [Tests.History.Record] {
         let path = path
-        return try await IO.run { () -> [Tests.History.Record] in
+        return try await IO.Blocking.shared.run { () -> [Tests.History.Record] in
             load(at: path)
         }
     }
@@ -270,9 +269,9 @@ extension Tests.History.Storage {
         root: File.Path,
         testID: Test.ID,
         fingerprint: Swift.String
-    ) async throws(IO.Lane.Error) -> [Tests.History.Record] {
+    ) async throws(IO.Blocking.Error) -> [Tests.History.Record] {
         let filePath = path(root: root, testID: testID, fingerprint: fingerprint)
-        return try await IO.run { () -> [Tests.History.Record] in
+        return try await IO.Blocking.shared.run { () -> [Tests.History.Record] in
             load(at: filePath)
         }
     }
