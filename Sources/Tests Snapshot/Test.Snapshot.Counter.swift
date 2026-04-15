@@ -21,9 +21,20 @@ extension Test.Snapshot {
     /// }
     /// ```
     ///
-    /// The counter is keyed by the combination of test file path and function name,
-    /// ensuring unique numbering per test.
-    public final class Counter: @unchecked Sendable {
+    /// ## Safety Invariant
+    ///
+    /// All mutable state (`counts` dictionary) is guarded by a `Mutex`. Every
+    /// mutation path goes through `lock.withLock`.
+    ///
+    /// ## Intended Use
+    ///
+    /// - Sequential numbering per test function for unnamed `expectSnapshot` calls.
+    /// - Shared as a `Dependency.Scope` dependency across a test run.
+    ///
+    /// ## Non-Goals
+    ///
+    /// - NOT a general-purpose counter; specific to snapshot numbering.
+    public final class Counter: @unsafe @unchecked Sendable {
         private var counts: [String: Int] = [:]
         private let lock = Mutex(())
 

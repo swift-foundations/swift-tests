@@ -38,7 +38,20 @@ extension Test.Reporter {
     /// A test reporter sink that outputs JSON with thread-safe event collection.
     ///
     /// Produces JSON without Foundation by manually constructing UTF-8 bytes.
-    private final class JSONSink: Sink.Implementation, @unchecked Sendable {
+    ///
+    /// ## Safety Invariant
+    ///
+    /// Mutable `_events` is guarded by `Mutex<[Test.Event]>`. All mutation
+    /// via `_events.withLock`. The `outputPath` is set once at init.
+    ///
+    /// ## Intended Use
+    ///
+    /// - JSON test event capture for CI tools, stdout, or file output.
+    ///
+    /// ## Non-Goals
+    ///
+    /// - NOT for streaming; events are collected and emitted in batch at `finish()`.
+    private final class JSONSink: Sink.Implementation, @unsafe @unchecked Sendable {
         let outputPath: Swift.String?
         private let _events = Mutex<[Test.Event]>([])
 

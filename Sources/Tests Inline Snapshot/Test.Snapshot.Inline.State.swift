@@ -20,13 +20,24 @@ extension Test.Snapshot.Inline {
     /// complete, at which point the ``Rewriter`` processes them into source file
     /// modifications.
     ///
-    /// An `atexit` handler is lazily registered on first ``register(_:)`` call
-    /// to ensure the rewriter fires even when tests run under Apple's Swift
-    /// Testing runner (which does not call `Test.Runner.postRunActions`).
-    /// When the Institute's runner is active, `postRunActions` drains first
-    /// and `atexit` sees empty state — they are safely composable via the
-    /// destructive ``drain()`` operation.
-    public final class State: @unchecked Sendable {
+    /// ## Safety Invariant
+    ///
+    /// The entries dictionary is guarded by a `Mutex`. All registration and drain
+    /// paths go through `mutex.withLock`. The one-time `atexit` handler is
+    /// installed lazily via a `static let` initializer (one-shot by language rule).
+    ///
+    /// ## Intended Use
+    ///
+    /// - Lazy collection of inline snapshot entries across multiple test runs.
+    /// - Drained once by either `Test.Runner.postRunActions` or the `atexit`
+    ///   handler (whichever fires first -- `drain()` is destructive and
+    ///   idempotent-by-empty).
+    ///
+    /// ## Non-Goals
+    ///
+    /// - NOT thread-safe for the `atexit` handler itself (process is exiting).
+    /// - Does NOT guarantee which drainer runs -- safe by `drain()`-then-empty design.
+    public final class State: @unsafe @unchecked Sendable {
         private let mutex = Mutex<[Swift.String: [Entry]]>([:])
 
         public init() {}

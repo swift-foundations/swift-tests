@@ -29,7 +29,20 @@ extension Test.Reporter {
 
 extension Test.Reporter {
     /// Sink that accumulates JSON records and writes JSONL on finish.
-    private final class StructuredSink: Sink.Implementation, @unchecked Sendable {
+    ///
+    /// ## Safety Invariant
+    ///
+    /// Mutable `_records` is guarded by `Mutex`. The path is set once at init
+    /// and thereafter immutable.
+    ///
+    /// ## Intended Use
+    ///
+    /// - JSONL-structured test event capture for CI tools.
+    ///
+    /// ## Non-Goals
+    ///
+    /// - NOT for in-process consumption; `finish()` writes to disk.
+    private final class StructuredSink: Sink.Implementation, @unsafe @unchecked Sendable {
         private let _path: Swift.String
         private let _records = Mutex<[JSON]>([])
 

@@ -33,7 +33,20 @@ extension Test.Reporter {
 
 extension Test.Reporter {
     /// Console sink implementation with thread-safe counters.
-    private final class Terminal: Sink.Implementation, @unchecked Sendable {
+    ///
+    /// ## Safety Invariant
+    ///
+    /// All mutable state (the counts tuple) is guarded by `Mutex`. The
+    /// `Console.Capability` field is set once at init and thereafter immutable.
+    ///
+    /// ## Intended Use
+    ///
+    /// - Terminal output for test events with thread-safe pass/fail/skip/issue counters.
+    ///
+    /// ## Non-Goals
+    ///
+    /// - NOT intended for non-terminal output; see `JSONSink` / `StructuredSink`.
+    private final class Terminal: Sink.Implementation, @unsafe @unchecked Sendable {
         private let capability: Console.Capability
         private let _counts = Mutex((passed: 0, failed: 0, skipped: 0, issues: 0))
 

@@ -17,6 +17,20 @@ extension Test.Expectation {
     /// etc.) record each expectation with the current collector. After the
     /// body returns, the runner drains the collector to determine pass/fail.
     ///
+    /// ## Safety Invariant
+    ///
+    /// All mutable state (`_storage`) is guarded by a `Mutex`. All mutation paths
+    /// (`record`, `drain`, `hasFailures`) go through `_storage.withLock`.
+    ///
+    /// ## Intended Use
+    ///
+    /// - Per-test collection of `expect`/`assertSnapshot` results.
+    /// - Injected via `Dependency.Scope` so async test bodies can record.
+    ///
+    /// ## Non-Goals
+    ///
+    /// - NOT intended to outlive a single test execution scope.
+    ///
     /// ## Example
     ///
     /// ```swift
@@ -29,7 +43,7 @@ extension Test.Expectation {
     /// // results[0].isPassing == true
     /// // results[1].isFailing == true
     /// ```
-    public final class Collector: @unchecked Sendable {
+    public final class Collector: @unsafe @unchecked Sendable {
 
         /// Dependency key for expectation collector injection.
         public enum Key: Dependency.Key {
