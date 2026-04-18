@@ -22,7 +22,7 @@ private func _makeRecord(
     let environment = Test_Primitives.Test.Environment.capture()
 
     return Tests.History.Record(
-        timestamp: try! Instant(secondsSinceUnixEpoch: secondsSinceUnixEpoch),
+        timestamp: Instant(secondsSinceUnixEpoch: secondsSinceUnixEpoch),
         testID: id,
         metric: .median,
         metricValue: metricValue,

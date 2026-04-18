@@ -60,7 +60,7 @@ extension Tests.History.Record.Test.Unit {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let original = Tests.History.Record(
-            timestamp: try! Instant(secondsSinceUnixEpoch: 1710100000),
+            timestamp: Instant(secondsSinceUnixEpoch: 1710100000),
             testID: id,
             metric: .p95,
             metricValue: .milliseconds(50),
@@ -89,7 +89,7 @@ extension Tests.History.Record.Test.Unit {
 
         for metric in metrics {
             let record = Tests.History.Record(
-                timestamp: try! Instant(secondsSinceUnixEpoch: 1),
+                timestamp: Instant(secondsSinceUnixEpoch: 1),
                 testID: id,
                 metric: metric,
                 metricValue: .seconds(1),
@@ -120,7 +120,7 @@ extension Tests.History.Record.Test.EdgeCase {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let record = Tests.History.Record(
-            timestamp: try! Instant(secondsSinceUnixEpoch: 1),
+            timestamp: Instant(secondsSinceUnixEpoch: 1),
             testID: id,
             metric: .median,
             metricValue: .seconds(1),
@@ -143,7 +143,7 @@ extension Tests.History.Record.Test.EdgeCase {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let record = Tests.History.Record(
-            timestamp: try! Instant(secondsSinceUnixEpoch: 1),
+            timestamp: Instant(secondsSinceUnixEpoch: 1),
             testID: id,
             metric: .median,
             metricValue: .seconds(1),

@@ -58,7 +58,7 @@ extension Tests.History.Storage.Test.Unit {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let record = Tests.History.Record(
-            timestamp: try! Instant(secondsSinceUnixEpoch: 1710100000),
+            timestamp: Instant(secondsSinceUnixEpoch: 1710100000),
             testID: id,
             metric: .median,
             metricValue: .milliseconds(11),
@@ -81,9 +81,7 @@ extension Tests.History.Storage.Test.Unit {
 
             #expect(records.count == 1)
             #expect(records.first?.testID.name == "benchTest")
-            #expect(
-                records.first?.timestamp == (try! Instant(secondsSinceUnixEpoch: 1710100000))
-            )
+            #expect(records.first?.timestamp == Instant(secondsSinceUnixEpoch: 1710100000))
         }
     }
 
@@ -100,7 +98,7 @@ extension Tests.History.Storage.Test.Unit {
                     .milliseconds(10 + i),
                 ])
                 let record = Tests.History.Record(
-                    timestamp: try! Instant(secondsSinceUnixEpoch: Int64(1710100000 + i)),
+                    timestamp: Instant(secondsSinceUnixEpoch: Int64(1710100000 + i)),
                     testID: id,
                     metric: .median,
                     metricValue: .milliseconds(10 + i),
@@ -129,7 +127,7 @@ extension Tests.History.Storage.Test.Unit {
         let measurement = Test_Primitives.Test.Benchmark.Measurement(durations: [.seconds(1)])
 
         let record = Tests.History.Record(
-            timestamp: try! Instant(secondsSinceUnixEpoch: 1),
+            timestamp: Instant(secondsSinceUnixEpoch: 1),
             testID: id,
             metric: .median,
             metricValue: .seconds(1),
