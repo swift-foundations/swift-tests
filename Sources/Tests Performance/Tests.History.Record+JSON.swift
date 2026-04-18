@@ -29,8 +29,11 @@ extension Tests.History.Record: JSON.Serializable {
 
         let env = Test.Environment.serialize(value.environment)
 
+        let tsSeconds =
+            Double(value.timestamp.secondsSinceUnixEpoch)
+            + Double(value.timestamp.nanosecondFraction) / 1_000_000_000
         var fields: [(Swift.String, JSON)] = [
-            ("ts", .number(value.timestamp)),
+            ("ts", .number(tsSeconds)),
             ("id", id),
             ("metric", .string("\(value.metric)")),
             ("value_s", .number(value.metricValue.inSeconds)),
@@ -50,9 +53,15 @@ extension Tests.History.Record: JSON.Serializable {
 
     /// Deserializes a record from JSON.
     public static func deserialize(_ json: JSON) throws(JSON.Error) -> Self {
-        guard let ts = try? Double(json: json.ts) else {
+        guard let tsSeconds = try? Double(json: json.ts) else {
             throw .missingKey("ts")
         }
+        let tsWhole = tsSeconds.rounded(.down)
+        let ts = Instant(
+            __unchecked: (),
+            secondsSinceUnixEpoch: Int64(tsWhole),
+            nanosecondFraction: Int32((tsSeconds - tsWhole) * 1_000_000_000)
+        )
 
         // Parse test ID
         guard let module = try? Swift.String(json: json.id.m) else {

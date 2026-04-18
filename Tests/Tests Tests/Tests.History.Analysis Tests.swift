@@ -22,7 +22,7 @@ private func _makeRecord(
     let environment = Test_Primitives.Test.Environment.capture()
 
     return Tests.History.Record(
-        timestamp: timestamp,
+        timestamp: _instant(epochSeconds: timestamp),
         testID: id,
         metric: .median,
         metricValue: metricValue,
@@ -30,6 +30,15 @@ private func _makeRecord(
         environment: environment,
         coefficientOfVariation: nil,
         outlierCount: nil
+    )
+}
+
+private func _instant(epochSeconds seconds: Double) -> Instant {
+    let whole = seconds.rounded(.down)
+    return Instant(
+        __unchecked: (),
+        secondsSinceUnixEpoch: Int64(whole),
+        nanosecondFraction: Int32((seconds - whole) * 1_000_000_000)
     )
 }
 

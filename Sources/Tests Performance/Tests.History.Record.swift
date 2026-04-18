@@ -15,8 +15,8 @@ extension Tests.History {
     /// append-only to a JSONL file, building a temporal sequence
     /// for cross-run trend analysis.
     public struct Record: Sendable {
-        /// Unix epoch seconds when this measurement was taken.
-        public let timestamp: Double
+        /// Wall-clock instant when this measurement was taken.
+        public let timestamp: Instant
 
         /// The test identifier.
         public let testID: Test.ID
@@ -40,7 +40,7 @@ extension Tests.History {
         public let outlierCount: Int?
 
         public init(
-            timestamp: Double,
+            timestamp: Instant,
             testID: Test.ID,
             metric: Test.Benchmark.Metric,
             metricValue: Duration,
