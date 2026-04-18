@@ -9,15 +9,6 @@ extension Tests.History.Record {
     }
 }
 
-private func _instant(epochSeconds seconds: Double) -> Instant {
-    let whole = seconds.rounded(.down)
-    return Instant(
-        __unchecked: (),
-        secondsSinceUnixEpoch: Int64(whole),
-        nanosecondFraction: Int32((seconds - whole) * 1_000_000_000)
-    )
-}
-
 // MARK: - Unit
 
 extension Tests.History.Record.Test.Unit {
@@ -30,7 +21,10 @@ extension Tests.History.Record.Test.Unit {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let original = Tests.History.Record(
-            timestamp: _instant(epochSeconds: 1710100000.5),
+            timestamp: try! Instant(
+                secondsSinceUnixEpoch: 1710100000,
+                nanosecondFraction: 500_000_000
+            ),
             testID: id,
             metric: .median,
             metricValue: .milliseconds(11),
@@ -43,7 +37,12 @@ extension Tests.History.Record.Test.Unit {
         let json = Tests.History.Record.serialize(original)
         let roundtripped = try Tests.History.Record.deserialize(json)
 
-        #expect(roundtripped.timestamp == _instant(epochSeconds: 1710100000.5))
+        #expect(
+            roundtripped.timestamp == (try! Instant(
+                secondsSinceUnixEpoch: 1710100000,
+                nanosecondFraction: 500_000_000
+            ))
+        )
         #expect(roundtripped.testID.module == "MyModule")
         #expect(roundtripped.testID.suite == "MySuite")
         #expect(roundtripped.testID.name == "benchTest")
@@ -61,7 +60,7 @@ extension Tests.History.Record.Test.Unit {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let original = Tests.History.Record(
-            timestamp: _instant(epochSeconds: 1710100000.0),
+            timestamp: try! Instant(secondsSinceUnixEpoch: 1710100000),
             testID: id,
             metric: .p95,
             metricValue: .milliseconds(50),
@@ -90,7 +89,7 @@ extension Tests.History.Record.Test.Unit {
 
         for metric in metrics {
             let record = Tests.History.Record(
-                timestamp: _instant(epochSeconds: 1.0),
+                timestamp: try! Instant(secondsSinceUnixEpoch: 1),
                 testID: id,
                 metric: metric,
                 metricValue: .seconds(1),
@@ -121,7 +120,7 @@ extension Tests.History.Record.Test.EdgeCase {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let record = Tests.History.Record(
-            timestamp: _instant(epochSeconds: 1.0),
+            timestamp: try! Instant(secondsSinceUnixEpoch: 1),
             testID: id,
             metric: .median,
             metricValue: .seconds(1),
@@ -144,7 +143,7 @@ extension Tests.History.Record.Test.EdgeCase {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let record = Tests.History.Record(
-            timestamp: _instant(epochSeconds: 1.0),
+            timestamp: try! Instant(secondsSinceUnixEpoch: 1),
             testID: id,
             metric: .median,
             metricValue: .seconds(1),

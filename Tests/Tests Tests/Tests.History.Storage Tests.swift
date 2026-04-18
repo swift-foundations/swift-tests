@@ -9,15 +9,6 @@ extension Tests.History.Storage {
     }
 }
 
-private func _instant(epochSeconds seconds: Double) -> Instant {
-    let whole = seconds.rounded(.down)
-    return Instant(
-        __unchecked: (),
-        secondsSinceUnixEpoch: Int64(whole),
-        nanosecondFraction: Int32((seconds - whole) * 1_000_000_000)
-    )
-}
-
 // MARK: - Unit
 
 extension Tests.History.Storage.Test.Unit {
@@ -67,7 +58,7 @@ extension Tests.History.Storage.Test.Unit {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let record = Tests.History.Record(
-            timestamp: _instant(epochSeconds: 1710100000.0),
+            timestamp: try! Instant(secondsSinceUnixEpoch: 1710100000),
             testID: id,
             metric: .median,
             metricValue: .milliseconds(11),
@@ -90,7 +81,9 @@ extension Tests.History.Storage.Test.Unit {
 
             #expect(records.count == 1)
             #expect(records.first?.testID.name == "benchTest")
-            #expect(records.first?.timestamp == _instant(epochSeconds: 1710100000.0))
+            #expect(
+                records.first?.timestamp == (try! Instant(secondsSinceUnixEpoch: 1710100000))
+            )
         }
     }
 
@@ -107,7 +100,7 @@ extension Tests.History.Storage.Test.Unit {
                     .milliseconds(10 + i),
                 ])
                 let record = Tests.History.Record(
-                    timestamp: _instant(epochSeconds: Double(1710100000 + i)),
+                    timestamp: try! Instant(secondsSinceUnixEpoch: Int64(1710100000 + i)),
                     testID: id,
                     metric: .median,
                     metricValue: .milliseconds(10 + i),
@@ -136,7 +129,7 @@ extension Tests.History.Storage.Test.Unit {
         let measurement = Test_Primitives.Test.Benchmark.Measurement(durations: [.seconds(1)])
 
         let record = Tests.History.Record(
-            timestamp: _instant(epochSeconds: 1.0),
+            timestamp: try! Instant(secondsSinceUnixEpoch: 1),
             testID: id,
             metric: .median,
             metricValue: .seconds(1),

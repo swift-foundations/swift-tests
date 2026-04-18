@@ -12,7 +12,7 @@ extension Tests.History.Analysis {
 // MARK: - Helpers
 
 private func _makeRecord(
-    timestamp: Double,
+    secondsSinceUnixEpoch: Int64,
     metricValue: Duration,
     name: Swift.String = "t",
     module: Swift.String = "M"
@@ -22,7 +22,7 @@ private func _makeRecord(
     let environment = Test_Primitives.Test.Environment.capture()
 
     return Tests.History.Record(
-        timestamp: _instant(epochSeconds: timestamp),
+        timestamp: try! Instant(secondsSinceUnixEpoch: secondsSinceUnixEpoch),
         testID: id,
         metric: .median,
         metricValue: metricValue,
@@ -30,15 +30,6 @@ private func _makeRecord(
         environment: environment,
         coefficientOfVariation: nil,
         outlierCount: nil
-    )
-}
-
-private func _instant(epochSeconds seconds: Double) -> Instant {
-    let whole = seconds.rounded(.down)
-    return Instant(
-        __unchecked: (),
-        secondsSinceUnixEpoch: Int64(whole),
-        nanosecondFraction: Int32((seconds - whole) * 1_000_000_000)
     )
 }
 
@@ -55,7 +46,7 @@ extension Tests.History.Analysis.Test.Unit {
         // Mann-Kendall needs ~8 monotonic points for Z > 1.96
         let records = (0..<10).map { i in
             _makeRecord(
-                timestamp: Double(i),
+                secondsSinceUnixEpoch: Int64(i),
                 metricValue: .milliseconds(10 + i * 5)
             )
         }
@@ -70,7 +61,7 @@ extension Tests.History.Analysis.Test.Unit {
     func `detects decreasing trend from improving records`() {
         let records = (0..<10).map { i in
             _makeRecord(
-                timestamp: Double(i),
+                secondsSinceUnixEpoch: Int64(i),
                 metricValue: .milliseconds(100 - i * 5)
             )
         }
@@ -83,9 +74,9 @@ extension Tests.History.Analysis.Test.Unit {
     @Test
     func `computes overall change correctly`() {
         let records = [
-            _makeRecord(timestamp: 1.0, metricValue: .milliseconds(100)),
-            _makeRecord(timestamp: 2.0, metricValue: .milliseconds(110)),
-            _makeRecord(timestamp: 3.0, metricValue: .milliseconds(120)),
+            _makeRecord(secondsSinceUnixEpoch: 1, metricValue: .milliseconds(100)),
+            _makeRecord(secondsSinceUnixEpoch: 2, metricValue: .milliseconds(110)),
+            _makeRecord(secondsSinceUnixEpoch: 3, metricValue: .milliseconds(120)),
         ]
 
         let analysis = Tests.History.Analysis.analyze(records)
@@ -100,9 +91,9 @@ extension Tests.History.Analysis.Test.Unit {
     @Test
     func `earliest and latest values match temporal order`() {
         let records = [
-            _makeRecord(timestamp: 3.0, metricValue: .milliseconds(30)),
-            _makeRecord(timestamp: 1.0, metricValue: .milliseconds(10)),
-            _makeRecord(timestamp: 2.0, metricValue: .milliseconds(20)),
+            _makeRecord(secondsSinceUnixEpoch: 3, metricValue: .milliseconds(30)),
+            _makeRecord(secondsSinceUnixEpoch: 1, metricValue: .milliseconds(10)),
+            _makeRecord(secondsSinceUnixEpoch: 2, metricValue: .milliseconds(20)),
         ]
 
         let analysis = Tests.History.Analysis.analyze(records)
@@ -123,8 +114,8 @@ extension Tests.History.Analysis.Test.EdgeCase {
     @Test
     func `returns nil with fewer than 3 records`() {
         let records = [
-            _makeRecord(timestamp: 1.0, metricValue: .milliseconds(10)),
-            _makeRecord(timestamp: 2.0, metricValue: .milliseconds(20)),
+            _makeRecord(secondsSinceUnixEpoch: 1, metricValue: .milliseconds(10)),
+            _makeRecord(secondsSinceUnixEpoch: 2, metricValue: .milliseconds(20)),
         ]
 
         #expect(Tests.History.Analysis.analyze(records) == nil)
@@ -138,9 +129,9 @@ extension Tests.History.Analysis.Test.EdgeCase {
     @Test
     func `stable values produce no significant trend`() {
         let records = [
-            _makeRecord(timestamp: 1.0, metricValue: .milliseconds(10)),
-            _makeRecord(timestamp: 2.0, metricValue: .milliseconds(10)),
-            _makeRecord(timestamp: 3.0, metricValue: .milliseconds(10)),
+            _makeRecord(secondsSinceUnixEpoch: 1, metricValue: .milliseconds(10)),
+            _makeRecord(secondsSinceUnixEpoch: 2, metricValue: .milliseconds(10)),
+            _makeRecord(secondsSinceUnixEpoch: 3, metricValue: .milliseconds(10)),
         ]
 
         let analysis = Tests.History.Analysis.analyze(records)
