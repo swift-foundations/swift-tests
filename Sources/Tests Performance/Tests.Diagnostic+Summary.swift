@@ -5,7 +5,7 @@
 //  Summary table formatter for collected performance diagnostics.
 //
 
-import Formatting_Primitives
+import Format_Primitives
 import Time_Primitives
 import Console
 

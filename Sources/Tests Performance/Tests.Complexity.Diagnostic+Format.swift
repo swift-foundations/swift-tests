@@ -6,7 +6,7 @@
 //
 
 import Console
-import Formatting_Primitives
+import Format_Primitives
 
 extension Tests.Complexity.Diagnostic {
 

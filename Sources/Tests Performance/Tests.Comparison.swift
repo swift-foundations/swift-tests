@@ -5,7 +5,7 @@
 //  Performance comparison report between current and baseline measurements.
 //
 
-import Formatting_Primitives
+import Format_Primitives
 public import Time_Primitives
 public import Sample_Primitives
 import Console

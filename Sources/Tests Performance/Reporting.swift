@@ -10,7 +10,7 @@
 // ===----------------------------------------------------------------------===//
 
 import Binary_Primitives
-import Formatting_Primitives
+import Format_Primitives
 import Time_Primitives
 import Console
 
