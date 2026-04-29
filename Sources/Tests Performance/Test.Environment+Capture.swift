@@ -3,12 +3,12 @@ import Kernel
 extension Test.Environment {
     /// Captures the current runtime and compile-time environment.
     public static func capture() -> Self {
-        let name = Kernel.System.name
+        let name = System.name
         return Self(
             architecture: _architecture,
-            physicalCPUCount: Int(Kernel.System.Processor.Physical.count),
-            logicalCPUCount: Int(Kernel.System.Processor.count),
-            memoryBytes: UInt64(Kernel.System.Memory.total),
+            physicalCPUCount: Int(System.Processor.Physical.count),
+            logicalCPUCount: Int(System.Processor.count),
+            memoryBytes: UInt64(System.Memory.total),
             osVersion: "\(name.system) \(name.release)",
             swiftVersion: _swiftVersion,
             optimization: .current,
