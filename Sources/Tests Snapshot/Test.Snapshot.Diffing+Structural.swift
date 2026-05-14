@@ -43,8 +43,8 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
             toBytes: { Swift.Array($0.utf8) },
             fromBytes: { Swift.String(decoding: $0, as: UTF8.self) },
             diff: { old, new in
-                guard let oldValue = try? RFC_8259.parse(old),
-                      let newValue = try? RFC_8259.parse(new)
+                guard let oldValue = try? JSON.Decode.parse(old),
+                      let newValue = try? JSON.Decode.parse(new)
                 else {
                     // Not valid JSON — fall back to line diff
                     return Test.Snapshot.Diffing.lines.diff(old, new)

@@ -109,7 +109,7 @@ private func _redactJSON(
     at path: [Swift.String],
     replacement: RFC_8259.Value
 ) -> Swift.String {
-    guard let value = try? RFC_8259.parse(jsonString) else { return jsonString }
+    guard let value = try? JSON.Decode.parse(jsonString) else { return jsonString }
     let modified = _replaceAtPath(value, path: path[...], replacement: replacement)
     return JSON(modified).serialize(pretty: true, sortKeys: true)
 }
@@ -120,7 +120,7 @@ private func _redactJSON(
     at path: [Swift.String],
     dynamicReplacement: (Swift.String) -> Swift.String
 ) -> Swift.String {
-    guard let value = try? RFC_8259.parse(jsonString) else { return jsonString }
+    guard let value = try? JSON.Decode.parse(jsonString) else { return jsonString }
     let modified = _replaceAtPathDynamic(value, path: path[...], replacement: dynamicReplacement)
     return JSON(modified).serialize(pretty: true, sortKeys: true)
 }
@@ -131,7 +131,7 @@ private func _redactJSONGlob(
     pattern: [Swift.String],
     replacement: Swift.String
 ) -> Swift.String {
-    guard let value = try? RFC_8259.parse(jsonString) else { return jsonString }
+    guard let value = try? JSON.Decode.parse(jsonString) else { return jsonString }
     let modified = _replaceGlob(value, pattern: pattern[...], replacement: .string(replacement))
     return JSON(modified).serialize(pretty: true, sortKeys: true)
 }
