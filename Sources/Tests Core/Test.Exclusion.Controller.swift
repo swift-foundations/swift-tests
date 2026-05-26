@@ -6,6 +6,7 @@
 //
 
 public import Test_Primitives
+public import Set_Ordered_Primitives
 
 extension Test.Exclusion {
     /// Actor that provides mutual exclusion for test execution.

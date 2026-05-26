@@ -32,6 +32,7 @@ let package = Package(
         .package(path: "../../swift-primitives/swift-set-primitives"),
         .package(path: "../../swift-primitives/swift-set-ordered-primitives"),
         .package(path: "../../swift-primitives/swift-tree-primitives"),
+        .package(path: "../../swift-primitives/swift-tree-keyed-primitives"),
         .package(path: "../swift-kernel"),
         .package(path: "../swift-memory"),
         .package(path: "../swift-console"),
@@ -60,7 +61,7 @@ let package = Package(
                 .product(name: "Witnesses", package: "swift-witnesses"),
                 .product(name: "Set Primitives", package: "swift-set-primitives"),
                 .product(name: "Set Ordered Primitives", package: "swift-set-ordered-primitives"),
-                .product(name: "Tree Keyed Primitives", package: "swift-tree-primitives"),
+                .product(name: "Tree Keyed Primitives", package: "swift-tree-keyed-primitives"),
             ]
         ),
 

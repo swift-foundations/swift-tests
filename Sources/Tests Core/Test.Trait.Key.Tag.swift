@@ -5,6 +5,9 @@
 //  Witness key for tag traits.
 //
 
+public import Set_Primitives
+public import Set_Ordered_Primitives
+
 extension Test.Trait {
     /// Witness key for tag collection.
     public struct Tag: Sendable {}

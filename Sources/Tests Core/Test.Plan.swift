@@ -6,6 +6,7 @@
 //
 
 public import Test_Primitives
+public import Set_Ordered_Primitives
 
 extension Test {
     /// An execution plan for running tests.
