@@ -7,17 +7,6 @@
   "scope": "swift-tests (swift-foundations)",
   "documents": [
     {
-      "file": "audit.md",
-      "displayName": "audit",
-      "topic": "Naming + implementation audit (46 violations) + modularization MOD-001 through MOD-014",
-      "date": "2026-04-08",
-      "status": "ACTIVE",
-      "statusDetail": null,
-      "statusRaw": "ACTIVE",
-      "tier": null,
-      "scope": null
-    },
-    {
       "file": "atexit-sigbus-inline-snapshot-writeback.md",
       "displayName": "atexit-sigbus-inline-snapshot-writeback",
       "topic": "atexit SIGBUS crash from inline snapshot write-back under Swift Testing runner",
