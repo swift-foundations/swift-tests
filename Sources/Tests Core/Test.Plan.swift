@@ -11,7 +11,7 @@ public import Set_Ordered_Primitives
 extension Test {
     /// An execution plan for running tests.
     ///
-    /// A `Plan` organizes tests into a hierarchy using `Tree<Node?>.Keyed<String>`.
+    /// A `Plan` organizes tests into a hierarchy using `TreeKeyed<Node?, String>`.
     /// Suites group tests and provide trait inheritance. The ``Test/Runner``
     /// walks this tree to execute tests with correct concurrency and trait
     /// propagation.
@@ -35,12 +35,12 @@ extension Test {
         /// Values are `Node?` where `nil` represents structural intermediates
         /// (module boundaries or implicit suite nesting levels not explicitly
         /// registered as suites).
-        public let tree: Tree<Node?>.Keyed<String>
+        public let tree: TreeKeyed<Node?, String>
 
         /// Creates a plan from a hierarchical tree.
         ///
         /// - Parameter tree: The test tree with propagated traits.
-        internal init(tree: Tree<Node?>.Keyed<String>) {
+        internal init(tree: TreeKeyed<Node?, String>) {
             self.tree = tree
         }
 
@@ -52,7 +52,7 @@ extension Test {
         ///
         /// - Parameter entries: The test entries to include.
         internal init(entries: [Entry]) {
-            var tree = Tree<Node?>.Keyed<String>()
+            var tree = TreeKeyed<Node?, String>()
             for entry in entries {
                 tree[Self.components(for: entry.id)] = Node(
                     id: entry.id,
@@ -71,7 +71,7 @@ extension Test {
         public var entries: [Entry] {
             guard let root = tree.root else { return [] }
             var result: [Entry] = []
-            var stack: [Tree<Node?>.Position] = [root]
+            var stack: [TreeKeyed<Node?, String>.Position] = [root]
             while let pos = stack.popLast() {
                 if let nodeOpt: Node? = tree.peek(at: pos),
                    let node = nodeOpt,

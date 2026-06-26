@@ -119,7 +119,7 @@ extension Test.Plan {
         ///
         /// - Returns: The finalized test plan.
         public consuming func finalize() -> Test.Plan {
-            var tree = Tree<Node?>.Keyed<String>()
+            var tree = TreeKeyed<Node?, String>()
 
             // 1. Insert suites
             for suite in suites {
@@ -176,8 +176,8 @@ extension Test.Plan.Registry {
     ///   - position: The current position.
     ///   - inherited: Modifiers accumulated from ancestor nodes.
     private static func propagate(
-        through tree: inout Tree<Test.Plan.Node?>.Keyed<String>,
-        from position: Tree<Test.Plan.Node?>.Position,
+        through tree: inout TreeKeyed<Test.Plan.Node?, String>,
+        from position: TreeKeyed<Test.Plan.Node?, String>.Position,
         inherited: [Test.Trait.Collection.Modifier]
     ) {
         let passDown: [Test.Trait.Collection.Modifier]

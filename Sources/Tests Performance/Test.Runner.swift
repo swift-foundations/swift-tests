@@ -164,8 +164,8 @@ extension Test {
         /// - Suite node (body == nil) → emit suite events, dispatch children
         /// - Test node (body != nil) → execute with scope providers
         private func walk(
-            _ tree: Tree<Plan.Node?>.Keyed<Swift.String>,
-            at position: Tree<Plan.Node?>.Position,
+            _ tree: TreeKeyed<Plan.Node?, Swift.String>,
+            at position: TreeKeyed<Plan.Node?, Swift.String>.Position,
             concurrency: Concurrency,
             sender: Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
@@ -235,8 +235,8 @@ extension Test {
         /// If the node has the `.serialized` trait, forces serial execution
         /// regardless of the top-level concurrency setting.
         private func dispatch(
-            _ tree: Tree<Plan.Node?>.Keyed<Swift.String>,
-            childrenOf position: Tree<Plan.Node?>.Position,
+            _ tree: TreeKeyed<Plan.Node?, Swift.String>,
+            childrenOf position: TreeKeyed<Plan.Node?, Swift.String>.Position,
             concurrency: Concurrency,
             traits: Test.Trait.Collection?,
             sender: Reporter.Sink.Sender,
@@ -454,8 +454,8 @@ extension Test {
         /// Named `sourceLocation(of:in:)` per [API-NAME-002] — labels
         /// carry the semantics instead of a compound method name.
         private func sourceLocation(
-            of position: Tree<Plan.Node?>.Position,
-            in tree: Tree<Plan.Node?>.Keyed<Swift.String>
+            of position: TreeKeyed<Plan.Node?, Swift.String>.Position,
+            in tree: TreeKeyed<Plan.Node?, Swift.String>
         ) -> Source.Location? {
             switch tree.peek(at: position) as Plan.Node?? {
             case .some(.some(let node)): node.id.sourceLocation

@@ -7,7 +7,7 @@
 
 import JSON
 
-// MARK: - JSON → Tree<RFC_8259.Value>.Keyed
+// MARK: - JSON → TreeKeyed<RFC_8259.Value, String>
 
 /// Converts an RFC 8259 value to a keyed tree for structural comparison.
 ///
@@ -17,12 +17,12 @@ import JSON
 ///
 /// Object keys map to tree child keys directly. Array elements use
 /// their string index ("0", "1", ...) as the child key.
-func _jsonToKeyedTree(_ value: RFC_8259.Value) -> Tree<RFC_8259.Value>.Keyed<Swift.String> {
-    var tree = Tree<RFC_8259.Value>.Keyed<Swift.String>()
+func _jsonToKeyedTree(_ value: RFC_8259.Value) -> TreeKeyed<RFC_8259.Value, Swift.String> {
+    var tree = TreeKeyed<RFC_8259.Value, Swift.String>()
 
     let rootPos = try! tree.insert(_jsonLocalValue(value), at: .root)
 
-    var pending: [(parent: Tree<RFC_8259.Value>.Position, key: Swift.String, value: RFC_8259.Value)] = []
+    var pending: [(parent: TreeKeyed<RFC_8259.Value, Swift.String>.Position, key: Swift.String, value: RFC_8259.Value)] = []
     _jsonAppendChildren(of: value, parent: rootPos, to: &pending)
 
     while let (parent, key, childValue) = pending.popLast() {
@@ -50,8 +50,8 @@ private func _jsonLocalValue(_ value: RFC_8259.Value) -> RFC_8259.Value {
 /// Appends child entries for containers onto the pending stack.
 private func _jsonAppendChildren(
     of value: RFC_8259.Value,
-    parent: Tree<RFC_8259.Value>.Position,
-    to pending: inout [(parent: Tree<RFC_8259.Value>.Position, key: Swift.String, value: RFC_8259.Value)]
+    parent: TreeKeyed<RFC_8259.Value, Swift.String>.Position,
+    to pending: inout [(parent: TreeKeyed<RFC_8259.Value, Swift.String>.Position, key: Swift.String, value: RFC_8259.Value)]
 ) {
     switch value {
     case .object(let obj):
