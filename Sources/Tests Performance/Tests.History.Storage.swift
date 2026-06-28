@@ -9,6 +9,7 @@ public import File_System
 import JSON
 import Environment
 public import IO
+public import Thread_Pool
 
 extension Tests.History {
     /// Handles history file I/O.
@@ -177,10 +178,10 @@ extension Tests.History.Storage {
     public static func append(
         _ record: Tests.History.Record,
         root: File.Path
-    ) async throws(Either<IO.Blocking.Error, Error>) {
+    ) async throws(Either<Kernel.Thread.Pool.Error, Error>) {
         let record = record
         let root = root
-        try await IO.Blocking.shared.run { () throws(Error) in
+        try await Kernel.Thread.Pool.shared.run { () throws(Error) in
             try append(record, root: root)
         }
     }
@@ -228,8 +229,7 @@ extension Tests.History.Storage {
     private static func _parseJSONL(_ content: Swift.String) -> [Tests.History.Record] {
         var records: [Tests.History.Record] = []
         for line in content.split(separator: "\n", omittingEmptySubsequences: true) {
-            let bytes = [UInt8](line.utf8)
-            guard let json = try? JSON.parse(bytes),
+            guard let json = try? JSON.parse(Swift.String(line)),
                   let record = try? Tests.History.Record.deserialize(json)
             else { continue }
             records.append(record)
@@ -249,9 +249,9 @@ extension Tests.History.Storage {
     /// - Returns: All successfully parsed records, in file order.
     public static func load(
         at path: File.Path
-    ) async throws(IO.Blocking.Error) -> [Tests.History.Record] {
+    ) async throws(Kernel.Thread.Pool.Error) -> [Tests.History.Record] {
         let path = path
-        return try await IO.Blocking.shared.run { () -> [Tests.History.Record] in
+        return try await Kernel.Thread.Pool.shared.run { () -> [Tests.History.Record] in
             load(at: path)
         }
     }
@@ -269,9 +269,9 @@ extension Tests.History.Storage {
         root: File.Path,
         testID: Test.ID,
         fingerprint: Swift.String
-    ) async throws(IO.Blocking.Error) -> [Tests.History.Record] {
+    ) async throws(Kernel.Thread.Pool.Error) -> [Tests.History.Record] {
         let filePath = path(root: root, testID: testID, fingerprint: fingerprint)
-        return try await IO.Blocking.shared.run { () -> [Tests.History.Record] in
+        return try await Kernel.Thread.Pool.shared.run { () -> [Tests.History.Record] in
             load(at: filePath)
         }
     }

@@ -35,6 +35,7 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-column-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-shared-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-buffer-linear-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-byte-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-tree-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-tree-keyed-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-kernel.git", branch: "main"),
@@ -83,6 +84,7 @@ let package = Package(
                 .product(name: "JSON", package: "swift-json"),
                 .product(name: "Dependency Primitives", package: "swift-dependency-primitives"),
                 .product(name: "Kernel", package: "swift-kernel"),
+                .product(name: "Byte Primitives Standard Library Integration", package: "swift-byte-primitives"),
             ]
         ),
 

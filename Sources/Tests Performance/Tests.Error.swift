@@ -41,24 +41,24 @@ extension Tests {
             case .allocationLimitExceeded(let test, let limit, let actual):
                 return """
                     Memory allocation limit exceeded in '\(test)':
-                    Limit: \(limit.formatted(.bytes))
-                    Actual: \(actual.formatted(.bytes))
-                    Exceeded by: \((actual - limit).formatted(.bytes))
+                    Limit: \(limit)
+                    Actual: \(actual)
+                    Exceeded by: \((actual - limit))
                     """
 
             case .memoryLeakDetected(let test, let netAllocations, let netBytes):
                 return """
                     Memory leak detected in '\(test)':
                     Net allocations: \(netAllocations)
-                    Net bytes: \(netBytes.formatted(.bytes))
+                    Net bytes: \(netBytes)
                     """
 
             case .peakMemoryExceeded(let test, let limit, let actual):
                 return """
                     Peak memory limit exceeded in '\(test)':
-                    Limit: \(limit.formatted(.bytes))
-                    Actual peak: \(actual.formatted(.bytes))
-                    Exceeded by: \((actual - limit).formatted(.bytes))
+                    Limit: \(limit)
+                    Actual peak: \(actual)
+                    Exceeded by: \((actual - limit))
                     """
             }
         }

@@ -93,7 +93,7 @@ extension Test.Snapshot.Storage {
     ///
     /// - Parameter path: Path to the snapshot file.
     /// - Returns: The file contents, or `nil` if the file doesn't exist.
-    public static func reference(at path: File.Path) -> [UInt8]? {
+    public static func reference(at path: File.Path) -> [Byte]? {
         let file = File(path)
         guard file.stat.exists else { return nil }
 
@@ -127,7 +127,7 @@ extension Test.Snapshot.Storage {
     ///   - path: The destination path.
     /// - Throws: `Storage.Error` on failure.
     public static func write(
-        bytes: [UInt8],
+        bytes: [Byte],
         to path: File.Path
     ) throws(Test.Snapshot.Storage.Error) {
         // Ensure parent directory exists

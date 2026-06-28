@@ -20,7 +20,7 @@ import JSON
 func _jsonToKeyedTree(_ value: RFC_8259.Value) -> TreeKeyed<RFC_8259.Value, Swift.String> {
     var tree = TreeKeyed<RFC_8259.Value, Swift.String>()
 
-    let rootPos = try! tree.insert(_jsonLocalValue(value), at: .root)
+    let rootPos = try! tree.insert(_jsonLocalValue(value), at: __TreeKeyedInsertPosition<Swift.String>.root)
 
     var pending: [(parent: TreeKeyed<RFC_8259.Value, Swift.String>.Position, key: Swift.String, value: RFC_8259.Value)] = []
     _jsonAppendChildren(of: value, parent: rootPos, to: &pending)

@@ -44,17 +44,17 @@ extension Tests {
             output += """
 
                    Allocations:
-                     Min:      \((allocations.min() ?? 0).formatted(.bytes))
-                     Median:   \(allocations.sorted()[allocations.count / 2].formatted(.bytes))
-                     Max:      \((allocations.max() ?? 0).formatted(.bytes))
-                     Avg:      \((allocations.reduce(0, +) / allocations.count).formatted(.bytes))
+                     Min:      \((allocations.min() ?? 0))
+                     Median:   \(allocations.sorted()[allocations.count / 2])
+                     Max:      \((allocations.max() ?? 0))
+                     Avg:      \((allocations.reduce(0, +) / allocations.count))
                 """
         }
 
         if let peak = peakMemory {
             output += """
 
-                   Peak Memory: \(peak.formatted(.bytes))
+                   Peak Memory: \(peak)
                 """
         }
 

@@ -9,6 +9,7 @@
 public import File_System
 public import JSON
 public import IO
+public import Thread_Pool
 
 // MARK: - JSON Serializable
 
@@ -103,7 +104,7 @@ extension Tests.Complexity.Baseline {
 
         do {
             return try file.read.full { span in
-                let bytes: [UInt8] = span.withUnsafeBufferPointer { unsafe .init($0) }
+                let bytes: [Byte] = span.withUnsafeBufferPointer { unsafe .init($0) }
                 return try Tests.Complexity.Baseline(jsonBytes: bytes)
             }
         } catch {
@@ -129,9 +130,9 @@ extension Tests.Complexity.Baseline {
             }
         }
 
-        let bytes = jsonBytes(pretty: true)
+        let content = jsonString(pretty: true)
         do {
-            try File(path).write.atomic(contentsOf: bytes)
+            try File(path).write.atomic(content)
         } catch {
             throw Tests.Baseline.Storage.Error.writeFailed(
                 path: path,
@@ -150,9 +151,9 @@ extension Tests.Complexity.Baseline {
     /// Async variant - runs blocking I/O on a dedicated thread pool.
     public static func load(
         at path: File.Path
-    ) async throws(IO.Blocking.Error) -> Tests.Complexity.Baseline? {
+    ) async throws(Kernel.Thread.Pool.Error) -> Tests.Complexity.Baseline? {
         let path = path
-        return try await IO.Blocking.shared.run { () -> Tests.Complexity.Baseline? in
+        return try await Kernel.Thread.Pool.shared.run { () -> Tests.Complexity.Baseline? in
             load(at: path)
         }
     }
@@ -162,10 +163,10 @@ extension Tests.Complexity.Baseline {
     /// Async variant - runs blocking I/O on a dedicated thread pool.
     public func save(
         to path: File.Path
-    ) async throws(Either<IO.Blocking.Error, Tests.Baseline.Storage.Error>) {
+    ) async throws(Either<Kernel.Thread.Pool.Error, Tests.Baseline.Storage.Error>) {
         let baseline = self
         let path = path
-        try await IO.Blocking.shared.run { () throws(Tests.Baseline.Storage.Error) in
+        try await Kernel.Thread.Pool.shared.run { () throws(Tests.Baseline.Storage.Error) in
             try baseline.save(to: path)
         }
     }

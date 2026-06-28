@@ -9,6 +9,7 @@ public import File_System
 import JSON
 import Environment
 public import IO
+public import Thread_Pool
 
 extension Tests.Baseline {
     /// Handles baseline file I/O.
@@ -86,7 +87,7 @@ extension Tests.Baseline.Storage {
 
         do {
             return try file.read.full { span in
-                let bytes: [UInt8] = span.withUnsafeBufferPointer { unsafe .init($0) }
+                let bytes: [Byte] = span.withUnsafeBufferPointer { unsafe .init($0) }
                 let json = try JSON.parse(bytes)
                 return try Test.Benchmark.Measurement(json: json)
             }
@@ -107,9 +108,9 @@ extension Tests.Baseline.Storage {
     /// - Returns: The deserialized measurement, or `nil` if the file does not exist.
     public static func load(
         at path: File.Path
-    ) async throws(IO.Blocking.Error) -> Test.Benchmark.Measurement? {
+    ) async throws(Kernel.Thread.Pool.Error) -> Test.Benchmark.Measurement? {
         let path = path
-        return try await IO.Blocking.shared.run { () -> Test.Benchmark.Measurement? in
+        return try await Kernel.Thread.Pool.shared.run { () -> Test.Benchmark.Measurement? in
             load(at: path)
         }
     }
@@ -136,9 +137,9 @@ extension Tests.Baseline.Storage {
         }
 
         // Serialize and write atomically
-        let bytes = measurement.jsonBytes(pretty: true)
+        let content = measurement.jsonString(pretty: true)
         do {
-            try File(path).write.atomic(contentsOf: bytes)
+            try File(path).write.atomic(content)
         } catch {
             throw Tests.Baseline.Storage.Error.writeFailed(
                 path: path,
@@ -157,10 +158,10 @@ extension Tests.Baseline.Storage {
     public static func save(
         _ measurement: Test.Benchmark.Measurement,
         to path: File.Path
-    ) async throws(Either<IO.Blocking.Error, Tests.Baseline.Storage.Error>) {
+    ) async throws(Either<Kernel.Thread.Pool.Error, Tests.Baseline.Storage.Error>) {
         let measurement = measurement
         let path = path
-        try await IO.Blocking.shared.run { () throws(Tests.Baseline.Storage.Error) in
+        try await Kernel.Thread.Pool.shared.run { () throws(Tests.Baseline.Storage.Error) in
             try save(measurement, to: path)
         }
     }

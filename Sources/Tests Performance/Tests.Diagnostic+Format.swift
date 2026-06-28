@@ -1,5 +1,7 @@
 import Console
 import Format_Primitives
+import Tagged_Primitives
+import Cardinal_Primitives
 
 extension Tests.Diagnostic {
 
@@ -129,7 +131,7 @@ extension Tests.Diagnostic {
         lines.append("  Environment:")
         lines.append("    Architecture:  \(environment.architecture)")
         lines.append("    CPU Cores:     \(environment.physicalCPUCount) (physical) / \(environment.logicalCPUCount) (logical)")
-        let memGB = Double(environment.memoryBytes) / (1024.0 * 1024.0 * 1024.0)
+        let memGB = Double(environment.memoryBytes.underlying.rawValue) / (1024.0 * 1024.0 * 1024.0)
         lines.append("    Memory:        \(Int(memGB.rounded())) GB")
         lines.append("    Swift:         \(environment.swiftVersion)")
         lines.append("    Optimization:  \(environment.optimization.rawValue)")

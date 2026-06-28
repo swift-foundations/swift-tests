@@ -58,7 +58,7 @@ extension Tests.History.Record: JSON.Serializable {
         }
         let tsWhole = tsSeconds.rounded(.down)
         let ts = Instant(
-            __unchecked: (),
+            _unchecked: (),
             secondsSinceUnixEpoch: Int64(tsWhole),
             nanosecondFraction: Int32((tsSeconds - tsWhole) * 1_000_000_000)
         )

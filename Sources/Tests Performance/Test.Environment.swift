@@ -1,4 +1,6 @@
 import Time_Primitives
+public import Kernel
+import Tagged_Primitives
 
 extension Test {
     /// Runtime and compile-time environment fingerprint for performance diagnostics.
@@ -6,18 +8,18 @@ extension Test {
     /// Captures hardware characteristics, compiler settings, and feature flags
     /// that affect performance measurement. Used to explain regressions caused
     /// by environment differences (e.g., debug vs release, feature flags enabled).
-    public struct Environment: Sendable, Codable, Hashable {
+    public struct Environment: Sendable, Hashable {
         /// CPU architecture (e.g., "arm64", "x86_64").
         public var architecture: Swift.String
 
         /// Number of physical CPU cores.
-        public var physicalCPUCount: Int
+        public var physicalCPUCount: System.Processor.Count
 
         /// Number of logical CPU cores (includes hyperthreading).
-        public var logicalCPUCount: Int
+        public var logicalCPUCount: System.Processor.Count
 
         /// Total physical memory in bytes.
-        public var memoryBytes: UInt64
+        public var memoryBytes: System.Memory.Capacity
 
         /// OS version string (e.g., "Darwin 24.3.0").
         public var osVersion: Swift.String
@@ -37,9 +39,9 @@ extension Test {
 
         public init(
             architecture: Swift.String,
-            physicalCPUCount: Int,
-            logicalCPUCount: Int,
-            memoryBytes: UInt64,
+            physicalCPUCount: System.Processor.Count,
+            logicalCPUCount: System.Processor.Count,
+            memoryBytes: System.Memory.Capacity,
             osVersion: Swift.String,
             swiftVersion: Swift.String,
             optimization: Optimization,

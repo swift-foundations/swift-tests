@@ -34,8 +34,8 @@ extension Test_Primitives.Test.Expectation {
                     sourceLocation: Testing.SourceLocation(
                         fileID: location.fileID,
                         filePath: location.filePath ?? location.fileID,
-                        line: location.line,
-                        column: location.column
+                        line: Swift.Int(location.line.underlying),
+                        column: Swift.Int(location.column.underlying.rawValue)
                     )
                 )
             }

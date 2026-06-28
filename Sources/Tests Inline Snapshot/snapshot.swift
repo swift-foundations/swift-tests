@@ -357,7 +357,7 @@ extension Test.Snapshot.Storage {
             }
         }
 
-        func compare(_ reference: [UInt8]) -> Swift.String? {
+        func compare(_ reference: [Byte]) -> Swift.String? {
             if reference == actualBytes { return nil }
 
             guard let referenceFormat = strategy.diffing.fromBytes(reference) else {

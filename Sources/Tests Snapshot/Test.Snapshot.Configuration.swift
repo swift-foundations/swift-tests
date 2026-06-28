@@ -118,7 +118,7 @@ extension Test.Snapshot.Configuration {
 
         // 3. Environment variable
         if let env = unsafe Kernel.Environment.get("SWIFT_SNAPSHOT_RECORD"),
-           let mode = Test.Snapshot.Recording(rawValue: Swift.String(env)) {
+           let mode = Test.Snapshot.Recording(rawValue: Swift.String(env.view)) {
             return mode
         }
 

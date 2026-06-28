@@ -7,6 +7,9 @@
 
 public import JSON
 import Time_Primitives
+public import Kernel
+import Tagged_Primitives
+import Cardinal_Primitives
 
 extension Test.Environment: JSON.Serializable {
     /// Serializes the environment as a JSON object.
@@ -21,9 +24,9 @@ extension Test.Environment: JSON.Serializable {
 
         return .object([
             ("architecture", JSON.string(value.architecture)),
-            ("physical_cores", JSON.number(value.physicalCPUCount)),
-            ("logical_cores", JSON.number(value.logicalCPUCount)),
-            ("memory_bytes", JSON.number(Int(value.memoryBytes))),
+            ("physical_cores", JSON.number(Int(bitPattern: value.physicalCPUCount.underlying.rawValue))),
+            ("logical_cores", JSON.number(Int(bitPattern: value.logicalCPUCount.underlying.rawValue))),
+            ("memory_bytes", JSON.number(Int(bitPattern: value.memoryBytes.underlying.rawValue))),
             ("os", JSON.string(value.osVersion)),
             ("swift_version", JSON.string(value.swiftVersion)),
             ("optimization", JSON.string(value.optimization.rawValue)),
@@ -61,9 +64,9 @@ extension Test.Environment: JSON.Serializable {
 
         return Self(
             architecture: architecture,
-            physicalCPUCount: physicalCores,
-            logicalCPUCount: logicalCores,
-            memoryBytes: UInt64(memoryBytes),
+            physicalCPUCount: System.Processor.Count(_unchecked: Cardinal(UInt(physicalCores))),
+            logicalCPUCount: System.Processor.Count(_unchecked: Cardinal(UInt(logicalCores))),
+            memoryBytes: System.Memory.Capacity(_unchecked: Cardinal(UInt(memoryBytes))),
             osVersion: os,
             swiftVersion: swiftVersion,
             optimization: .init(rawValue: optimization),

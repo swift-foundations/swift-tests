@@ -4,12 +4,16 @@ extension Test.Environment {
     /// Captures the current runtime and compile-time environment.
     public static func capture() -> Self {
         let name = System.name
+        let osVersion = "\(name.system) \(name.release)"
+        let physical = System.Processor.Physical.count
+        let logical = System.Processor.count
+        let memory = System.Memory.total
         return Self(
             architecture: _architecture,
-            physicalCPUCount: Int(System.Processor.Physical.count),
-            logicalCPUCount: Int(System.Processor.count),
-            memoryBytes: UInt64(System.Memory.total),
-            osVersion: "\(name.system) \(name.release)",
+            physicalCPUCount: physical,
+            logicalCPUCount: logical,
+            memoryBytes: memory,
+            osVersion: osVersion,
             swiftVersion: _swiftVersion,
             optimization: .current,
             features: .current
