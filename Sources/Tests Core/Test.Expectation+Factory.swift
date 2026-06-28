@@ -16,15 +16,13 @@ private let _expectationCounter = Atomic<UInt64>(0)
 
 func _nextExpressionID() -> Test.Expression.ID {
     Test.Expression.ID(
-        __unchecked: (),
-        _expressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
+        _unchecked: _expressionCounter.wrappingAdd(1, ordering: .relaxed).newValue
     )
 }
 
 func _nextExpectationID() -> Test.Expectation.ID {
     Test.Expectation.ID(
-        __unchecked: (),
-        _expectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
+        _unchecked: _expectationCounter.wrappingAdd(1, ordering: .relaxed).newValue
     )
 }
 

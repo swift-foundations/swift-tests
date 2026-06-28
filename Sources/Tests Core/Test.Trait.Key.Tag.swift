@@ -7,6 +7,10 @@
 
 public import Set_Primitives
 public import Set_Ordered_Primitives
+public import Hash_Indexed_Primitive
+public import Column_Primitives
+public import Shared_Primitive
+public import Buffer_Linear_Primitive
 
 extension Test.Trait {
     /// Witness key for tag collection.
@@ -14,8 +18,8 @@ extension Test.Trait {
 }
 
 extension Test.Trait.Tag: Witness.Key {
-    public typealias Value = Set<Swift.String>.Ordered
+    public typealias Value = Set<Shared<Swift.String, Hash.Indexed<Column.Heap<Swift.String>>>>.Ordered
 
     @inlinable
-    public static var liveValue: Set<Swift.String>.Ordered { [] }
+    public static var liveValue: Value { .init() }
 }

@@ -6,7 +6,12 @@
 //
 
 public import Test_Primitives
+public import Set_Primitives
 public import Set_Ordered_Primitives
+public import Hash_Indexed_Primitive
+public import Column_Primitives
+public import Shared_Primitive
+public import Buffer_Linear_Primitive
 
 extension Test {
     /// An execution plan for running tests.
@@ -146,11 +151,15 @@ extension Test.Plan {
     ///
     /// - Parameter tags: The tags to filter by.
     /// - Returns: A plan containing only matching entries.
-    public func filter(tags: Set<Swift.String>.Ordered) -> Self {
+    public func filter(tags: Test.Trait.Tag.Value) -> Self {
         filter { entry in
             let collection = Test.Trait.Collection(modifiers: entry.modifiers)
             let entryTags = collection[Test.Trait.Tag.self]
-            return tags.contains(where: { entryTags.contains($0) })
+            var matches = false
+            tags.forEach { (tag: Swift.String) in
+                if entryTags.contains(tag) { matches = true }
+            }
+            return matches
         }
     }
 

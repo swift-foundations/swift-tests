@@ -6,7 +6,12 @@
 //
 
 public import Test_Primitives
+public import Set_Primitives
 public import Set_Ordered_Primitives
+public import Hash_Indexed_Primitive
+public import Column_Primitives
+public import Shared_Primitive
+public import Buffer_Linear_Primitive
 
 extension Test.Exclusion {
     /// Actor that provides mutual exclusion for test execution.
@@ -18,7 +23,7 @@ extension Test.Exclusion {
         public static let shared = Controller()
 
         /// Tracks which groups are currently running.
-        private var runningGroups: Set<Swift.String>.Ordered = .init()
+        private var runningGroups: Set<Shared<Swift.String, Hash.Indexed<Column.Heap<Swift.String>>>>.Ordered = .init()
 
         /// Continuations waiting for access, keyed by group.
         private var waiters: [Swift.String: [CheckedContinuation<Void, Never>]] = [:]
