@@ -96,7 +96,7 @@ extension Test.Reporter {
 
         private func json(from event: Test.Event) -> Swift.String {
             var json = "{"
-            json += "\"kind\": \"\(event.kind.rawValue)\""
+            json += "\"kind\": \"\(event.kind.underlying)\""
 
             if let id = event.id {
                 json += ", \"test_id\": \"\(id.fullyQualifiedName)\""
@@ -117,7 +117,7 @@ extension Test.Reporter {
 
         private func write(to path: Swift.String, bytes: [UInt8]) {
             do {
-                let descriptor = try Kernel.Path.scope(path) { pathView in
+                let descriptor = try Path.scope(path) { pathView in
                     try Kernel.File.Open.open(
                         path: pathView,
                         mode: .write,

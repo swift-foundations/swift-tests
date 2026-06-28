@@ -66,7 +66,7 @@ extension Test.Reporter {
             }
 
             do {
-                let descriptor = try Kernel.Path.scope(_path) { pathView in
+                let descriptor = try Path.scope(_path) { pathView in
                     try Kernel.File.Open.open(
                         path: pathView,
                         mode: .write,
@@ -124,8 +124,8 @@ extension Test.Reporter {
                 let loc = expectation.expression.sourceLocation
                 fields.append(("source_location", .object([
                     ("fileID", .string(loc.fileID)),
-                    ("line", .number(loc.line)),
-                    ("column", .number(loc.column)),
+                    ("line", .number(Swift.Int(loc.line.underlying))),
+                    ("column", .number(Swift.Int(loc.column.underlying.rawValue))),
                 ])))
                 if let failure = expectation.failure {
                     fields.append(("message", .string(failure.message.plainText)))
@@ -145,8 +145,8 @@ extension Test.Reporter {
                 if let loc = issue.sourceLocation {
                     fields.append(("source_location", .object([
                         ("fileID", .string(loc.fileID)),
-                        ("line", .number(loc.line)),
-                        ("column", .number(loc.column)),
+                        ("line", .number(Swift.Int(loc.line.underlying))),
+                        ("column", .number(Swift.Int(loc.column.underlying.rawValue))),
                     ])))
                 }
                 return envelope("issueRecorded", payload: .object(fields))
@@ -162,7 +162,7 @@ extension Test.Reporter {
                 // Extensible kinds (e.g., performanceDiagnostic) with payload
                 if let payload = event.payload {
                     let parsed = (try? JSON.parse(payload)) ?? .string(payload)
-                    return envelope(event.kind.rawValue, payload: parsed)
+                    return envelope(event.kind.underlying, payload: parsed)
                 }
                 return nil
             }
