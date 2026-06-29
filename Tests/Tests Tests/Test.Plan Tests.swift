@@ -67,7 +67,9 @@ extension TestPlanTests.Unit {
         )
         let plan = registry.finalize()
 
-        let filtered = plan.filter(tags: ["smoke"])
+        var tagFilter = Test.Trait.Tag.liveValue
+        tagFilter.insert("smoke")
+        let filtered = plan.filter(tags: tagFilter)
         #expect(filtered.count == 1)
     }
 

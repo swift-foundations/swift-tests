@@ -219,8 +219,8 @@ extension ComplexityBaselineTests.JSONRoundTrip {
             bestClass: .linear, exponent: 1.05, confidence: .high, bestRSquared: 0.9987
         )
 
-        let bytes = original.jsonBytes(pretty: true)
-        let restored = try Tests.Complexity.Baseline(jsonBytes: bytes)
+        let string = original.jsonString(pretty: true)
+        let restored = try Tests.Complexity.Baseline(jsonString: string)
 
         #expect(restored.bestClass == .linear)
         #expect(abs(restored.exponent - 1.05) < 0.0001)
@@ -235,8 +235,8 @@ extension ComplexityBaselineTests.JSONRoundTrip {
             bestClass: nil, exponent: 0.3, confidence: .inconclusive, bestRSquared: nil
         )
 
-        let bytes = original.jsonBytes(pretty: true)
-        let restored = try Tests.Complexity.Baseline(jsonBytes: bytes)
+        let string = original.jsonString(pretty: true)
+        let restored = try Tests.Complexity.Baseline(jsonString: string)
 
         #expect(restored.bestClass == nil)
         #expect(abs(restored.exponent - 0.3) < 0.0001)
@@ -256,8 +256,8 @@ extension ComplexityBaselineTests.JSONRoundTrip {
                 bestClass: .quadratic, exponent: 2.0, confidence: confidence, bestRSquared: 0.99
             )
 
-            let bytes = original.jsonBytes(pretty: true)
-            let restored = try Tests.Complexity.Baseline(jsonBytes: bytes)
+            let string = original.jsonString(pretty: true)
+            let restored = try Tests.Complexity.Baseline(jsonString: string)
 
             #expect(restored.confidence == confidence)
         }
@@ -270,8 +270,8 @@ extension ComplexityBaselineTests.JSONRoundTrip {
                 bestClass: cls, exponent: 1.0, confidence: .high, bestRSquared: 0.99
             )
 
-            let bytes = original.jsonBytes(pretty: true)
-            let restored = try Tests.Complexity.Baseline(jsonBytes: bytes)
+            let string = original.jsonString(pretty: true)
+            let restored = try Tests.Complexity.Baseline(jsonString: string)
 
             #expect(restored.bestClass == cls)
         }
