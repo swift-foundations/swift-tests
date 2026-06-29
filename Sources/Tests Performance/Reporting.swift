@@ -13,6 +13,7 @@ import Binary_Primitives
 import Format_Primitives
 import Time_Primitives
 import Console
+import IEC_80000_13_Formatting
 
 extension Tests {
     /// Print a performance measurement summary
@@ -44,17 +45,17 @@ extension Tests {
             output += """
 
                    Allocations:
-                     Min:      \((allocations.min() ?? 0))
-                     Median:   \(allocations.sorted()[allocations.count / 2])
-                     Max:      \((allocations.max() ?? 0))
-                     Avg:      \((allocations.reduce(0, +) / allocations.count))
+                     Min:      \((allocations.min() ?? 0).formatted(.bytes(.binary)))
+                     Median:   \(allocations.sorted()[allocations.count / 2].formatted(.bytes(.binary)))
+                     Max:      \((allocations.max() ?? 0).formatted(.bytes(.binary)))
+                     Avg:      \((allocations.reduce(0, +) / allocations.count).formatted(.bytes(.binary)))
                 """
         }
 
         if let peak = peakMemory {
             output += """
 
-                   Peak Memory: \(peak)
+                   Peak Memory: \(peak.formatted(.bytes(.binary)))
                 """
         }
 

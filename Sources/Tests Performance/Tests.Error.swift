@@ -13,6 +13,7 @@ import Binary_Primitives
 import Format_Primitives
 import Memory
 import Dependency_Primitives
+import IEC_80000_13_Formatting
 
 // MARK: - Error Types
 
@@ -41,24 +42,24 @@ extension Tests {
             case .allocationLimitExceeded(let test, let limit, let actual):
                 return """
                     Memory allocation limit exceeded in '\(test)':
-                    Limit: \(limit)
-                    Actual: \(actual)
-                    Exceeded by: \((actual - limit))
+                    Limit: \(limit.formatted(.bytes(.binary)))
+                    Actual: \(actual.formatted(.bytes(.binary)))
+                    Exceeded by: \((actual - limit).formatted(.bytes(.binary)))
                     """
 
             case .memoryLeakDetected(let test, let netAllocations, let netBytes):
                 return """
                     Memory leak detected in '\(test)':
                     Net allocations: \(netAllocations)
-                    Net bytes: \(netBytes)
+                    Net bytes: \(netBytes.formatted(.bytes(.binary)))
                     """
 
             case .peakMemoryExceeded(let test, let limit, let actual):
                 return """
                     Peak memory limit exceeded in '\(test)':
-                    Limit: \(limit)
-                    Actual peak: \(actual)
-                    Exceeded by: \((actual - limit))
+                    Limit: \(limit.formatted(.bytes(.binary)))
+                    Actual peak: \(actual.formatted(.bytes(.binary)))
+                    Exceeded by: \((actual - limit).formatted(.bytes(.binary)))
                     """
             }
         }

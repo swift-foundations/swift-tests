@@ -49,6 +49,7 @@ let package = Package(
         .package(url: "https://github.com/swift-foundations/swift-clocks.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-environment.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-witnesses.git", branch: "main"),
+        .package(url: "https://github.com/swift-iec/swift-iec-80000-13.git", branch: "main"),
         .package(url: "https://github.com/swiftlang/swift-syntax", "602.0.0"..<"603.0.0"),
     ],
     targets: [
@@ -120,6 +121,7 @@ let package = Package(
                 .product(name: "JSON", package: "swift-json"),
                 .product(name: "Environment", package: "swift-environment"),
                 .product(name: "IO", package: "swift-io"),
+                .product(name: "IEC 80000-13 Formatting", package: "swift-iec-80000-13"),
             ]
         ),
 
