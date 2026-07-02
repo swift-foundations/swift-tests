@@ -1,6 +1,6 @@
 # .github/metadata.yaml
 # Triaged by AI-assisted bulk pass (2026-04-29).
-description: "Tests for Swift."
+description: "Snapshot testing (inline and file-backed), timed benchmarks with regression detection, and algorithmic-complexity assertions for Swift."
 topics:
   - foundations
   - tests
