@@ -153,7 +153,7 @@ Snapshot storage, baseline storage, and inline-snapshot rewriting each declare t
 ## Community
 
 <!-- BEGIN: discussion -->
-*Discussion thread will be created at first public flip.*
+*Discussion thread will be created at the first public release.*
 <!-- END: discussion -->
 
 ---
