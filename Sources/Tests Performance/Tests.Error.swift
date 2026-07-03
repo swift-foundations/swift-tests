@@ -10,10 +10,10 @@
 // ===----------------------------------------------------------------------===//
 
 import Binary_Primitives
-import Format_Primitives
-import Memory
 import Dependency_Primitives
+import Format_Primitives
 import IEC_80000_13_Formatting
+import Memory
 
 // MARK: - Error Types
 

@@ -1,6 +1,6 @@
+import JSON
 import Testing
 import Tests_Test_Support
-import JSON
 
 extension TestEnvironmentTests {
     @Suite struct JSON {}
@@ -46,7 +46,7 @@ extension TestEnvironmentTests.JSON {
     @Test
     func `missing required key throws error`() {
         let incomplete: JSON = .object([
-            ("architecture", .string("arm64")),
+            ("architecture", .string("arm64"))
         ])
         #expect(throws: JSON.Error.self) {
             _ = try Test.Environment.deserialize(incomplete)

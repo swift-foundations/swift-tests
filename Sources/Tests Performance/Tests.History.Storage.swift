@@ -5,10 +5,10 @@
 //  Append-only JSONL storage for run history.
 //
 
-public import File_System
-import JSON
 import Environment
+public import File_System
 public import IO
+import JSON
 public import Thread_Pool
 
 extension Tests.History {
@@ -73,7 +73,7 @@ extension Tests.History.Storage {
     /// - positive integer → that limit
     public static var maxRecords: Int? {
         guard let value = Environment.read("SWIFT_BENCHMARK_HISTORY_MAX"),
-              let max = Int(value), max > 0
+            let max = Int(value), max > 0
         else { return nil }
         return max
     }
@@ -230,7 +230,7 @@ extension Tests.History.Storage {
         var records: [Tests.History.Record] = []
         for line in content.split(separator: "\n", omittingEmptySubsequences: true) {
             guard let json = try? JSON.parse(Swift.String(line)),
-                  let record = try? Tests.History.Record.deserialize(json)
+                let record = try? Tests.History.Record.deserialize(json)
             else { continue }
             records.append(record)
         }

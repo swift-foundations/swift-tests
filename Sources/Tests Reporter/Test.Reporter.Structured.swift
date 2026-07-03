@@ -5,10 +5,10 @@
 //  JSONL reporter that writes one JSON record per line.
 //
 
-import Test_Primitives
 import JSON
 import Kernel
 import Synchronization
+import Test_Primitives
 
 extension Test.Reporter {
     /// Creates a structured JSONL reporter.
@@ -62,7 +62,7 @@ extension Test.Reporter {
             var lines: [UInt8] = []
             for record in records {
                 lines.append(contentsOf: record.serialize().utf8)
-                lines.append(0x0A) // newline
+                lines.append(0x0A)  // newline
             }
 
             do {
@@ -94,9 +94,12 @@ extension Test.Reporter {
                 return envelope("runStarted")
 
             case .testStarted:
-                return envelope("testStarted", payload: .object(
-                    testFields(event)
-                ))
+                return envelope(
+                    "testStarted",
+                    payload: .object(
+                        testFields(event)
+                    )
+                )
 
             case .testEnded:
                 var fields = testFields(event)
@@ -117,16 +120,21 @@ extension Test.Reporter {
 
             case .expectationChecked:
                 guard let expectation = event.expectation, expectation.isFailing else {
-                    return nil // Only record failures
+                    return nil  // Only record failures
                 }
                 var fields = testFields(event)
                 fields.append(("expression", .string(expectation.expression.sourceCode)))
                 let loc = expectation.expression.sourceLocation
-                fields.append(("source_location", .object([
-                    ("fileID", .string(loc.fileID)),
-                    ("line", .number(Swift.Int(loc.line.underlying))),
-                    ("column", .number(Swift.Int(loc.column.underlying.rawValue))),
-                ])))
+                fields.append(
+                    (
+                        "source_location",
+                        .object([
+                            ("fileID", .string(loc.fileID)),
+                            ("line", .number(Swift.Int(loc.line.underlying))),
+                            ("column", .number(Swift.Int(loc.column.underlying.rawValue))),
+                        ])
+                    )
+                )
                 if let failure = expectation.failure {
                     fields.append(("message", .string(failure.message.plainText)))
                     if let expected = failure.expected {
@@ -143,11 +151,16 @@ extension Test.Reporter {
                 var fields = testFields(event)
                 fields.append(("issue_kind", .string("\(issue.kind)")))
                 if let loc = issue.sourceLocation {
-                    fields.append(("source_location", .object([
-                        ("fileID", .string(loc.fileID)),
-                        ("line", .number(Swift.Int(loc.line.underlying))),
-                        ("column", .number(Swift.Int(loc.column.underlying.rawValue))),
-                    ])))
+                    fields.append(
+                        (
+                            "source_location",
+                            .object([
+                                ("fileID", .string(loc.fileID)),
+                                ("line", .number(Swift.Int(loc.line.underlying))),
+                                ("column", .number(Swift.Int(loc.column.underlying.rawValue))),
+                            ])
+                        )
+                    )
                 }
                 return envelope("issueRecorded", payload: .object(fields))
 

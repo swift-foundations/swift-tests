@@ -78,12 +78,14 @@ private typealias OriginalHook = @convention(thin) (UnownedJob) -> Void
 private typealias TaskEnqueueHook = @convention(thin) (UnownedJob, OriginalHook) -> Void
 
 nonisolated(unsafe)
-private let _taskEnqueueHookPointer: UnsafeMutablePointer<TaskEnqueueHook?>? = {
-    guard let symbol = try? unsafe Loader.Symbol.lookup(
-        name: "swift_task_enqueueGlobal_hook",
-        in: .default
-    ) else { return nil }
-    return unsafe UnsafeMutablePointer(
-        mutating: symbol.assumingMemoryBound(to: TaskEnqueueHook?.self)
-    )
-}()
+    private let _taskEnqueueHookPointer: UnsafeMutablePointer<TaskEnqueueHook?>? = {
+        guard
+            let symbol = try? unsafe Loader.Symbol.lookup(
+                name: "swift_task_enqueueGlobal_hook",
+                in: .default
+            )
+        else { return nil }
+        return unsafe UnsafeMutablePointer(
+            mutating: symbol.assumingMemoryBound(to: TaskEnqueueHook?.self)
+        )
+    }()

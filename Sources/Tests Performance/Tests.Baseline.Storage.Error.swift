@@ -29,10 +29,13 @@ extension Tests.Baseline.Storage.Error: CustomStringConvertible {
         switch self {
         case .readFailed(let path, let underlying):
             return "Failed to read baseline at '\(path)': \(underlying)"
+
         case .writeFailed(let path, let underlying):
             return "Failed to write baseline to '\(path)': \(underlying)"
+
         case .directoryCreationFailed(let path, let underlying):
             return "Failed to create baseline directory '\(path)': \(underlying)"
+
         case .baselineMissing(let path):
             return "No baseline exists at '\(path)' and recording mode is 'never'"
         }

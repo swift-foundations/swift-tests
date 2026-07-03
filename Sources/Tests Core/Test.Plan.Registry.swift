@@ -185,8 +185,10 @@ extension Test.Plan.Registry {
         switch tree.peek(at: position) as Test.Plan.Node?? {
         case nil:
             return
+
         case .some(nil):
             passDown = inherited
+
         case .some(.some(var node)):
             node.traits = Test.Trait.Collection(modifiers: inherited + node.modifiers)
             _ = try? tree.update(at: position, node)

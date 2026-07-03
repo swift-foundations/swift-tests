@@ -29,7 +29,7 @@ extension TestPlanRegistryTests.Unit {
     @Test
     func `add with sync body closure`() {
         var registry = Test_Primitives.Test.Plan.Registry()
-        registry.add(id: .stub("sync")) { /* sync body */ }
+        registry.add(id: .stub("sync")) { /* sync body */  }
         #expect(registry.count == 1)
     }
 
@@ -71,10 +71,12 @@ extension TestPlanRegistryTests.Unit {
         var registry = Test_Primitives.Test.Plan.Registry()
 
         // Register a suite with .serialized
-        registry.add(suite: Tests_Core.Test.Suite.Registration(
-            id: .init(module: "M", suite: "MySuite", name: "", sourceLocation: .stub()),
-            modifiers: [.serialized]
-        ))
+        registry.add(
+            suite: Tests_Core.Test.Suite.Registration(
+                id: .init(module: "M", suite: "MySuite", name: "", sourceLocation: .stub()),
+                modifiers: [.serialized]
+            )
+        )
 
         // Register a test inside that suite
         registry.add(

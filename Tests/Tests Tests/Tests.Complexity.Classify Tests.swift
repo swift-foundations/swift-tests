@@ -6,11 +6,11 @@
 //  reason cases not covered by the main classification tests.
 //
 
+import Real_Primitives
 import Testing
 import Tests_Test_Support
-import Real_Primitives
 
-fileprivate typealias SUT = Test_Primitives.Test
+private typealias SUT = Test_Primitives.Test
 
 @Suite
 struct ComplexityClassifyTests {
@@ -104,7 +104,7 @@ extension ComplexityClassifyTests.InconclusiveReasons {
         // Use sizes where some are constant and some grow,
         // creating a bad log-log R².
         let sizes = ComplexityClassifyTests.defaultSizes
-        let points: [(size: Int, metric: Duration)] = sizes.enumerated().map { (i, n) in
+        let points: [(size: Int, metric: Duration)] = sizes.enumerated().map { i, n in
             // Alternating between constant and growing durations.
             let seconds = i % 2 == 0 ? 0.001 : 1e-8 * Double(n)
             return (size: n, metric: Duration.seconds(seconds))
@@ -131,7 +131,7 @@ extension ComplexityClassifyTests.InconclusiveReasons {
         // Use alternating growth rates to create poor discrete fits
         // while keeping a monotonic trend.
         let sizes = ComplexityClassifyTests.defaultSizes
-        let points: [(size: Int, metric: Duration)] = sizes.enumerated().map { (i, n) in
+        let points: [(size: Int, metric: Duration)] = sizes.enumerated().map { i, n in
             let base = 1e-8 * Double(n)
             // Add oscillation: even indices get 3× longer.
             let seconds = i % 2 == 0 ? base * 3.0 : base

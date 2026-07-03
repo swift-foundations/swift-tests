@@ -1,6 +1,6 @@
-public import Tests
-public import Test_Primitives
 import Synchronization
+public import Test_Primitives
+public import Tests
 
 // MARK: - Test.Benchmark.Measurement Factory
 

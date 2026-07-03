@@ -5,12 +5,12 @@
 //  Test plan executor.
 //
 
-public import Tests_Core
-import Tree_Keyed_Primitives
 import Clocks
 import Dependency_Primitives
-import Standard_Library_Extensions
 import JSON
+import Standard_Library_Extensions
+public import Tests_Core
+import Tree_Keyed_Primitives
 
 extension Test {
     /// Executes test plans and reports results.
@@ -90,19 +90,23 @@ extension Test {
             await sender.send(Test.Event(kind: .planCreated, elapsed: elapsed(since: startTime)))
 
             // Emit structured plan record
-            await sender.send(Test.Event(
-                kind: .planRecord,
-                elapsed: elapsed(since: startTime),
-                payload: Self.planJSON(plan).serialize()
-            ))
+            await sender.send(
+                Test.Event(
+                    kind: .planRecord,
+                    elapsed: elapsed(since: startTime),
+                    payload: Self.planJSON(plan).serialize()
+                )
+            )
 
             // Walk the tree
             let counters: Counters
             if let root = plan.tree.root {
                 counters = await walk(
-                    plan.tree, at: root,
+                    plan.tree,
+                    at: root,
                     concurrency: concurrency,
-                    sender: sender, startTime: startTime
+                    sender: sender,
+                    startTime: startTime
                 )
             } else {
                 counters = Counters()
@@ -118,29 +122,35 @@ extension Test {
                 print(diagnostic.formatted())
 
                 // Emit structured event with JSON payload
-                await sender.send(Test.Event(
-                    kind: .performanceDiagnostic,
-                    elapsed: elapsed(since: startTime),
-                    payload: diagnostic.jsonBlock()
-                ))
+                await sender.send(
+                    Test.Event(
+                        kind: .performanceDiagnostic,
+                        elapsed: elapsed(since: startTime),
+                        payload: diagnostic.jsonBlock()
+                    )
+                )
             }
 
             // Emit summary if any timed tests ran
             if !diagnostics.isEmpty {
                 Tests.Diagnostic.summary(diagnostics)
 
-                await sender.send(Test.Event(
-                    kind: .performanceSummary,
-                    elapsed: elapsed(since: startTime)
-                ))
+                await sender.send(
+                    Test.Event(
+                        kind: .performanceSummary,
+                        elapsed: elapsed(since: startTime)
+                    )
+                )
             }
 
             // Emit structured summary record
-            await sender.send(Test.Event(
-                kind: .summaryRecord,
-                elapsed: elapsed(since: startTime),
-                payload: Self.summaryJSON(counters, elapsed: elapsed(since: startTime)).serialize()
-            ))
+            await sender.send(
+                Test.Event(
+                    kind: .summaryRecord,
+                    elapsed: elapsed(since: startTime),
+                    payload: Self.summaryJSON(counters, elapsed: elapsed(since: startTime)).serialize()
+                )
+            )
 
             // Execute post-run actions (e.g., inline snapshot write-back)
             for action in postRunActions {
@@ -177,50 +187,64 @@ extension Test {
             case .some(nil):
                 // Structural nil node — module boundary or implicit nesting.
                 return await dispatch(
-                    tree, childrenOf: position,
-                    concurrency: concurrency, traits: nil,
-                    sender: sender, startTime: startTime
+                    tree,
+                    childrenOf: position,
+                    concurrency: concurrency,
+                    traits: nil,
+                    sender: sender,
+                    startTime: startTime
                 )
 
             case .some(.some(let node)):
                 let traits = node.traits
 
                 if !isEnabled(traits) {
-                    await sender.send(Test.Event(
-                        id: node.id,
-                        kind: .testSkipped,
-                        elapsed: elapsed(since: startTime),
-                        reason: reason(disabled: traits)
-                    ))
+                    await sender.send(
+                        Test.Event(
+                            id: node.id,
+                            kind: .testSkipped,
+                            elapsed: elapsed(since: startTime),
+                            reason: reason(disabled: traits)
+                        )
+                    )
                     return Counters(passed: 0, failed: 0, skipped: 1)
                 }
 
                 if node.body != nil {
                     // Test node — execute with scope providers
                     return await execute(
-                        node, traits: traits,
-                        sender: sender, startTime: startTime
+                        node,
+                        traits: traits,
+                        sender: sender,
+                        startTime: startTime
                     )
                 } else {
                     // Suite node — bracket children with suite events
-                    await sender.send(Test.Event(
-                        id: node.id,
-                        kind: .testStarted,
-                        elapsed: elapsed(since: startTime)
-                    ))
-
-                    let counters = await dispatch(
-                        tree, childrenOf: position,
-                        concurrency: concurrency, traits: traits,
-                        sender: sender, startTime: startTime
+                    await sender.send(
+                        Test.Event(
+                            id: node.id,
+                            kind: .testStarted,
+                            elapsed: elapsed(since: startTime)
+                        )
                     )
 
-                    await sender.send(Test.Event(
-                        id: node.id,
-                        kind: .testEnded,
-                        elapsed: elapsed(since: startTime),
-                        result: counters.failed > 0 ? .failed : .passed
-                    ))
+                    let counters = await dispatch(
+                        tree,
+                        childrenOf: position,
+                        concurrency: concurrency,
+                        traits: traits,
+                        sender: sender,
+                        startTime: startTime
+                    )
+
+                    await sender.send(
+                        Test.Event(
+                            id: node.id,
+                            kind: .testEnded,
+                            elapsed: elapsed(since: startTime),
+                            result: counters.failed > 0 ? .failed : .passed
+                        )
+                    )
 
                     return counters
                 }
@@ -265,9 +289,11 @@ extension Test {
                 var counters = Counters()
                 for (_, childPos) in sorted {
                     counters += await walk(
-                        tree, at: childPos,
+                        tree,
+                        at: childPos,
                         concurrency: effective,
-                        sender: sender, startTime: startTime
+                        sender: sender,
+                        startTime: startTime
                     )
                 }
                 return counters
@@ -276,10 +302,12 @@ extension Test {
                 return await withTaskGroup(of: Counters.self, returning: Counters.self) { group in
                     for (_, childPos) in children {
                         group.addTask {
-                            await self.walk(
-                                tree, at: childPos,
+                            await walk(
+                                tree,
+                                at: childPos,
                                 concurrency: effective,
-                                sender: sender, startTime: startTime
+                                sender: sender,
+                                startTime: startTime
                             )
                         }
                     }
@@ -299,10 +327,12 @@ extension Test {
                     // Seed initial batch
                     while inFlight < maxConcurrent, let (_, childPos) = childIter.next() {
                         group.addTask {
-                            await self.walk(
-                                tree, at: childPos,
+                            await walk(
+                                tree,
+                                at: childPos,
                                 concurrency: effective,
-                                sender: sender, startTime: startTime
+                                sender: sender,
+                                startTime: startTime
                             )
                         }
                         inFlight += 1
@@ -314,10 +344,12 @@ extension Test {
                         inFlight -= 1
                         if let (_, childPos) = childIter.next() {
                             group.addTask {
-                                await self.walk(
-                                    tree, at: childPos,
+                                await walk(
+                                    tree,
+                                    at: childPos,
                                     concurrency: effective,
-                                    sender: sender, startTime: startTime
+                                    sender: sender,
+                                    startTime: startTime
                                 )
                             }
                             inFlight += 1
@@ -340,11 +372,13 @@ extension Test {
             sender: Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
         ) async -> Counters {
-            await sender.send(Test.Event(
-                id: node.id,
-                kind: .testStarted,
-                elapsed: elapsed(since: startTime)
-            ))
+            await sender.send(
+                Test.Event(
+                    id: node.id,
+                    kind: .testStarted,
+                    elapsed: elapsed(since: startTime)
+                )
+            )
 
             let entry = Test.Plan.Entry(
                 id: node.id,
@@ -372,18 +406,20 @@ extension Test {
                 }
 
                 if !isRequirementFailure {
-                    await sender.send(Test.Event(
-                        id: node.id,
-                        kind: .issueRecorded,
-                        elapsed: elapsed(since: startTime),
-                        issue: Test.Issue(
-                            kind: .errorCaught(
-                                type: Swift.String(describing: type(of: error)),
-                                description: Test.Text(Swift.String(describing: error))
-                            ),
-                            sourceLocation: entry.id.sourceLocation
+                    await sender.send(
+                        Test.Event(
+                            id: node.id,
+                            kind: .issueRecorded,
+                            elapsed: elapsed(since: startTime),
+                            issue: Test.Issue(
+                                kind: .errorCaught(
+                                    type: Swift.String(describing: type(of: error)),
+                                    description: Test.Text(Swift.String(describing: error))
+                                ),
+                                sourceLocation: entry.id.sourceLocation
+                            )
                         )
-                    ))
+                    )
                 }
             }
 
@@ -391,23 +427,27 @@ extension Test {
             let hasExpectationFailures = expectations.contains(where: \.isFailing)
 
             for expectation in expectations {
-                await sender.send(Test.Event(
-                    id: node.id,
-                    kind: .expectationChecked,
-                    elapsed: elapsed(since: startTime),
-                    expectation: expectation
-                ))
+                await sender.send(
+                    Test.Event(
+                        id: node.id,
+                        kind: .expectationChecked,
+                        elapsed: elapsed(since: startTime),
+                        expectation: expectation
+                    )
+                )
 
                 if expectation.isFailing {
-                    await sender.send(Test.Event(
-                        id: node.id,
-                        kind: .issueRecorded,
-                        elapsed: elapsed(since: startTime),
-                        issue: Test.Issue(
-                            kind: .expectationFailed(expectation.id),
-                            sourceLocation: expectation.expression.sourceLocation
+                    await sender.send(
+                        Test.Event(
+                            id: node.id,
+                            kind: .issueRecorded,
+                            elapsed: elapsed(since: startTime),
+                            issue: Test.Issue(
+                                kind: .expectationFailed(expectation.id),
+                                sourceLocation: expectation.expression.sourceLocation
+                            )
                         )
-                    ))
+                    )
                 }
             }
 
@@ -417,12 +457,14 @@ extension Test {
                 testResult = .passed
             }
 
-            await sender.send(Test.Event(
-                id: node.id,
-                kind: .testEnded,
-                elapsed: elapsed(since: startTime),
-                result: testResult
-            ))
+            await sender.send(
+                Test.Event(
+                    id: node.id,
+                    kind: .testEnded,
+                    elapsed: elapsed(since: startTime),
+                    result: testResult
+                )
+            )
 
             return testResult == .passed
                 ? Counters(passed: 1, failed: 0, skipped: 0)
@@ -476,10 +518,12 @@ extension Test {
                 do {
                     try await entry.body.run()
                 } catch {
-                    let bodyError = error as? Test.Body.Error ?? .caught(
-                        type: Swift.String(describing: type(of: error)),
-                        description: Swift.String(describing: error)
-                    )
+                    let bodyError =
+                        error as? Test.Body.Error
+                        ?? .caught(
+                            type: Swift.String(describing: type(of: error)),
+                            description: Swift.String(describing: error)
+                        )
                     throw Error.bodyFailed(bodyError)
                 }
             }
@@ -515,16 +559,22 @@ extension Test.Runner {
         }
 
         return .object([
-            ("git", .object([
-                ("sha", git.sha.map { .string($0) } ?? .null),
-                ("branch", git.branch.map { .string($0) } ?? .null),
-                ("dirty", git.dirty.map { .bool($0) } ?? .null),
-            ])),
+            (
+                "git",
+                .object([
+                    ("sha", git.sha.map { .string($0) } ?? .null),
+                    ("branch", git.branch.map { .string($0) } ?? .null),
+                    ("dirty", git.dirty.map { .bool($0) } ?? .null),
+                ])
+            ),
             ("environment", env.json),
             ("tests", .array(tests)),
-            ("counts", .object([
-                ("discovered", .number(plan.count)),
-            ])),
+            (
+                "counts",
+                .object([
+                    ("discovered", .number(plan.count))
+                ])
+            ),
         ])
     }
 
@@ -532,11 +582,14 @@ extension Test.Runner {
     private static func summaryJSON(_ counters: Counters, elapsed: Duration) -> JSON {
         .object([
             ("duration_seconds", .number(elapsed.inSeconds)),
-            ("counts", .object([
-                ("passed", .number(counters.passed)),
-                ("failed", .number(counters.failed)),
-                ("skipped", .number(counters.skipped)),
-            ])),
+            (
+                "counts",
+                .object([
+                    ("passed", .number(counters.passed)),
+                    ("failed", .number(counters.failed)),
+                    ("skipped", .number(counters.skipped)),
+                ])
+            ),
         ])
     }
 }
@@ -554,15 +607,15 @@ extension Test.Runner {
         var failed: Int = 0
         var skipped: Int = 0
 
-        static func + (lhs: Counters, rhs: Counters) -> Counters {
-            Counters(
+        static func + (lhs: Self, rhs: Self) -> Self {
+            Self(
                 passed: lhs.passed + rhs.passed,
                 failed: lhs.failed + rhs.failed,
                 skipped: lhs.skipped + rhs.skipped
             )
         }
 
-        static func += (lhs: inout Counters, rhs: Counters) {
+        static func += (lhs: inout Self, rhs: Self) {
             lhs = lhs + rhs
         }
     }

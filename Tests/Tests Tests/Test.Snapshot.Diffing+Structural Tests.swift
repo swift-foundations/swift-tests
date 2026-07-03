@@ -27,7 +27,10 @@ extension TestSnapshotDiffingStructuralTests.Unit {
         #expect(result != nil)
         #expect(result?.structuralOperations != nil)
         let ops = result!.structuralOperations!
-        let added = ops.filter { if case .added = $0 { return true }; return false }
+        let added = ops.filter {
+            if case .added = $0 { return true }
+            return false
+        }
         #expect(added.count == 1)
         if case .added(let path, let value) = added.first {
             #expect(path == "email")
@@ -43,7 +46,10 @@ extension TestSnapshotDiffingStructuralTests.Unit {
         )
         #expect(result != nil)
         let ops = result!.structuralOperations!
-        let removed = ops.filter { if case .removed = $0 { return true }; return false }
+        let removed = ops.filter {
+            if case .removed = $0 { return true }
+            return false
+        }
         #expect(removed.count == 1)
         if case .removed(let path, let value) = removed.first {
             #expect(path == "age")
@@ -89,7 +95,10 @@ extension TestSnapshotDiffingStructuralTests.Unit {
         )
         #expect(result != nil)
         let ops = result!.structuralOperations!
-        let modified = ops.filter { if case .modified = $0 { return true }; return false }
+        let modified = ops.filter {
+            if case .modified = $0 { return true }
+            return false
+        }
         #expect(modified.count >= 1)
         if case .modified(let path, _, _) = modified.first {
             #expect(path.contains("[1]"))

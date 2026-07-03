@@ -1,4 +1,5 @@
 import Testing
+
 @testable import Tests_Inline_Snapshot
 
 @Suite("Test.Snapshot.Inline.Rewriter")

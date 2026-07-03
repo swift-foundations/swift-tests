@@ -5,10 +5,10 @@
 //  Performance comparison report between current and baseline measurements.
 //
 
-import Format_Primitives
-public import Time_Primitives
-public import Sample_Primitives
 import Console
+import Format_Primitives
+public import Sample_Primitives
+public import Time_Primitives
 
 extension Tests {
     /// Performance comparison report between current and baseline measurements.
@@ -71,4 +71,3 @@ extension Tests {
         }
     }
 }
-

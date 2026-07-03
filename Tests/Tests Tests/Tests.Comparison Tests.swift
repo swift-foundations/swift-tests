@@ -73,7 +73,9 @@ extension Tests.Comparison.Test.EdgeCase {
     func `identical measurements produce zero change`() {
         let measurement = Test.Benchmark.Measurement(durations: [.milliseconds(100)])
         let comparison = Tests.Comparison(
-            name: "test", current: measurement, baseline: measurement
+            name: "test",
+            current: measurement,
+            baseline: measurement
         )
         #expect(comparison.change == 0.0)
         #expect(!comparison.isRegression)

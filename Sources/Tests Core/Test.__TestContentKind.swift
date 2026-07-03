@@ -29,7 +29,10 @@ extension Test {
 extension Test.__TestContentKind {
     /// Constructs a FourCC value from four ASCII bytes (big-endian).
     private static func fourCC(
-        _ a: UInt8, _ b: UInt8, _ c: UInt8, _ d: UInt8
+        _ a: UInt8,
+        _ b: UInt8,
+        _ c: UInt8,
+        _ d: UInt8
     ) -> Self {
         Self(rawValue: UInt32(a) << 24 | UInt32(b) << 16 | UInt32(c) << 8 | UInt32(d))
     }

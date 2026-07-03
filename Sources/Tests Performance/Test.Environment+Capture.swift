@@ -37,25 +37,25 @@ extension Test.Environment {
 extension Test.Environment {
     private static var _architecture: Swift.String {
         #if arch(arm64)
-        "arm64"
+            "arm64"
         #elseif arch(x86_64)
-        "x86_64"
+            "x86_64"
         #elseif arch(i386)
-        "i386"
+            "i386"
         #else
-        "unknown"
+            "unknown"
         #endif
     }
 
     private static var _swiftVersion: Swift.String {
         #if swift(>=6.2)
-        "6.2"
+            "6.2"
         #elseif swift(>=6.1)
-        "6.1"
+            "6.1"
         #elseif swift(>=6.0)
-        "6.0"
+            "6.0"
         #else
-        "< 6.0"
+            "< 6.0"
         #endif
     }
 }

@@ -5,8 +5,8 @@
 //  JSON snapshot strategy using swift-json.
 //
 
-public import Test_Primitives
 public import JSON
+public import Test_Primitives
 
 // MARK: - JSON Strategy
 

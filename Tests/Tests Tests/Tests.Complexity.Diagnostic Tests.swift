@@ -8,7 +8,7 @@
 import Testing
 import Tests_Test_Support
 
-fileprivate typealias SUT = Test_Primitives.Test
+private typealias SUT = Test_Primitives.Test
 
 @Suite
 struct ComplexityDiagnosticTests {
@@ -95,10 +95,16 @@ extension ComplexityDiagnosticTests.Formatted {
         var diagnostic = ComplexityDiagnosticTests.linearDiagnostic()
         diagnostic.baselineComparison = Tests.Complexity.Baseline.Comparison(
             previous: Tests.Complexity.Baseline(
-                bestClass: .quadratic, exponent: 2.0, confidence: .high, bestRSquared: 0.99
+                bestClass: .quadratic,
+                exponent: 2.0,
+                confidence: .high,
+                bestRSquared: 0.99
             ),
             current: Tests.Complexity.Baseline(
-                bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+                bestClass: .linear,
+                exponent: 1.0,
+                confidence: .high,
+                bestRSquared: 0.99
             )
         )
         let output = diagnostic.formatted()
@@ -114,10 +120,16 @@ extension ComplexityDiagnosticTests.Formatted {
         var diagnostic = ComplexityDiagnosticTests.linearDiagnostic()
         diagnostic.baselineComparison = Tests.Complexity.Baseline.Comparison(
             previous: Tests.Complexity.Baseline(
-                bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+                bestClass: .linear,
+                exponent: 1.0,
+                confidence: .high,
+                bestRSquared: 0.99
             ),
             current: Tests.Complexity.Baseline(
-                bestClass: .quadratic, exponent: 2.0, confidence: .high, bestRSquared: 0.99
+                bestClass: .quadratic,
+                exponent: 2.0,
+                confidence: .high,
+                bestRSquared: 0.99
             )
         )
         let output = diagnostic.formatted()
@@ -165,10 +177,16 @@ extension ComplexityDiagnosticTests.JSON {
         var diagnostic = ComplexityDiagnosticTests.linearDiagnostic()
         diagnostic.baselineComparison = Tests.Complexity.Baseline.Comparison(
             previous: Tests.Complexity.Baseline(
-                bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+                bestClass: .linear,
+                exponent: 1.0,
+                confidence: .high,
+                bestRSquared: 0.99
             ),
             current: Tests.Complexity.Baseline(
-                bestClass: .quadratic, exponent: 2.0, confidence: .high, bestRSquared: 0.99
+                bestClass: .quadratic,
+                exponent: 2.0,
+                confidence: .high,
+                bestRSquared: 0.99
             )
         )
         let json = diagnostic.jsonBlock()

@@ -92,8 +92,8 @@ extension Tests.Complexity {
         /// Default policy with provisional thresholds.
         ///
         /// These values are implementation heuristics pending calibration.
-        public static var `default`: Policy {
-            Policy(
+        public static var `default`: Self {
+            Self(
                 candidateClasses: [
                     .constant,
                     .logarithmic,

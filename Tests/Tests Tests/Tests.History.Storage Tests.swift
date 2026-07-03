@@ -18,7 +18,9 @@ extension Tests.History.Storage.Test.Unit {
         let id = Tests_Core.Test.ID.stub("myTest", module: "MyModule")
 
         let path = Tests.History.Storage.path(
-            root: root, testID: id, fingerprint: "arm64-10c-debug"
+            root: root,
+            testID: id,
+            fingerprint: "arm64-10c-debug"
         )
         let str = Swift.String(path)
 
@@ -58,7 +60,7 @@ extension Tests.History.Storage.Test.Unit {
         let environment = Test_Primitives.Test.Environment.capture()
 
         let record = Tests.History.Record(
-            timestamp: Instant(secondsSinceUnixEpoch: 1710100000),
+            timestamp: Instant(secondsSinceUnixEpoch: 1_710_100_000),
             testID: id,
             metric: .median,
             metricValue: .milliseconds(11),
@@ -81,7 +83,7 @@ extension Tests.History.Storage.Test.Unit {
 
             #expect(records.count == 1)
             #expect(records.first?.testID.name == "benchTest")
-            #expect(records.first?.timestamp == Instant(secondsSinceUnixEpoch: 1710100000))
+            #expect(records.first?.timestamp == Instant(secondsSinceUnixEpoch: 1_710_100_000))
         }
     }
 
@@ -95,10 +97,10 @@ extension Tests.History.Storage.Test.Unit {
 
             for i in 0..<5 {
                 let measurement = Test_Primitives.Test.Benchmark.Measurement(durations: [
-                    .milliseconds(10 + i),
+                    .milliseconds(10 + i)
                 ])
                 let record = Tests.History.Record(
-                    timestamp: Instant(secondsSinceUnixEpoch: Int64(1710100000 + i)),
+                    timestamp: Instant(secondsSinceUnixEpoch: Int64(1_710_100_000 + i)),
                     testID: id,
                     metric: .median,
                     metricValue: .milliseconds(10 + i),

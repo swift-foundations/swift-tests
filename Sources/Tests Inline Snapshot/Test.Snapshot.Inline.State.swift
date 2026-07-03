@@ -5,12 +5,13 @@
 //  Thread-safe accumulator for pending inline snapshot writes.
 //
 
-public import Test_Primitives
 import Synchronization
+public import Test_Primitives
+
 #if canImport(Darwin)
-import Darwin
+    import Darwin
 #elseif canImport(Glibc)
-import Glibc
+    import Glibc
 #endif
 
 extension Test.Snapshot.Inline {

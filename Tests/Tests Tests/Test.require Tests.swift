@@ -42,8 +42,10 @@ extension TestRequireTests.Runner {
         let expectationEvents = spy.events.filter {
             $0.kind == .expectationChecked
         }
-        #expect(!expectationEvents.isEmpty,
-            ".expectationChecked should be emitted for require()")
+        #expect(
+            !expectationEvents.isEmpty,
+            ".expectationChecked should be emitted for require()"
+        )
     }
 
     @Test
@@ -63,8 +65,10 @@ extension TestRequireTests.Runner {
             if case .expectationFailed = issue.kind { return true }
             return false
         }
-        #expect(!expectationFailedIssues.isEmpty,
-            ".issueRecorded(.expectationFailed) should be emitted, not .errorCaught")
+        #expect(
+            !expectationFailedIssues.isEmpty,
+            ".issueRecorded(.expectationFailed) should be emitted, not .errorCaught"
+        )
     }
 
     @Test
@@ -84,8 +88,10 @@ extension TestRequireTests.Runner {
             if case .errorCaught = issue.kind { return true }
             return false
         }
-        #expect(errorCaughtIssues.isEmpty,
-            "require() should not produce .errorCaught — the expectation covers it")
+        #expect(
+            errorCaughtIssues.isEmpty,
+            "require() should not produce .errorCaught — the expectation covers it"
+        )
     }
 
     @Test
@@ -107,8 +113,10 @@ extension TestRequireTests.Runner {
             if case .errorCaught = issue.kind { return true }
             return false
         }
-        #expect(!errorCaughtIssues.isEmpty,
-            "Independent throws should still produce .errorCaught")
+        #expect(
+            !errorCaughtIssues.isEmpty,
+            "Independent throws should still produce .errorCaught"
+        )
     }
 
     @Test
@@ -128,8 +136,10 @@ extension TestRequireTests.Runner {
         let expectationEvents = spy.events.filter {
             $0.kind == .expectationChecked && ($0.expectation?.isPassing ?? false)
         }
-        #expect(!expectationEvents.isEmpty,
-            "Passing require should emit .expectationChecked")
+        #expect(
+            !expectationEvents.isEmpty,
+            "Passing require should emit .expectationChecked"
+        )
     }
 }
 

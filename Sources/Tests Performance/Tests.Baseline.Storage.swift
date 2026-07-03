@@ -5,10 +5,10 @@
 //  File-backed baseline storage using swift-file-system and swift-json.
 //
 
-public import File_System
-import JSON
 import Environment
+public import File_System
 public import IO
+import JSON
 public import Thread_Pool
 
 extension Tests.Baseline {
@@ -130,7 +130,7 @@ extension Tests.Baseline.Storage {
     public static func save(
         _ measurement: Test.Benchmark.Measurement,
         to path: File.Path
-    ) throws(Tests.Baseline.Storage.Error) {
+    ) throws(Self.Error) {
         // Ensure parent directory exists
         if let parent = path.parent {
             try ensureDirectory(at: parent)
@@ -141,7 +141,7 @@ extension Tests.Baseline.Storage {
         do {
             try File(path).write.atomic(content)
         } catch {
-            throw Tests.Baseline.Storage.Error.writeFailed(
+            throw Self.Error.writeFailed(
                 path: path,
                 underlying: Swift.String(describing: error)
             )
@@ -161,7 +161,7 @@ extension Tests.Baseline.Storage {
     ) async throws(Either<Kernel.Thread.Pool.Error, Tests.Baseline.Storage.Error>) {
         let measurement = measurement
         let path = path
-        try await Kernel.Thread.Pool.shared.run { () throws(Tests.Baseline.Storage.Error) in
+        try await Kernel.Thread.Pool.shared.run { () throws(Self.Error) in
             try save(measurement, to: path)
         }
     }
@@ -169,14 +169,14 @@ extension Tests.Baseline.Storage {
     /// Ensures a directory exists, creating it recursively if needed.
     private static func ensureDirectory(
         at path: File.Path
-    ) throws(Tests.Baseline.Storage.Error) {
+    ) throws(Self.Error) {
         let dir = File.Directory(path)
         if dir.stat.exists { return }
 
         do {
             try dir.create.recursive()
         } catch {
-            throw Tests.Baseline.Storage.Error.directoryCreationFailed(
+            throw Self.Error.directoryCreationFailed(
                 path: path,
                 underlying: Swift.String(describing: error)
             )

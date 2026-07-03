@@ -25,12 +25,13 @@ extension Test {
     /// - Returns: `true` if the accessor successfully wrote a value.
     ///
     /// - Warning: This type is used by the `@Test` macro. Do not use directly.
-    public typealias __TestContentRecordAccessor = @convention(c) (
-        _ outValue: UnsafeMutableRawPointer,
-        _ type: UnsafeRawPointer,
-        _ hint: UnsafeRawPointer?,
-        _ reserved: UInt
-    ) -> CBool
+    public typealias __TestContentRecordAccessor =
+        @convention(c) (
+            _ outValue: UnsafeMutableRawPointer,
+            _ type: UnsafeRawPointer,
+            _ hint: UnsafeRawPointer?,
+            _ reserved: UInt
+        ) -> CBool
 
     /// A test content record stored in the binary's test section.
     ///

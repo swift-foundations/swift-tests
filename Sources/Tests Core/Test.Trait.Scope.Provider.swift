@@ -24,11 +24,12 @@ extension Test.Trait.Scope {
         public var shouldActivate: @Sendable (Test.Trait.Collection) -> Bool
 
         /// Wraps the test execution with this provider's behavior.
-        public var provideScope: @Sendable (
-            Test.Plan.Entry,
-            Test.Trait.Collection,
-            @Sendable () async throws(Error) -> Void
-        ) async throws(Error) -> Void
+        public var provideScope:
+            @Sendable (
+                Test.Plan.Entry,
+                Test.Trait.Collection,
+                @Sendable () async throws(Error) -> Void
+            ) async throws(Error) -> Void
 
         /// Creates a scope provider.
         ///
@@ -41,11 +42,12 @@ extension Test.Trait.Scope {
             id: Swift.String,
             priority: Int,
             shouldActivate: @escaping @Sendable (Test.Trait.Collection) -> Bool,
-            provideScope: @escaping @Sendable (
-                Test.Plan.Entry,
-                Test.Trait.Collection,
-                @Sendable () async throws(Error) -> Void
-            ) async throws(Error) -> Void
+            provideScope:
+                @escaping @Sendable (
+                    Test.Plan.Entry,
+                    Test.Trait.Collection,
+                    @Sendable () async throws(Error) -> Void
+                ) async throws(Error) -> Void
         ) {
             self.id = id
             self.priority = priority

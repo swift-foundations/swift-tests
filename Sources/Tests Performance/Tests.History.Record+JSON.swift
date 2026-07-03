@@ -6,8 +6,8 @@
 //
 
 public import JSON
-import Time_Primitives
 import Source_Primitives
+import Time_Primitives
 
 extension Tests.History.Record: JSON.Serializable {
     /// Serializes a record as a compact JSON object for JSONL storage.

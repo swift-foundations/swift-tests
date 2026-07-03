@@ -58,10 +58,12 @@ private func _jsonAppendChildren(
         for (key, childValue) in obj {
             pending.append((parent, key, childValue))
         }
+
     case .array(let arr):
         for (index, childValue) in arr.enumerated() {
             pending.append((parent, Swift.String(index), childValue))
         }
+
     default:
         break
     }

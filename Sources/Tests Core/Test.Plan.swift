@@ -5,13 +5,13 @@
 //  Test execution plan.
 //
 
-public import Test_Primitives
-public import Set_Primitives
-public import Set_Ordered_Primitives
-public import Hash_Indexed_Primitive
-public import Column_Primitives
-public import Shared_Primitive
 public import Buffer_Linear_Primitive
+public import Column_Primitives
+public import Hash_Indexed_Primitive
+public import Set_Ordered_Primitives
+public import Set_Primitives
+public import Shared_Primitive
+public import Test_Primitives
 
 extension Test {
     /// An execution plan for running tests.
@@ -79,8 +79,9 @@ extension Test {
             var stack: [TreeKeyed<Node?, String>.Position] = [root]
             while let pos = stack.popLast() {
                 if let nodeOpt: Node? = tree.peek(at: pos),
-                   let node = nodeOpt,
-                   let body = node.body {
+                    let node = nodeOpt,
+                    let body = node.body
+                {
                     result.append(Entry(id: node.id, modifiers: node.modifiers, body: body))
                 }
                 if let children = tree.children(of: pos) {

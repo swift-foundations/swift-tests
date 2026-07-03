@@ -10,10 +10,10 @@
 // ===----------------------------------------------------------------------===//
 
 import Binary_Primitives
-import Format_Primitives
-import Time_Primitives
 import Console
+import Format_Primitives
 import IEC_80000_13_Formatting
+import Time_Primitives
 
 extension Tests {
     /// Print a performance measurement summary
@@ -41,7 +41,7 @@ extension Tests {
                StdDev:     \(measurement.standardDeviation.formatted())
             """
 
-        if let allocations = allocations, !allocations.isEmpty {
+        if let allocations, !allocations.isEmpty {
             output += """
 
                    Allocations:

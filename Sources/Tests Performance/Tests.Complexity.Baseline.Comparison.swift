@@ -37,7 +37,7 @@ extension Tests.Complexity.Baseline {
         /// reported separately.
         public var classRegressed: Bool {
             guard let prev = previous.bestClass,
-                  let curr = current.bestClass
+                let curr = current.bestClass
             else { return false }
             return curr > prev
         }
@@ -45,7 +45,7 @@ extension Tests.Complexity.Baseline {
         /// Whether the complexity class improved.
         public var classImproved: Bool {
             guard let prev = previous.bestClass,
-                  let curr = current.bestClass
+                let curr = current.bestClass
             else { return false }
             return curr < prev
         }

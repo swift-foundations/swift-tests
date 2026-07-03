@@ -24,9 +24,12 @@ extension Test.Trait.Collection {
         /// When present, the `TestScoping` conformance (in the Apple Testing Bridge)
         /// delegates to this closure to inject dependency scope. When absent,
         /// `provideScope` passes through without wrapping.
-        package let _provideScope: (@Sendable @concurrent (
-            @Sendable @concurrent () async throws -> Void
-        ) async throws -> Void)?
+        package let _provideScope:
+            (
+                @Sendable @concurrent (
+                    @Sendable @concurrent () async throws -> Void
+                ) async throws -> Void
+            )?
 
         /// Creates a modifier from a mutation closure.
         ///
@@ -43,9 +46,10 @@ extension Test.Trait.Collection {
         ///   - provideScope: A closure that wraps test execution with dependency scope.
         package init(
             apply: @escaping @Sendable (inout Test.Trait.Collection) -> Void,
-            provideScope: @escaping @Sendable @concurrent (
-                @Sendable @concurrent () async throws -> Void
-            ) async throws -> Void
+            provideScope:
+                @escaping @Sendable @concurrent (
+                    @Sendable @concurrent () async throws -> Void
+                ) async throws -> Void
         ) {
             self._apply = apply
             self._provideScope = provideScope

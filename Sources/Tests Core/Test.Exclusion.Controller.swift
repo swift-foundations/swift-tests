@@ -5,13 +5,13 @@
 //  Actor that provides mutual exclusion for test execution.
 //
 
-public import Test_Primitives
-public import Set_Primitives
-public import Set_Ordered_Primitives
-public import Hash_Indexed_Primitive
-public import Column_Primitives
-public import Shared_Primitive
 public import Buffer_Linear_Primitive
+public import Column_Primitives
+public import Hash_Indexed_Primitive
+public import Set_Ordered_Primitives
+public import Set_Primitives
+public import Shared_Primitive
+public import Test_Primitives
 
 extension Test.Exclusion {
     /// Actor that provides mutual exclusion for test execution.
@@ -82,4 +82,3 @@ extension Test.Exclusion {
         }
     }
 }
-

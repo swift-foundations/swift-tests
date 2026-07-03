@@ -5,8 +5,8 @@
 //  Policy-based interpretation of complexity evidence.
 //
 
-public import Test_Primitives
 import Sample_Primitives
+public import Test_Primitives
 
 extension Tests.Complexity {
     /// Interprets raw complexity evidence under a policy to produce a result.
@@ -29,17 +29,21 @@ extension Tests.Complexity {
         // If data has no monotonic trend and very low variation across
         // sizes, classify as constant regardless of OLS results.
         if policy.constantCVThreshold > 0,
-           evidence.monotonicity.interpretation == .none,
-           evidence.metricCV < policy.constantCVThreshold,
-           evidence.points.count >= policy.minimumSizePoints,
-           Self.hasScaleRange(evidence, policy: policy)
+            evidence.monotonicity.interpretation == .none,
+            evidence.metricCV < policy.constantCVThreshold,
+            evidence.points.count >= policy.minimumSizePoints,
+            Self.hasScaleRange(evidence, policy: policy)
         {
-            let constantCandidate = evidence.candidates
+            let constantCandidate =
+                evidence.candidates
                 .first { $0.complexity == .constant }
                 ?? Test.Benchmark.Complexity.Candidate.Fit(
                     complexity: .constant,
                     regression: Sample.Regression.Fit(
-                        slope: 0, intercept: 0, rSquared: 0, meanSquaredError: 0
+                        slope: 0,
+                        intercept: 0,
+                        rSquared: 0,
+                        meanSquaredError: 0
                     ),
                     effectiveExponent: 0
                 )
@@ -113,9 +117,10 @@ extension Tests.Complexity {
 
         // Separation analysis: best vs runner-up R² gap.
         let runnerUp = viable.dropFirst().first
-        let separation = runnerUp.map {
-            best.regression.rSquared - $0.regression.rSquared
-        } ?? 1.0
+        let separation =
+            runnerUp.map {
+                best.regression.rSquared - $0.regression.rSquared
+            } ?? 1.0
 
         let ambiguous = viable.filter {
             $0.complexity != best.complexity
@@ -170,8 +175,8 @@ extension Tests.Complexity {
         policy: Policy
     ) -> Bool {
         guard let first = evidence.points.first,
-              let last = evidence.points.last,
-              first.size > 0
+            let last = evidence.points.last,
+            first.size > 0
         else { return false }
         return Double(last.size) / Double(first.size) >= policy.minimumScaleRange
     }

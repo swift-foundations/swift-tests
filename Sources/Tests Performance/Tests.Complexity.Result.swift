@@ -72,7 +72,7 @@ extension Tests.Complexity {
         public func isNoWorseThan(
             _ bound: Test.Benchmark.Complexity.Class
         ) -> Bool {
-            guard let best = best else { return false }
+            guard let best else { return false }
             if best.complexity > bound { return false }
             return ambiguousWith.allSatisfy { $0 <= bound }
         }

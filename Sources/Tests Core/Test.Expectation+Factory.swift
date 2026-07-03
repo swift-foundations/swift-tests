@@ -5,9 +5,9 @@
 //  Convenience factories for creating and recording expectations.
 //
 
-public import Test_Primitives
 import Loader
 import Synchronization
+public import Test_Primitives
 
 // MARK: - ID Counters
 
@@ -39,8 +39,7 @@ extension Test.Expectation {
     /// Set once before tests run; read during test execution.
     /// When the Institute's runner is active, ``Collector/current`` is
     /// non-nil and this handler is never invoked.
-    public nonisolated(unsafe) static var externalFailureHandler:
-        (@Sendable (_ message: Swift.String, _ location: Source.Location) -> Void)?
+    nonisolated(unsafe) public static var externalFailureHandler: (@Sendable (_ message: Swift.String, _ location: Source.Location) -> Void)?
 }
 
 // MARK: - External Bridge Resolution
@@ -55,10 +54,12 @@ extension Test.Expectation {
     /// Thread-safe: `static let` guarantees exactly-once initialization.
     private static let _resolveBridge: Void = {
         guard unsafe externalFailureHandler == nil else { return }
-        guard let symbol = try? unsafe Loader.Symbol.lookup(
-            name: "_swift_tests_bridge_install",
-            in: .default
-        ) else { return }
+        guard
+            let symbol = try? unsafe Loader.Symbol.lookup(
+                name: "_swift_tests_bridge_install",
+                in: .default
+            )
+        else { return }
         unsafe unsafeBitCast(symbol, to: (@convention(c) () -> Void).self)()
     }()
 

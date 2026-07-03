@@ -5,9 +5,9 @@
 //  Collects expectations during test body execution.
 //
 
-public import Test_Primitives
 public import Dependency_Primitives
 import Synchronization
+public import Test_Primitives
 
 extension Test.Expectation {
     /// Collects expectations recorded during a test body's execution.

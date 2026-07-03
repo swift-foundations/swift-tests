@@ -27,16 +27,16 @@ extension Test.Environment {
             Self(
                 nonisolatedNonsendingByDefault: {
                     #if hasFeature(NonisolatedNonsendingByDefault)
-                    return true
+                        return true
                     #else
-                    return false
+                        return false
                     #endif
                 }(),
                 strictMemorySafety: {
                     #if hasFeature(StrictMemorySafety)
-                    return true
+                        return true
                     #else
-                    return false
+                        return false
                     #endif
                 }()
             )

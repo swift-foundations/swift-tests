@@ -18,7 +18,9 @@ extension Tests.Baseline.Storage.Test.Unit {
         let id = Tests_Core.Test.ID.stub("myTest", module: "MyModule")
 
         let path = Tests.Baseline.Storage.path(
-            root: root, testID: id, fingerprint: "arm64-10c-debug"
+            root: root,
+            testID: id,
+            fingerprint: "arm64-10c-debug"
         )
         let str = Swift.String(path)
 
@@ -55,7 +57,9 @@ extension Tests.Baseline.Storage.Test.Unit {
         let id = Tests_Core.Test.ID.stub("t", module: "M")
 
         let path = Tests.Baseline.Storage.path(
-            root: root, testID: id, fingerprint: "arm64-10c-debug-nnbd-sms"
+            root: root,
+            testID: id,
+            fingerprint: "arm64-10c-debug-nnbd-sms"
         )
 
         #expect(Swift.String(path).hasSuffix("arm64-10c-debug-nnbd-sms.json"))

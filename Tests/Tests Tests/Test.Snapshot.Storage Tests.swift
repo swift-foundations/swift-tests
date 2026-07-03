@@ -1,6 +1,6 @@
+import Paths
 import Testing
 import Tests_Test_Support
-import Paths
 
 @Suite("Test.Snapshot.Storage")
 struct SnapshotStorageTests {

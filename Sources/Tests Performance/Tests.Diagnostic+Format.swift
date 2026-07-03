@@ -1,7 +1,7 @@
+import Cardinal_Primitives
 import Console
 import Format_Primitives
 import Tagged_Primitives
-import Cardinal_Primitives
 
 extension Tests.Diagnostic {
 
@@ -15,7 +15,8 @@ extension Tests.Diagnostic {
         // Header
         if let factor = exceedanceFactor {
             let header = Console.Style.error.apply(
-                to: "PERFORMANCE THRESHOLD EXCEEDED", capability: cap
+                to: "PERFORMANCE THRESHOLD EXCEEDED",
+                capability: cap
             )
             lines.append(header)
             lines.append("  Test:     \(qualifiedName)")
@@ -26,7 +27,8 @@ extension Tests.Diagnostic {
             lines.append("  Factor:   \(Console.Style.error.apply(to: factorStr, capability: cap))")
         } else {
             let header = Console.Style.success.apply(
-                to: "PERFORMANCE MEASUREMENT", capability: cap
+                to: "PERFORMANCE MEASUREMENT",
+                capability: cap
             )
             lines.append(header)
             lines.append("  Test:     \(qualifiedName)")
@@ -67,11 +69,13 @@ extension Tests.Diagnostic {
         let trendLabel: Swift.String
         if trend.interpretation == .increasing {
             trendLabel = Console.Style.error.apply(
-                to: "INCREASING - possible thermal throttle", capability: cap
+                to: "INCREASING - possible thermal throttle",
+                capability: cap
             )
         } else if trend.interpretation == .decreasing {
             trendLabel = Console.Style.warning.apply(
-                to: "DECREASING - possible caching/warmup effect", capability: cap
+                to: "DECREASING - possible caching/warmup effect",
+                capability: cap
             )
         } else {
             trendLabel = "NO TREND - not thermal throttle"
@@ -79,7 +83,7 @@ extension Tests.Diagnostic {
         lines.append("    Mann-Kendall Z: \(zStr) (\(trendLabel))")
 
         // Baseline comparison
-        if let comparison = comparison {
+        if let comparison {
             lines.append("")
             lines.append("  Baseline Comparison:")
             lines.append("    Baseline: \(comparison.baselineValue.formatted())")
@@ -87,12 +91,14 @@ extension Tests.Diagnostic {
             let changePercent = (comparison.change * 100.0).formatted(.number.precision(2))
             if comparison.isRegression {
                 let label = Console.Style.error.apply(
-                    to: "REGRESSION +\(changePercent)%", capability: cap
+                    to: "REGRESSION +\(changePercent)%",
+                    capability: cap
                 )
                 lines.append("    Change:   \(label)")
             } else if comparison.isImprovement {
                 let label = Console.Style.success.apply(
-                    to: "IMPROVEMENT \(changePercent)%", capability: cap
+                    to: "IMPROVEMENT \(changePercent)%",
+                    capability: cap
                 )
                 lines.append("    Change:   \(label)")
             } else {
@@ -110,11 +116,13 @@ extension Tests.Diagnostic {
             let historyTrendLabel: Swift.String
             if history.trend.interpretation == .increasing {
                 historyTrendLabel = Console.Style.error.apply(
-                    to: "DEGRADING over time", capability: cap
+                    to: "DEGRADING over time",
+                    capability: cap
                 )
             } else if history.trend.interpretation == .decreasing {
                 historyTrendLabel = Console.Style.success.apply(
-                    to: "IMPROVING over time", capability: cap
+                    to: "IMPROVING over time",
+                    capability: cap
                 )
             } else {
                 historyTrendLabel = "STABLE across runs"
@@ -226,7 +234,7 @@ extension Tests.Diagnostic {
         json.append("  },")
 
         // Baseline
-        if let comparison = comparison {
+        if let comparison {
             json.append("  \"baseline\": {")
             json.append("    \"value\": \(comparison.baselineValue.inSeconds),")
             json.append("    \"change\": \(comparison.change.formatted(.number.precision(4))),")

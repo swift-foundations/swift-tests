@@ -8,7 +8,7 @@
 import Testing
 import Tests_Test_Support
 
-fileprivate typealias SUT = Test_Primitives.Test
+private typealias SUT = Test_Primitives.Test
 
 @Suite
 struct TestsComplexityTests {

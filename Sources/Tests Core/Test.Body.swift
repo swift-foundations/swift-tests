@@ -39,20 +39,22 @@ extension Test {
         /// - Returns: A test body wrapping the closure.
         public static func sync<E: Swift.Error>(
             _ body: @escaping @Sendable () throws(E) -> Void
-        ) -> Body {
-            Body(kind: .sync({ () throws(Error) in
-                do {
-                    try body()
-                } catch {
-                    if error is Test.Requirement.Failed {
-                        throw Error.requirementFailed
+        ) -> Self {
+            Self(
+                kind: .sync({ () throws(Error) in
+                    do {
+                        try body()
+                    } catch {
+                        if error is Test.Requirement.Failed {
+                            throw Error.requirementFailed
+                        }
+                        throw Error.caught(
+                            type: Swift.String(describing: type(of: error)),
+                            description: Swift.String(describing: error)
+                        )
                     }
-                    throw Error.caught(
-                        type: Swift.String(describing: type(of: error)),
-                        description: Swift.String(describing: error)
-                    )
-                }
-            }))
+                })
+            )
         }
 
         /// Creates an asynchronous test body.
@@ -63,20 +65,22 @@ extension Test {
         /// - Returns: A test body wrapping the closure.
         public static func `async`<E: Swift.Error>(
             _ body: @escaping @Sendable () async throws(E) -> Void
-        ) -> Body {
-            Body(kind: .async({ () async throws(Error) in
-                do {
-                    try await body()
-                } catch {
-                    if error is Test.Requirement.Failed {
-                        throw Error.requirementFailed
+        ) -> Self {
+            Self(
+                kind: .async({ () async throws(Error) in
+                    do {
+                        try await body()
+                    } catch {
+                        if error is Test.Requirement.Failed {
+                            throw Error.requirementFailed
+                        }
+                        throw Error.caught(
+                            type: Swift.String(describing: type(of: error)),
+                            description: Swift.String(describing: error)
+                        )
                     }
-                    throw Error.caught(
-                        type: Swift.String(describing: type(of: error)),
-                        description: Swift.String(describing: error)
-                    )
-                }
-            }))
+                })
+            )
         }
 
         private init(kind: Kind) {
@@ -93,6 +97,7 @@ extension Test {
             switch kind {
             case .sync(let body):
                 try body()
+
             case .async(let body):
                 try await body()
             }

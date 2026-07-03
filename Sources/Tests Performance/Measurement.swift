@@ -9,8 +9,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Time_Primitives
 import Clocks
+public import Time_Primitives
 
 // MARK: - Measurement API
 

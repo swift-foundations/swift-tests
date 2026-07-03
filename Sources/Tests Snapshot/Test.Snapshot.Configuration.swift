@@ -5,12 +5,12 @@
 //  Task-local snapshot testing configuration.
 //
 
-public import Test_Primitives
-public import File_System
 public import Dependency_Primitives
+public import File_System
 internal import Kernel
-internal import Strings
 import Standard_Library_Extensions
+internal import Strings
+public import Test_Primitives
 
 extension Test.Snapshot {
     /// Runtime configuration for snapshot testing.
@@ -73,8 +73,8 @@ extension Test.Snapshot {
         /// Default configuration.
         ///
         /// Uses ``.missing`` recording mode and stores snapshots alongside tests.
-        public static var `default`: Configuration {
-            Configuration()
+        public static var `default`: Self {
+            Self()
         }
 
         /// Dependency key for snapshot configuration.
@@ -86,7 +86,7 @@ extension Test.Snapshot {
         }
 
         /// Current configuration for this scope.
-        public static var current: Configuration? {
+        public static var current: Self? {
             Dependency.Scope.current[Key.self]
         }
     }
@@ -112,13 +112,14 @@ extension Test.Snapshot.Configuration {
         if let recording { return recording }
 
         // 2. Task-local configuration
-        if let current = Test.Snapshot.Configuration.current {
+        if let current = Self.current {
             return current.recording
         }
 
         // 3. Environment variable
         if let env = unsafe Kernel.Environment.get("SWIFT_SNAPSHOT_RECORD"),
-           let mode = Test.Snapshot.Recording(rawValue: Swift.String(env.view)) {
+            let mode = Test.Snapshot.Recording(rawValue: Swift.String(env.view))
+        {
             return mode
         }
 

@@ -5,8 +5,8 @@
 //  Snapshot file storage using swift-file-system.
 //
 
-public import Test_Primitives
 public import File_System
+public import Test_Primitives
 
 extension Test.Snapshot {
     /// Handles snapshot file I/O.
@@ -129,7 +129,7 @@ extension Test.Snapshot.Storage {
     public static func write(
         bytes: [Byte],
         to path: File.Path
-    ) throws(Test.Snapshot.Storage.Error) {
+    ) throws(Self.Error) {
         // Ensure parent directory exists
         if let parent = path.parent {
             try ensure(directory: parent)
@@ -139,7 +139,7 @@ extension Test.Snapshot.Storage {
         do {
             try File(path).write.atomic(contentsOf: bytes)
         } catch {
-            throw Test.Snapshot.Storage.Error.writeFailed(
+            throw Self.Error.writeFailed(
                 path: path,
                 underlying: Swift.String(describing: error)
             )
@@ -150,7 +150,7 @@ extension Test.Snapshot.Storage {
     ///
     /// - Parameter directory: The directory path.
     /// - Throws: `Storage.Error` on failure.
-    public static func ensure(directory path: File.Path) throws(Test.Snapshot.Storage.Error) {
+    public static func ensure(directory path: File.Path) throws(Self.Error) {
         let dir = File.Directory(path)
 
         // If already exists, we're done
@@ -162,7 +162,7 @@ extension Test.Snapshot.Storage {
         do {
             try dir.create.recursive()
         } catch {
-            throw Test.Snapshot.Storage.Error.directoryCreationFailed(
+            throw Self.Error.directoryCreationFailed(
                 path: path,
                 underlying: Swift.String(describing: error)
             )
@@ -191,11 +191,12 @@ extension Test.Snapshot.Storage.Error: CustomStringConvertible {
         switch self {
         case .readFailed(let path, let underlying):
             return "Failed to read snapshot at '\(path)': \(underlying)"
+
         case .writeFailed(let path, let underlying):
             return "Failed to write snapshot to '\(path)': \(underlying)"
+
         case .directoryCreationFailed(let path, let underlying):
             return "Failed to create snapshot directory '\(path)': \(underlying)"
         }
     }
 }
-

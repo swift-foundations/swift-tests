@@ -6,11 +6,11 @@
 //  JSON round-trip serialization.
 //
 
+import JSON
 import Testing
 import Tests_Test_Support
-import JSON
 
-fileprivate typealias SUT = Test_Primitives.Test
+private typealias SUT = Test_Primitives.Test
 
 @Suite
 struct ComplexityBaselineTests {
@@ -99,14 +99,21 @@ extension ComplexityBaselineTests.Comparison {
     @Test
     func `class regression detected when class worsens`() {
         let previous = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.0,
+            confidence: .high,
+            bestRSquared: 0.99
         )
         let current = Tests.Complexity.Baseline(
-            bestClass: .quadratic, exponent: 2.0, confidence: .high, bestRSquared: 0.99
+            bestClass: .quadratic,
+            exponent: 2.0,
+            confidence: .high,
+            bestRSquared: 0.99
         )
 
         let comparison = Tests.Complexity.Baseline.Comparison(
-            previous: previous, current: current
+            previous: previous,
+            current: current
         )
 
         #expect(comparison.classRegressed)
@@ -118,14 +125,21 @@ extension ComplexityBaselineTests.Comparison {
     @Test
     func `class improvement detected when class improves`() {
         let previous = Tests.Complexity.Baseline(
-            bestClass: .quadratic, exponent: 2.0, confidence: .high, bestRSquared: 0.99
+            bestClass: .quadratic,
+            exponent: 2.0,
+            confidence: .high,
+            bestRSquared: 0.99
         )
         let current = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.0,
+            confidence: .high,
+            bestRSquared: 0.99
         )
 
         let comparison = Tests.Complexity.Baseline.Comparison(
-            previous: previous, current: current
+            previous: previous,
+            current: current
         )
 
         #expect(!comparison.classRegressed)
@@ -137,14 +151,21 @@ extension ComplexityBaselineTests.Comparison {
     @Test
     func `no change when class and exponent are stable`() {
         let previous = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.05, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.05,
+            confidence: .high,
+            bestRSquared: 0.99
         )
         let current = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.08, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.08,
+            confidence: .high,
+            bestRSquared: 0.99
         )
 
         let comparison = Tests.Complexity.Baseline.Comparison(
-            previous: previous, current: current
+            previous: previous,
+            current: current
         )
 
         #expect(!comparison.classRegressed)
@@ -157,14 +178,21 @@ extension ComplexityBaselineTests.Comparison {
     @Test
     func `exponent drift detected without class change`() {
         let previous = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.0,
+            confidence: .high,
+            bestRSquared: 0.99
         )
         let current = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.5, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.5,
+            confidence: .high,
+            bestRSquared: 0.99
         )
 
         let comparison = Tests.Complexity.Baseline.Comparison(
-            previous: previous, current: current
+            previous: previous,
+            current: current
         )
 
         #expect(!comparison.classChanged)
@@ -176,14 +204,21 @@ extension ComplexityBaselineTests.Comparison {
     @Test
     func `confidence degradation detected`() {
         let previous = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.0,
+            confidence: .high,
+            bestRSquared: 0.99
         )
         let current = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.0, confidence: .low, bestRSquared: 0.90
+            bestClass: .linear,
+            exponent: 1.0,
+            confidence: .low,
+            bestRSquared: 0.90
         )
 
         let comparison = Tests.Complexity.Baseline.Comparison(
-            previous: previous, current: current
+            previous: previous,
+            current: current
         )
 
         #expect(comparison.confidenceDegraded)
@@ -192,14 +227,21 @@ extension ComplexityBaselineTests.Comparison {
     @Test
     func `nil class does not trigger regression`() {
         let previous = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+            bestClass: .linear,
+            exponent: 1.0,
+            confidence: .high,
+            bestRSquared: 0.99
         )
         let current = Tests.Complexity.Baseline(
-            bestClass: nil, exponent: 0.5, confidence: .inconclusive, bestRSquared: nil
+            bestClass: nil,
+            exponent: 0.5,
+            confidence: .inconclusive,
+            bestRSquared: nil
         )
 
         let comparison = Tests.Complexity.Baseline.Comparison(
-            previous: previous, current: current
+            previous: previous,
+            current: current
         )
 
         // nil class -> classRegressed is false (nil-safety)
@@ -216,7 +258,10 @@ extension ComplexityBaselineTests.JSONRoundTrip {
     @Test
     func `linear baseline survives round trip`() throws {
         let original = Tests.Complexity.Baseline(
-            bestClass: .linear, exponent: 1.05, confidence: .high, bestRSquared: 0.9987
+            bestClass: .linear,
+            exponent: 1.05,
+            confidence: .high,
+            bestRSquared: 0.9987
         )
 
         let string = original.jsonString(pretty: true)
@@ -232,7 +277,10 @@ extension ComplexityBaselineTests.JSONRoundTrip {
     @Test
     func `inconclusive baseline survives round trip`() throws {
         let original = Tests.Complexity.Baseline(
-            bestClass: nil, exponent: 0.3, confidence: .inconclusive, bestRSquared: nil
+            bestClass: nil,
+            exponent: 0.3,
+            confidence: .inconclusive,
+            bestRSquared: nil
         )
 
         let string = original.jsonString(pretty: true)
@@ -253,7 +301,10 @@ extension ComplexityBaselineTests.JSONRoundTrip {
             .inconclusive,
         ] {
             let original = Tests.Complexity.Baseline(
-                bestClass: .quadratic, exponent: 2.0, confidence: confidence, bestRSquared: 0.99
+                bestClass: .quadratic,
+                exponent: 2.0,
+                confidence: confidence,
+                bestRSquared: 0.99
             )
 
             let string = original.jsonString(pretty: true)
@@ -267,7 +318,10 @@ extension ComplexityBaselineTests.JSONRoundTrip {
     func `all complexity classes survive round trip`() throws {
         for cls in SUT.Benchmark.Complexity.Class.allCases {
             let original = Tests.Complexity.Baseline(
-                bestClass: cls, exponent: 1.0, confidence: .high, bestRSquared: 0.99
+                bestClass: cls,
+                exponent: 1.0,
+                confidence: .high,
+                bestRSquared: 0.99
             )
 
             let string = original.jsonString(pretty: true)

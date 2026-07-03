@@ -5,9 +5,9 @@
 //  Summary table formatter for collected performance diagnostics.
 //
 
+import Console
 import Format_Primitives
 import Time_Primitives
-import Console
 
 extension Tests.Diagnostic {
     /// Prints a summary comparison table from an array of diagnostics.
@@ -28,7 +28,7 @@ extension Tests.Diagnostic {
         // Column widths
         let nameWidth = max(
             displayNames.map(\.count).max() ?? 0,
-            4 // "Test"
+            4  // "Test"
         )
 
         // Header
@@ -83,7 +83,7 @@ extension Tests.Diagnostic {
             }
         }
         guard shared > 0 else { return names }
-        let dropLength = parts[0..<shared].joined(separator: ".").count + 1 // +1 for trailing dot
+        let dropLength = parts[0..<shared].joined(separator: ".").count + 1  // +1 for trailing dot
         return names.map { Swift.String($0.dropFirst(dropLength)) }
     }
 }

@@ -22,7 +22,7 @@ extension Tests.History.Record.Test.Unit {
 
         let original = Tests.History.Record(
             timestamp: try! Instant(
-                secondsSinceUnixEpoch: 1710100000,
+                secondsSinceUnixEpoch: 1_710_100_000,
                 nanosecondFraction: 500_000_000
             ),
             testID: id,
@@ -38,10 +38,11 @@ extension Tests.History.Record.Test.Unit {
         let roundtripped = try Tests.History.Record.deserialize(json)
 
         #expect(
-            roundtripped.timestamp == (try! Instant(
-                secondsSinceUnixEpoch: 1710100000,
-                nanosecondFraction: 500_000_000
-            ))
+            roundtripped.timestamp
+                == (try! Instant(
+                    secondsSinceUnixEpoch: 1_710_100_000,
+                    nanosecondFraction: 500_000_000
+                ))
         )
         #expect(roundtripped.testID.module == "MyModule")
         #expect(roundtripped.testID.suite == "MySuite")
@@ -55,12 +56,12 @@ extension Tests.History.Record.Test.Unit {
     func `serialize roundtrip preserves metric value`() throws {
         let id = Tests_Core.Test.ID.stub("t", module: "M")
         let measurement = Test_Primitives.Test.Benchmark.Measurement(durations: [
-            .milliseconds(50),
+            .milliseconds(50)
         ])
         let environment = Test_Primitives.Test.Environment.capture()
 
         let original = Tests.History.Record(
-            timestamp: Instant(secondsSinceUnixEpoch: 1710100000),
+            timestamp: Instant(secondsSinceUnixEpoch: 1_710_100_000),
             testID: id,
             metric: .p95,
             metricValue: .milliseconds(50),

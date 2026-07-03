@@ -199,12 +199,14 @@ public func require<T: Equatable>(
         )
         Test.Expectation.Collector.current?.record(expectation)
     } else {
-        let message = comment ?? Test.Text([
-            .init("Expected ", style: .plain),
-            .init(String(describing: rhs), style: .value),
-            .init(" but got ", style: .plain),
-            .init(String(describing: lhs), style: .value),
-        ])
+        let message =
+            comment
+            ?? Test.Text([
+                .init("Expected ", style: .plain),
+                .init(String(describing: rhs), style: .value),
+                .init(" but got ", style: .plain),
+                .init(String(describing: lhs), style: .value),
+            ])
 
         let failure = Test.Expectation.Failure(
             message: "Values are not equal",

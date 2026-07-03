@@ -5,8 +5,8 @@
 //  Full complexity analysis orchestrator.
 //
 
-public import Test_Primitives
 import Clocks
+public import Test_Primitives
 
 extension Tests.Complexity {
     /// Analyzes the empirical complexity of an operation.
@@ -235,8 +235,10 @@ extension Tests.Complexity {
         switch recording {
         case .all:
             shouldSave = true
+
         case .normal:
             shouldSave = previous == nil
+
         case .never:
             shouldSave = false
         }

@@ -10,7 +10,8 @@ extension TestSnapshotRedactionJSONTests.Unit {
 
     @Test func `json path replaces simple key`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(
-            path: "id", replacement: "[id]"
+            path: "id",
+            replacement: "[id]"
         )
         let input = #"{"id":"abc-123","name":"Alice"}"#
         let output = redaction.apply(input)
@@ -20,7 +21,8 @@ extension TestSnapshotRedactionJSONTests.Unit {
 
     @Test func `json path replaces nested key`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(
-            path: "user.id", replacement: "[uuid]"
+            path: "user.id",
+            replacement: "[uuid]"
         )
         let input = #"{"user":{"id":"abc","name":"Alice"}}"#
         let output = redaction.apply(input)
@@ -30,7 +32,8 @@ extension TestSnapshotRedactionJSONTests.Unit {
 
     @Test func `json path replaces array element`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(
-            path: "items.0", replacement: "[first]"
+            path: "items.0",
+            replacement: "[first]"
         )
         let input = #"{"items":["apple","banana"]}"#
         let output = redaction.apply(input)
@@ -41,7 +44,8 @@ extension TestSnapshotRedactionJSONTests.Unit {
 
     @Test func `json glob replaces recursive descent`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(
-            glob: "**.created_at", replacement: "[timestamp]"
+            glob: "**.created_at",
+            replacement: "[timestamp]"
         )
         let input = #"{"user":{"created_at":"2024-01-01"},"post":{"created_at":"2024-06-15"}}"#
         let output = redaction.apply(input)
@@ -52,7 +56,8 @@ extension TestSnapshotRedactionJSONTests.Unit {
 
     @Test func `json glob replaces single level wildcard`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(
-            glob: "meta.*", replacement: "[redacted]"
+            glob: "meta.*",
+            replacement: "[redacted]"
         )
         let input = #"{"meta":{"a":"1","b":"2"},"data":"keep"}"#
         let output = redaction.apply(input)
@@ -73,7 +78,8 @@ extension TestSnapshotRedactionJSONTests.Unit {
 
     @Test func `json path on missing key returns unchanged`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(
-            path: "nonexistent.key", replacement: "[replaced]"
+            path: "nonexistent.key",
+            replacement: "[replaced]"
         )
         let input = #"{"name":"Alice"}"#
         let output = redaction.apply(input)
@@ -83,7 +89,8 @@ extension TestSnapshotRedactionJSONTests.Unit {
 
     @Test func `json redaction on invalid JSON returns input unchanged`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(
-            path: "id", replacement: "[id]"
+            path: "id",
+            replacement: "[id]"
         )
         let input = "not valid json {"
         let output = redaction.apply(input)

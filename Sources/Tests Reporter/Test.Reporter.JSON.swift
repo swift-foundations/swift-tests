@@ -16,9 +16,9 @@
  implement string escaping semantics.
  */
 
-import Test_Primitives
 import Kernel
 import Synchronization
+import Test_Primitives
 
 extension Test.Reporter {
     /// Creates a JSON reporter.

@@ -48,10 +48,12 @@ extension Test.Trait.Scope.Provider {
         } catch let error as Error {
             throw error
         } catch {
-            throw Error.bodyFailed(.caught(
-                type: Swift.String(describing: type(of: error)),
-                description: Swift.String(describing: error)
-            ))
+            throw Error.bodyFailed(
+                .caught(
+                    type: Swift.String(describing: type(of: error)),
+                    description: Swift.String(describing: error)
+                )
+            )
         }
     }
 
@@ -112,10 +114,12 @@ extension Test.Trait.Scope.Provider {
         } catch let error as _Timeout {
             throw .timeLimitExceeded(limit: error.limit)
         } catch {
-            throw .bodyFailed(.caught(
-                type: Swift.String(describing: type(of: error)),
-                description: Swift.String(describing: error)
-            ))
+            throw .bodyFailed(
+                .caught(
+                    type: Swift.String(describing: type(of: error)),
+                    description: Swift.String(describing: error)
+                )
+            )
         }
     }
 }

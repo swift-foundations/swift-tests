@@ -5,8 +5,8 @@
 //  Single run record for JSONL history.
 //
 
-public import Time_Primitives
 public import Sample_Primitives
+public import Time_Primitives
 
 extension Tests.History {
     /// A single benchmark run record.

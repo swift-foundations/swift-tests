@@ -6,9 +6,9 @@
 //
 
 #if canImport(Darwin)
-import Darwin
+    import Darwin
 #elseif canImport(Glibc)
-import Glibc
+    import Glibc
 #endif
 
 extension Test {
@@ -43,7 +43,8 @@ extension Test {
                 let ref = Swift.String(head.dropFirst(refPrefix.count))
                 let sha = _read(".git/\(ref)")
                 let branchPrefix = "refs/heads/"
-                let branch = ref.hasPrefix(branchPrefix)
+                let branch =
+                    ref.hasPrefix(branchPrefix)
                     ? Swift.String(ref.dropFirst(branchPrefix.count))
                     : nil
                 return Self(sha: sha, branch: branch, dirty: nil)
@@ -69,7 +70,8 @@ private func _read(_ path: Swift.String) -> Swift.String? {
 
     // Trim trailing whitespace/newlines
     while let last = result.unicodeScalars.last,
-          last == "\n" || last == "\r" || last == " " || last == "\t" {
+        last == "\n" || last == "\r" || last == " " || last == "\t"
+    {
         result.unicodeScalars.removeLast()
     }
 

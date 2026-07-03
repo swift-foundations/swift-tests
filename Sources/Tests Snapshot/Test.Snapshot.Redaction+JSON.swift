@@ -5,8 +5,8 @@
 //  JSON-aware redaction constructors for snapshot testing.
 //
 
-public import Test_Primitives
 import JSON
+public import Test_Primitives
 
 // MARK: - JSON Path Redaction
 

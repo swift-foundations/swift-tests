@@ -6,11 +6,11 @@
 //  synthetic workloads with known complexity classes.
 //
 
+import Real_Primitives
 import Testing
 import Tests_Test_Support
-import Real_Primitives
 
-fileprivate typealias SUT = Test_Primitives.Test
+private typealias SUT = Test_Primitives.Test
 
 /// Calibration suite for complexity classification thresholds.
 ///
@@ -188,7 +188,7 @@ extension ComplexityCalibrationTests.Ambiguity {
         var seed: UInt64 = 42
         let evidence = ComplexityCalibrationTests.evidence { n in
             // Simple LCG for deterministic "noise".
-            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
             let noise = 1.0 + 0.05 * (Double(seed >> 33) / Double(UInt32.max) - 0.5)
             return 1e-12 * n * n * noise
         }
@@ -224,7 +224,7 @@ extension ComplexityCalibrationTests.Ambiguity {
         // Uses deterministic LCG noise for reproducibility.
         var seed: UInt64 = 42
         let evidence = ComplexityCalibrationTests.evidence { n in
-            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
             let jitter = 1.0 + noiseLevel * (Double(seed >> 33) / Double(UInt32.max) - 0.5)
             return 1e-12 * n * n * jitter
         }

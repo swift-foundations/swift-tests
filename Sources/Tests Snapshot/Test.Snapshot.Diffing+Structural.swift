@@ -5,9 +5,9 @@
 //  Structural JSON diffing — tree-aware comparison.
 //
 
-public import Test_Primitives
-import JSON
 import Byte_Primitives_Standard_Library_Integration
+import JSON
+public import Test_Primitives
 
 // MARK: - Structural JSON Diffing
 
@@ -45,10 +45,10 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
             fromBytes: { Swift.String(decoding: $0.underlying, as: UTF8.self) },
             diff: { old, new in
                 guard let oldValue = try? JSON.Decode.parse(old),
-                      let newValue = try? JSON.Decode.parse(new)
+                    let newValue = try? JSON.Decode.parse(new)
                 else {
                     // Not valid JSON — fall back to line diff
-                    return Test.Snapshot.Diffing.lines.diff(old, new)
+                    return Self.lines.diff(old, new)
                 }
 
                 let oldTree = _jsonToKeyedTree(oldValue)
@@ -67,12 +67,14 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
                                 path: _jsonFormatPath(path),
                                 value: _jsonDisplayValue(value)
                             )
+
                         case .removed(let path, let value):
                             guard !_jsonIsContainer(value) else { return nil }
                             return .removed(
                                 path: _jsonFormatPath(path),
                                 value: _jsonDisplayValue(value)
                             )
+
                         case .modified(let path, let old, let new):
                             return .modified(
                                 path: _jsonFormatPath(path),
@@ -87,8 +89,10 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
                     switch op {
                     case .added(let path, let value):
                         "+ \(path): \(value)"
+
                     case .removed(let path, let value):
                         "- \(path): \(value)"
+
                     case .modified(let path, let old, let new):
                         "~ \(path): \(old) → \(new)"
                     }

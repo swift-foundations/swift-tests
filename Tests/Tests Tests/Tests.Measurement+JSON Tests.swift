@@ -1,6 +1,6 @@
+import JSON
 import Testing
 import Tests_Test_Support
-import JSON
 
 extension Test_Primitives.Test.Benchmark.Measurement.Test {
     @Suite struct JSON {}

@@ -20,7 +20,8 @@ extension Tests.Complexity.Diagnostic {
         let header: Swift.String
         if result.confidence == .inconclusive {
             header = Console.Style.warning.apply(
-                to: "COMPLEXITY ANALYSIS — INCONCLUSIVE", capability: cap
+                to: "COMPLEXITY ANALYSIS — INCONCLUSIVE",
+                capability: cap
             )
         } else if let best = result.best {
             header = Console.Style.success.apply(
@@ -29,7 +30,8 @@ extension Tests.Complexity.Diagnostic {
             )
         } else {
             header = Console.Style.warning.apply(
-                to: "COMPLEXITY ANALYSIS — NO RESULT", capability: cap
+                to: "COMPLEXITY ANALYSIS — NO RESULT",
+                capability: cap
             )
         }
         lines.append(header)
@@ -54,19 +56,26 @@ extension Tests.Complexity.Diagnostic {
             switch result.confidence {
             case .high:
                 confidenceLabel = Console.Style.success.apply(
-                    to: "HIGH", capability: cap
+                    to: "HIGH",
+                    capability: cap
                 )
+
             case .medium:
                 confidenceLabel = Console.Style.warning.apply(
-                    to: "MEDIUM", capability: cap
+                    to: "MEDIUM",
+                    capability: cap
                 )
+
             case .low:
                 confidenceLabel = Console.Style.warning.apply(
-                    to: "LOW", capability: cap
+                    to: "LOW",
+                    capability: cap
                 )
+
             case .inconclusive:
                 confidenceLabel = Console.Style.error.apply(
-                    to: "INCONCLUSIVE", capability: cap
+                    to: "INCONCLUSIVE",
+                    capability: cap
                 )
             }
             lines.append("    Confidence: \(confidenceLabel)")

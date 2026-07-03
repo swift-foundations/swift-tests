@@ -9,10 +9,10 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Test_Primitives
-import Time_Primitives
 internal import Console
 import Synchronization
+public import Test_Primitives
+import Time_Primitives
 
 extension Test.Reporter {
     /// Creates a console reporter with ANSI terminal styling.
@@ -73,14 +73,17 @@ extension Test.Reporter {
                         symbol = "✓"
                         style = .success
                         _counts.withLock { $0.passed += 1 }
+
                     case .failed:
                         symbol = "✗"
                         style = .error
                         _counts.withLock { $0.failed += 1 }
+
                     case .skipped:
                         symbol = "○"
                         style = .dim
                         _counts.withLock { $0.skipped += 1 }
+
                     case nil:
                         symbol = "?"
                         style = .dim
@@ -127,10 +130,12 @@ extension Test.Reporter {
                         // Expected vs actual
                         if let expected = failure.expected, let actual = failure.actual {
                             let expectedLabel = Console.Style.success.apply(
-                                to: "expected", capability: capability
+                                to: "expected",
+                                capability: capability
                             )
                             let actualLabel = Console.Style.error.apply(
-                                to: "actual", capability: capability
+                                to: "actual",
+                                capability: capability
                             )
                             print("      \(expectedLabel): \(expected.stringValue)")
                             print("      \(actualLabel):   \(actual.stringValue)")
@@ -153,21 +158,30 @@ extension Test.Reporter {
                 let counts = _counts.withLock { $0 }
                 print("")
                 print("Test run complete:")
-                print(Console.Style.success.apply(
-                    to: "  Passed:  \(counts.passed)", capability: capability
-                ))
+                print(
+                    Console.Style.success.apply(
+                        to: "  Passed:  \(counts.passed)",
+                        capability: capability
+                    )
+                )
                 if counts.failed > 0 {
-                    print(Console.Style.error.apply(
-                        to: "  Failed:  \(counts.failed)", capability: capability
-                    ))
+                    print(
+                        Console.Style.error.apply(
+                            to: "  Failed:  \(counts.failed)",
+                            capability: capability
+                        )
+                    )
                 }
                 if counts.skipped > 0 {
                     print(dimmed("  Skipped: \(counts.skipped)"))
                 }
                 if counts.issues > 0 {
-                    print(Console.Style.warning.apply(
-                        to: "  Issues:  \(counts.issues)", capability: capability
-                    ))
+                    print(
+                        Console.Style.warning.apply(
+                            to: "  Issues:  \(counts.issues)",
+                            capability: capability
+                        )
+                    )
                 }
 
             case .planCreated, .caseStarted, .caseEnded:
@@ -210,19 +224,19 @@ extension Test.Reporter {
             for style: Test.Text.Segment.Style
         ) -> Console.Style {
             switch style {
-            case .plain:        .plain
-            case .identifier:   Console.Style(foreground: .palette(.cyan))
-            case .value:        Console.Style(foreground: .palette(.yellow))
-            case .keyword:      Console.Style(foreground: .palette(.magenta))
-            case .punctuation:  .plain
-            case .emphasis:     .bold
-            case .secondary:    .dim
-            case .success:      .success
-            case .failure:      .error
-            case .warning:      .warning
-            case .diffAdded:    Console.Style(foreground: .palette(.green))
-            case .diffRemoved:  Console.Style(foreground: .palette(.red))
-            case .diffContext:  .dim
+            case .plain: .plain
+            case .identifier: Console.Style(foreground: .palette(.cyan))
+            case .value: Console.Style(foreground: .palette(.yellow))
+            case .keyword: Console.Style(foreground: .palette(.magenta))
+            case .punctuation: .plain
+            case .emphasis: .bold
+            case .secondary: .dim
+            case .success: .success
+            case .failure: .error
+            case .warning: .warning
+            case .diffAdded: Console.Style(foreground: .palette(.green))
+            case .diffRemoved: Console.Style(foreground: .palette(.red))
+            case .diffContext: .dim
             }
         }
     }

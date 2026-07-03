@@ -5,8 +5,8 @@
 //  Unified snapshot assertion function.
 //
 
-public import Test_Primitives
 import File_System
+public import Test_Primitives
 
 // MARK: - snapshot (String Format, Synchronous)
 
@@ -71,7 +71,10 @@ public func snapshot<Value>(
 ) -> Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
-        fileID: fileID, filePath: filePath, line: line, column: column
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
     )
 
     if name != nil && expected != nil {
@@ -97,15 +100,25 @@ public func snapshot<Value>(
     let failure: Swift.String?
     if let name {
         failure = Test.Snapshot.Storage.resolve(
-            actual: actual, strategy: effective, name: name, mode: mode,
-            filePath: filePath, function: function,
+            actual: actual,
+            strategy: effective,
+            name: name,
+            mode: mode,
+            filePath: filePath,
+            function: function,
             snapshotDirectory: config?.snapshotDirectory,
             subdirectory: config?.subdirectory
         )
     } else {
         failure = Test.Snapshot.Inline.resolve(
-            actual: actual, strategy: effective, expected: expected, mode: mode,
-            filePath: filePath, line: line, column: column, function: function
+            actual: actual,
+            strategy: effective,
+            expected: expected,
+            mode: mode,
+            filePath: filePath,
+            line: line,
+            column: column,
+            function: function
         )
     }
 
@@ -134,7 +147,10 @@ public func snapshot<Value>(
 ) async -> Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
-        fileID: fileID, filePath: filePath, line: line, column: column
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
     )
 
     if name != nil && expected != nil {
@@ -152,15 +168,25 @@ public func snapshot<Value>(
     let failure: Swift.String?
     if let name {
         failure = Test.Snapshot.Storage.resolve(
-            actual: actual, strategy: effective, name: name, mode: mode,
-            filePath: filePath, function: function,
+            actual: actual,
+            strategy: effective,
+            name: name,
+            mode: mode,
+            filePath: filePath,
+            function: function,
             snapshotDirectory: config?.snapshotDirectory,
             subdirectory: config?.subdirectory
         )
     } else {
         failure = Test.Snapshot.Inline.resolve(
-            actual: actual, strategy: effective, expected: expected, mode: mode,
-            filePath: filePath, line: line, column: column, function: function
+            actual: actual,
+            strategy: effective,
+            expected: expected,
+            mode: mode,
+            filePath: filePath,
+            line: line,
+            column: column,
+            function: function
         )
     }
 
@@ -190,7 +216,10 @@ public func snapshot<Value, Format: Sendable>(
 ) -> Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
-        fileID: fileID, filePath: filePath, line: line, column: column
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
     )
 
     guard let syncSnapshot = effective.syncSnapshot else {
@@ -206,14 +235,20 @@ public func snapshot<Value, Format: Sendable>(
     let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
 
     let failure = Test.Snapshot.Storage.resolve(
-        actual: actual, strategy: effective, name: name, mode: mode,
-        filePath: filePath, function: function,
+        actual: actual,
+        strategy: effective,
+        name: name,
+        mode: mode,
+        filePath: filePath,
+        function: function,
         snapshotDirectory: snapshotDir
     )
 
     if let failure {
         return .record(
-            failing: failure, sourceCode: "snapshot(as: ..., named: ...)", at: location
+            failing: failure,
+            sourceCode: "snapshot(as: ..., named: ...)",
+            at: location
         )
     }
     return .record(passing: "snapshot(as: ..., named: ...)", at: location)
@@ -237,7 +272,10 @@ public func snapshot<Value, Format: Sendable>(
 ) async -> Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
-        fileID: fileID, filePath: filePath, line: line, column: column
+        fileID: fileID,
+        filePath: filePath,
+        line: line,
+        column: column
     )
 
     let actual = await effective.capture(value())
@@ -245,14 +283,20 @@ public func snapshot<Value, Format: Sendable>(
     let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
 
     let failure = Test.Snapshot.Storage.resolve(
-        actual: actual, strategy: effective, name: name, mode: mode,
-        filePath: filePath, function: function,
+        actual: actual,
+        strategy: effective,
+        name: name,
+        mode: mode,
+        filePath: filePath,
+        function: function,
         snapshotDirectory: snapshotDir
     )
 
     if let failure {
         return .record(
-            failing: failure, sourceCode: "snapshot(as: ..., named: ...)", at: location
+            failing: failure,
+            sourceCode: "snapshot(as: ..., named: ...)",
+            at: location
         )
     }
     return .record(passing: "snapshot(as: ..., named: ...)", at: location)
@@ -277,10 +321,17 @@ extension Test.Snapshot.Inline {
         let expectedValue = expected?()
 
         func register() {
-            state.register(.init(
-                expected: expectedValue, actual: actual, wasRecording: true,
-                filePath: filePath, function: function, line: line, column: column
-            ))
+            state.register(
+                .init(
+                    expected: expectedValue,
+                    actual: actual,
+                    wasRecording: true,
+                    filePath: filePath,
+                    function: function,
+                    line: line,
+                    column: column
+                )
+            )
         }
 
         switch mode {

@@ -88,14 +88,14 @@ extension Test.Reporter {
         ///   - second: The second sink (consumed).
         /// - Returns: A compound sink.
         public static func tee(
-            _ first: consuming Sink,
-            _ second: consuming Sink
-        ) -> Sink {
+            _ first: consuming Self,
+            _ second: consuming Self
+        ) -> Self {
             let sendA = first._send
             let sendB = second._send
             let finishA = first._finish
             let finishB = second._finish
-            return Sink(
+            return Self(
                 send: { event in
                     await sendA(event)
                     await sendB(event)

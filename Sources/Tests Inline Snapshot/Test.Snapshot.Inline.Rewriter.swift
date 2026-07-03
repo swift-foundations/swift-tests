@@ -5,11 +5,11 @@
 //  SwiftSyntax-based source file rewriter for inline snapshots.
 //
 
-public import Test_Primitives
 import File_System
 import SwiftParser
 import SwiftSyntax
 import SwiftSyntaxBuilder
+public import Test_Primitives
 
 extension Test.Snapshot.Inline {
     /// SwiftSyntax-based source file rewriter for inline snapshots.
@@ -126,7 +126,7 @@ extension Test.Snapshot.Inline.Rewriter {
             return super.visit(updated)
         }
 
-}
+    }
 }
 
 // MARK: - Call Site Detection
@@ -194,11 +194,12 @@ private func buildSnapshotClosure(
     let closureBody: Swift.String
     if value.isEmpty {
         closureBody = """
-        \(hashString)\"\"\"
-        \(innerIndent)\(hashString)\"\"\"
-        """
+            \(hashString)\"\"\"
+            \(innerIndent)\(hashString)\"\"\"
+            """
     } else {
-        let indentedValue = value
+        let indentedValue =
+            value
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { line in
                 line.isEmpty ? Swift.String(line) : "\(innerIndent)\(line)"
@@ -206,10 +207,10 @@ private func buildSnapshotClosure(
             .joined(separator: "\n")
 
         closureBody = """
-        \(hashString)\"\"\"
-        \(indentedValue)
-        \(innerIndent)\(hashString)\"\"\"
-        """
+            \(hashString)\"\"\"
+            \(indentedValue)
+            \(innerIndent)\(hashString)\"\"\"
+            """
     }
 
     return ClosureExprSyntax(
@@ -236,8 +237,10 @@ private func extractIndentation(from node: some SyntaxProtocol) -> Swift.String 
         switch piece {
         case .spaces(let count):
             indent = Swift.String(repeating: " ", count: count)
+
         case .tabs(let count):
             indent = Swift.String(repeating: "\t", count: count)
+
         default:
             break
         }
@@ -299,10 +302,12 @@ func hashCount(for value: Swift.String) -> Int {
                 // At minimum we need 1 hash to distinguish from closing """
                 needed = max(needed, 1)
             }
+
         case "#" where inTripleQuote:
             hashesAfterTripleQuote += 1
             // """#...# with N hashes means we need N+1 hashes in our delimiter
             needed = max(needed, hashesAfterTripleQuote + 1)
+
         case "\\":
             // Any backslash needs at least 1 hash so \n, \t, \(, etc.
             // are not interpreted as escape sequences.
@@ -311,6 +316,7 @@ func hashCount(for value: Swift.String) -> Int {
             consecutiveQuotes = 0
             inTripleQuote = false
             hashesAfterTripleQuote = 0
+
         default:
             consecutiveQuotes = 0
             inTripleQuote = false

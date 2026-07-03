@@ -19,7 +19,12 @@ extension Test.Environment {
         /// and flips the flag. In release builds, `assert` is a no-op.
         public static var current: Self {
             var isDebug = false
-            assert({ isDebug = true; return true }())
+            assert(
+                {
+                    isDebug = true
+                    return true
+                }()
+            )
             return isDebug ? .debug : .release
         }
 

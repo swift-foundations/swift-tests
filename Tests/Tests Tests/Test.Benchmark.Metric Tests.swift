@@ -20,27 +20,27 @@ extension BenchmarkMetricTests.Unit {
 
         #expect(
             Test_Primitives.Test.Benchmark.Metric.min.extract(from: measurement)
-            == measurement.min
+                == measurement.min
         )
         #expect(
             Test_Primitives.Test.Benchmark.Metric.max.extract(from: measurement)
-            == measurement.max
+                == measurement.max
         )
         #expect(
             Test_Primitives.Test.Benchmark.Metric.median.extract(from: measurement)
-            == measurement.median
+                == measurement.median
         )
         #expect(
             Test_Primitives.Test.Benchmark.Metric.mean.extract(from: measurement)
-            == measurement.mean
+                == measurement.mean
         )
         #expect(
             Test_Primitives.Test.Benchmark.Metric.p95.extract(from: measurement)
-            == measurement.p95
+                == measurement.p95
         )
         #expect(
             Test_Primitives.Test.Benchmark.Metric.p99.extract(from: measurement)
-            == measurement.p99
+                == measurement.p99
         )
     }
 

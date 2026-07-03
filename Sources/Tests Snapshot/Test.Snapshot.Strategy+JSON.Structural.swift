@@ -5,8 +5,8 @@
 //  JSON snapshot strategy with structural (tree-aware) diffing.
 //
 
-public import Test_Primitives
 public import JSON
+public import Test_Primitives
 
 // MARK: - Structural JSON Strategy (JSON.Serializable)
 

@@ -12,7 +12,9 @@ extension TestRequirementFailedTests.Unit {
     @Test
     func `init stores message and sourceLocation`() {
         let location = Source.Location(
-            fileID: "Module/File.swift", line: 42, column: 5
+            fileID: "Module/File.swift",
+            line: 42,
+            column: 5
         )
         let message = Test_Primitives.Test.Text("requirement not met")
         let failed = Test_Primitives.Test.Requirement.Failed(
@@ -27,7 +29,9 @@ extension TestRequirementFailedTests.Unit {
     @Test
     func `description contains message text`() {
         let location = Source.Location(
-            fileID: "Module/File.swift", line: 10, column: 1
+            fileID: "Module/File.swift",
+            line: 10,
+            column: 1
         )
         let failed = Test_Primitives.Test.Requirement.Failed(
             message: Test_Primitives.Test.Text("expected true"),
@@ -39,7 +43,9 @@ extension TestRequirementFailedTests.Unit {
     @Test
     func `description contains source location`() {
         let location = Source.Location(
-            fileID: "Module/File.swift", line: 99, column: 3
+            fileID: "Module/File.swift",
+            line: 99,
+            column: 3
         )
         let failed = Test_Primitives.Test.Requirement.Failed(
             message: Test_Primitives.Test.Text("failed"),

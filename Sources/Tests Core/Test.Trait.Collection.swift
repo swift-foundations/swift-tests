@@ -25,18 +25,24 @@ extension Test.Trait {
                 switch trait.kind {
                 case .timeLimit(let duration):
                     storage[TimeLimit.self] = duration
+
                 case .tag(let name):
                     var tags = storage[Tag.self]
                     tags.insert(name)
                     storage[Tag.self] = tags
+
                 case .enabled(let flag, let comment):
                     storage[Enabled.self] = Enabled(isEnabled: flag, comment: comment)
+
                 case .bug(let id, let comment):
                     storage[Bug.self] = Bug(id: id, comment: comment)
+
                 case .serialized:
                     storage[Serialized.self] = true
+
                 case .exclusive(let group):
                     storage[Exclusive.self] = Exclusive(group: group)
+
                 case .timed(let config):
                     storage[Timed.self] = config
                 }

@@ -5,12 +5,12 @@
 //  Witness key for tag traits.
 //
 
-public import Set_Primitives
-public import Set_Ordered_Primitives
-public import Hash_Indexed_Primitive
-public import Column_Primitives
-public import Shared_Primitive
 public import Buffer_Linear_Primitive
+public import Column_Primitives
+public import Hash_Indexed_Primitive
+public import Set_Ordered_Primitives
+public import Set_Primitives
+public import Shared_Primitive
 
 extension Test.Trait {
     /// Witness key for tag collection.
