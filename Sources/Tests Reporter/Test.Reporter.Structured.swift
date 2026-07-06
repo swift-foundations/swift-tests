@@ -174,7 +174,12 @@ extension Test.Reporter {
             default:
                 // Extensible kinds (e.g., performanceDiagnostic) with payload
                 if let payload = event.payload {
-                    let parsed = (try? JSON.parse(payload)) ?? .string(payload)
+                    let parsed: JSON
+                    do throws(JSON.Error) {
+                        parsed = try JSON.parse(payload)
+                    } catch {
+                        parsed = .string(payload)
+                    }
                     return envelope(event.kind.underlying, payload: parsed)
                 }
                 return nil

@@ -19,6 +19,10 @@ extension Test.Trait.Collection {
         /// The closure that mutates the collection.
         internal let _apply: @Sendable (inout Test.Trait.Collection) -> Void
 
+        // swiftlint:disable typed_throws_required
+        // Reason: closure type mirrors the signature forced by external protocol
+        // Testing.TestScoping (untyped throws upstream); the Apple Testing bridge
+        // forwards this closure verbatim, so its throws cannot be typed.
         /// Optional scope provider for Apple Testing integration.
         ///
         /// When present, the `TestScoping` conformance (in the Apple Testing Bridge)
@@ -54,6 +58,7 @@ extension Test.Trait.Collection {
             self._apply = apply
             self._provideScope = provideScope
         }
+        // swiftlint:enable typed_throws_required
 
         /// Applies this modifier to the given collection.
         ///

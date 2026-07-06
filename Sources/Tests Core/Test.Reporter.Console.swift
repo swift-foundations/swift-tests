@@ -34,7 +34,6 @@ extension Test.Reporter {
 // MARK: - NullSink
 
 extension Test.Reporter {
-    /// Null sink that discards all events.
     // WHY: Category D — structural Sendable workaround.
     // WHY: Stateless discard sink. No stored properties, no caller invariant.
     // WHY: The @unchecked exists because the Sink.Implementation protocol
@@ -42,6 +41,7 @@ extension Test.Reporter {
     // WHEN TO REMOVE: When compiler gains structural Sendable inference through
     // WHEN TO REMOVE: protocol conformance on stateless types.
     // TRACKING: unsafe-audit-findings.md Category D; SP-7.
+    /// Null sink that discards all events.
     private final class NullSink: Sink.Implementation, @unchecked Sendable {
         func send(_ event: Test.Event) async {}
         func finish() async {}

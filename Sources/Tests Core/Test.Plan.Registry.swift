@@ -192,7 +192,11 @@ extension Test.Plan.Registry {
 
         case .some(.some(var node)):
             node.traits = Test.Trait.Collection(modifiers: inherited + node.modifiers)
-            _ = try? tree.update(at: position, node)
+            do {
+                try tree.update(at: position, node)
+            } catch {
+                // best-effort: position validated by peek above; update failure is non-fatal
+            }
             passDown = inherited + node.modifiers
         }
 

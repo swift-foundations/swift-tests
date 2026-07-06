@@ -64,6 +64,8 @@ extension Test.Snapshot.Storage {
 
         var snapshotDir = snapshotDirectory ?? (testDir / ".snapshots")
         if let subdirectory {
+            // No `/=` overload for File.Path; `/` is a heterogeneous path-append (Path / Path.Component).
+            // swiftlint:disable:next shorthand_operator
             snapshotDir = snapshotDir / subdirectory
         }
 

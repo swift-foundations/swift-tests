@@ -29,7 +29,7 @@ extension TestPlanRegistryTests.Unit {
     @Test
     func `add with sync body closure`() {
         var registry = Test_Primitives.Test.Plan.Registry()
-        registry.add(id: .stub("sync")) { /* sync body */  }
+        registry.add(id: .stub("sync")) {}
         #expect(registry.count == 1)
     }
 

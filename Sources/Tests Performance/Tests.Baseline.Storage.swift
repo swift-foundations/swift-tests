@@ -65,6 +65,8 @@ extension Tests.Baseline.Storage {
 
         if let suite = testID.suite {
             for component in suite.split(separator: ".") {
+                // No `/=` overload for File.Path; `/` is a heterogeneous path-append (Path / Path.Component).
+                // swiftlint:disable:next shorthand_operator
                 result = result / "\(component)"
             }
         }

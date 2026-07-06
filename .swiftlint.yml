@@ -6,3 +6,9 @@ parent_config: https://raw.githubusercontent.com/swift-foundations/.github/main/
 # Package-specific overrides
 disabled_rules:
   - function_parameter_count
+  # force_try: deliberate and provably-safe, not accidental. `_jsonToKeyedTree`
+  # builds a fresh tree where every insert position is freshly created (the root of
+  # an empty tree, or a just-inserted parent), so `insert` cannot fail; the round-trip
+  # tests use fixed, valid `Instant` literals. The force_try trap-table disposition
+  # forbids rewriting these; disable the rule repo-wide (iso-8601 precedent).
+  - force_try

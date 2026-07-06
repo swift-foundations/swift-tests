@@ -53,7 +53,10 @@ extension Tests.History.Record: JSON.Serializable {
 
     /// Deserializes a record from JSON.
     public static func deserialize(_ json: JSON) throws(JSON.Error) -> Self {
-        guard let tsSeconds = try? Double(json: json.ts) else {
+        let tsSeconds: Double
+        do throws(JSON.Error) {
+            tsSeconds = try Double(json: json.ts)
+        } catch {
             throw .missingKey("ts")
         }
         let tsWhole = tsSeconds.rounded(.down)
@@ -64,11 +67,22 @@ extension Tests.History.Record: JSON.Serializable {
         )
 
         // Parse test ID
-        guard let module = try? Swift.String(json: json.id.m) else {
+        let module: Swift.String
+        do throws(JSON.Error) {
+            module = try Swift.String(json: json.id.m)
+        } catch {
             throw .missingKey("id.m")
         }
-        let suite = try? Swift.String(json: json.id.s)
-        guard let name = try? Swift.String(json: json.id.n) else {
+        let suite: Swift.String?
+        do throws(JSON.Error) {
+            suite = try Swift.String(json: json.id.s)
+        } catch {
+            suite = nil
+        }
+        let name: Swift.String
+        do throws(JSON.Error) {
+            name = try Swift.String(json: json.id.n)
+        } catch {
             throw .missingKey("id.n")
         }
         let testID = Test.ID(
@@ -84,13 +98,19 @@ extension Tests.History.Record: JSON.Serializable {
         )
 
         // Parse metric
-        guard let metricStr = try? Swift.String(json: json.metric) else {
+        let metricStr: Swift.String
+        do throws(JSON.Error) {
+            metricStr = try Swift.String(json: json.metric)
+        } catch {
             throw .missingKey("metric")
         }
         let metric = _parseMetric(metricStr)
 
         // Parse metric value
-        guard let valueSeconds = try? Double(json: json.value_s) else {
+        let valueSeconds: Double
+        do throws(JSON.Error) {
+            valueSeconds = try Double(json: json.value_s)
+        } catch {
             throw .missingKey("value_s")
         }
 
@@ -101,7 +121,10 @@ extension Tests.History.Record: JSON.Serializable {
         var durations: [Duration] = []
         durations.reserveCapacity(durationsArray.count)
         for element in durationsArray {
-            guard let seconds = try? Double(json: element) else {
+            let seconds: Double
+            do throws(JSON.Error) {
+                seconds = try Double(json: element)
+            } catch {
                 throw .typeMismatch(expected: "number", got: "\(element)")
             }
             durations.append(.seconds(seconds))
@@ -111,8 +134,18 @@ extension Tests.History.Record: JSON.Serializable {
         let environment = try Test.Environment.deserialize(json.env)
 
         // Optional fields
-        let cv = try? Double(json: json.cv)
-        let outliers = try? Int(json: json.outliers)
+        let cv: Double?
+        do throws(JSON.Error) {
+            cv = try Double(json: json.cv)
+        } catch {
+            cv = nil
+        }
+        let outliers: Int?
+        do throws(JSON.Error) {
+            outliers = try Int(json: json.outliers)
+        } catch {
+            outliers = nil
+        }
 
         return Self(
             timestamp: ts,

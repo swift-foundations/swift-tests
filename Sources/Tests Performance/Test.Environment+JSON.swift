@@ -37,30 +37,61 @@ extension Test.Environment: JSON.Serializable {
 
     /// Deserializes an environment from JSON.
     public static func deserialize(_ json: JSON) throws(JSON.Error) -> Self {
-        guard let architecture = try? Swift.String(json: json.architecture) else {
+        let architecture: Swift.String
+        do throws(JSON.Error) {
+            architecture = try Swift.String(json: json.architecture)
+        } catch {
             throw .missingKey("architecture")
         }
-        guard let physicalCores = try? Int(json: json.physical_cores) else {
+        let physicalCores: Int
+        do throws(JSON.Error) {
+            physicalCores = try Int(json: json.physical_cores)
+        } catch {
             throw .missingKey("physical_cores")
         }
-        guard let logicalCores = try? Int(json: json.logical_cores) else {
+        let logicalCores: Int
+        do throws(JSON.Error) {
+            logicalCores = try Int(json: json.logical_cores)
+        } catch {
             throw .missingKey("logical_cores")
         }
-        guard let memoryBytes = try? Int(json: json.memory_bytes) else {
+        let memoryBytes: Int
+        do throws(JSON.Error) {
+            memoryBytes = try Int(json: json.memory_bytes)
+        } catch {
             throw .missingKey("memory_bytes")
         }
-        guard let os = try? Swift.String(json: json.os) else {
+        let os: Swift.String
+        do throws(JSON.Error) {
+            os = try Swift.String(json: json.os)
+        } catch {
             throw .missingKey("os")
         }
-        guard let swiftVersion = try? Swift.String(json: json.swift_version) else {
+        let swiftVersion: Swift.String
+        do throws(JSON.Error) {
+            swiftVersion = try Swift.String(json: json.swift_version)
+        } catch {
             throw .missingKey("swift_version")
         }
-        guard let optimization = try? Swift.String(json: json.optimization) else {
+        let optimization: Swift.String
+        do throws(JSON.Error) {
+            optimization = try Swift.String(json: json.optimization)
+        } catch {
             throw .missingKey("optimization")
         }
 
-        let nnbd = (try? Bool(json: json.features.NonisolatedNonsendingByDefault)) ?? false
-        let sms = (try? Bool(json: json.features.StrictMemorySafety)) ?? false
+        let nnbd: Bool
+        do throws(JSON.Error) {
+            nnbd = try Bool(json: json.features.NonisolatedNonsendingByDefault)
+        } catch {
+            nnbd = false
+        }
+        let sms: Bool
+        do throws(JSON.Error) {
+            sms = try Bool(json: json.features.StrictMemorySafety)
+        } catch {
+            sms = false
+        }
 
         return Self(
             architecture: architecture,

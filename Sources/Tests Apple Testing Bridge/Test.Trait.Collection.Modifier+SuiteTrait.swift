@@ -17,6 +17,8 @@
     extension Test_Primitives.Test.Trait.Collection.Modifier: Testing.SuiteTrait, Testing.TestScoping {
         public var isRecursive: Bool { true }
 
+        // swiftlint:disable typed_throws_required
+        // Reason: signature forced by external protocol Testing.TestScoping (untyped throws upstream).
         @concurrent
         public func provideScope(
             for test: Testing.Test,
@@ -29,5 +31,6 @@
                 try await function()
             }
         }
+        // swiftlint:enable typed_throws_required
     }
 #endif

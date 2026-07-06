@@ -245,7 +245,11 @@ extension Tests.Complexity {
 
         if shouldSave {
             let current = Baseline(result: result)
-            try? current.save(to: path)
+            do throws(Tests.Baseline.Storage.Error) {
+                try current.save(to: path)
+            } catch {
+                // best-effort: complexity baseline save failure is non-fatal
+            }
         }
     }
 }

@@ -42,6 +42,8 @@ extension Tests.History.Storage {
 
         if let suite = testID.suite {
             for component in suite.split(separator: ".") {
+                // No `/=` overload for File.Path; `/` is a heterogeneous path-append (Path / Path.Component).
+                // swiftlint:disable:next shorthand_operator
                 result = result / "\(component)"
             }
         }
@@ -161,7 +163,11 @@ extension Tests.History.Storage {
             lines.append(Swift.String(decoding: bytes, as: UTF8.self))
         }
         let content = lines.joined(separator: "\n") + "\n"
-        try? File(path).write.atomic(content)
+        do throws(File.System.Write.Atomic.Error) {
+            try File(path).write.atomic(content)
+        } catch {
+            // best-effort: history prune rewrite failure is non-fatal
+        }
     }
 }
 
@@ -178,7 +184,7 @@ extension Tests.History.Storage {
     public static func append(
         _ record: Tests.History.Record,
         root: File.Path
-    ) async throws(Either<Kernel.Thread.Pool.Error, Error>) {
+    ) async throws(Either<Kernel.Thread.Pool.Error, Tests.History.Storage.Error>) {
         let record = record
         let root = root
         try await Kernel.Thread.Pool.shared.run { () throws(Error) in
@@ -229,9 +235,13 @@ extension Tests.History.Storage {
     private static func _parseJSONL(_ content: Swift.String) -> [Tests.History.Record] {
         var records: [Tests.History.Record] = []
         for line in content.split(separator: "\n", omittingEmptySubsequences: true) {
-            guard let json = try? JSON.parse(Swift.String(line)),
-                let record = try? Tests.History.Record.deserialize(json)
-            else { continue }
+            let record: Tests.History.Record
+            do throws(JSON.Error) {
+                let json = try JSON.parse(Swift.String(line))
+                record = try Tests.History.Record.deserialize(json)
+            } catch {
+                continue
+            }
             records.append(record)
         }
         return records

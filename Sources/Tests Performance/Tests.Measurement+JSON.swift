@@ -35,7 +35,10 @@ extension Test.Benchmark.Measurement: JSON.Serializable {
         durations.reserveCapacity(array.count)
 
         for element in array {
-            guard let seconds = try? Double(json: element) else {
+            let seconds: Double
+            do throws(JSON.Error) {
+                seconds = try Double(json: element)
+            } catch {
                 throw .typeMismatch(expected: "number", got: "\(element)")
             }
             durations.append(.seconds(seconds))

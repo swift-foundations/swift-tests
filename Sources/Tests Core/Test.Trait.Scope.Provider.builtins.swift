@@ -37,15 +37,19 @@ extension Test.Trait.Scope.Provider {
         _ operation: @Sendable () async throws(Error) -> Void
     ) async throws(Error) {
         let limit = traits[Test.Trait.TimeLimit.self]!
+        // swiftlint:disable:next workaround_marker_present
         // WORKAROUND: withoutActuallyEscaping uses rethrows which doesn't
         // narrow to typed throws. Catch boundary converts untyped rethrow
         // back to our typed Error.
+        // WHY: `rethrows` cannot be narrowed to `throws(Error)` by the
+        //   compiler, so the untyped rethrow is re-narrowed at the catch.
         // WHEN TO REMOVE: When rethrows supports typed throw inference.
+        // TRACKING: upstream Swift gap — rethrows to typed-throws inference.
         do {
             try await withoutActuallyEscaping(operation) { escapingOp in
                 try await _withTimeout(limit, operation: escapingOp)
             }
-        } catch let error as Error {
+        } catch let error as Self.Error {
             throw error
         } catch {
             throw Error.bodyFailed(
@@ -83,15 +87,19 @@ extension Test.Trait.Scope.Provider {
         let limit: Duration
     }
 
+    // swiftlint:disable:next workaround_marker_present
+    // WORKAROUND: withoutActuallyEscaping needed because @Sendable closure
+    // parameters are non-escaping but addTask requires @escaping.
+    // WHY: addTask requires `@escaping`; @Sendable closure parameters are
+    //   non-escaping, so callers must launder via withoutActuallyEscaping.
+    // WHEN TO REMOVE: When Swift supports @escaping on closure parameters
+    // in @Sendable function types.
+    // TRACKING: upstream Swift gap — @escaping on @Sendable closure params.
     /// Runs an operation with a timeout.
     ///
     /// - Note: `withThrowingTaskGroup` erases typed throws. The catch
     ///   boundary here converts between untyped task group errors and
     ///   our typed `Error` enum.
-    // WORKAROUND: withoutActuallyEscaping needed because @Sendable closure
-    // parameters are non-escaping but addTask requires @escaping.
-    // WHEN TO REMOVE: When Swift supports @escaping on closure parameters
-    // in @Sendable function types.
     @Sendable
     private static func _withTimeout(
         _ timeout: Duration,
@@ -109,7 +117,7 @@ extension Test.Trait.Scope.Provider {
                 try await group.next()
                 group.cancelAll()
             }
-        } catch let error as Error {
+        } catch let error as Self.Error {
             throw error
         } catch let error as _Timeout {
             throw .timeLimitExceeded(limit: error.limit)

@@ -397,9 +397,10 @@ extension Test {
             } catch {
                 bodyThrew = true
 
-                let runnerError = error as! Error
                 let isRequirementFailure: Bool
-                if case .bodyFailed(.requirementFailed) = runnerError {
+                if let runnerError = error as? Self.Error,
+                    case .bodyFailed(.requirementFailed) = runnerError
+                {
                     isRequirementFailure = true
                 } else {
                     isRequirementFailure = false

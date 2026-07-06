@@ -54,12 +54,15 @@ extension Test.Expectation {
     /// Thread-safe: `static let` guarantees exactly-once initialization.
     private static let _resolveBridge: Void = {
         guard unsafe externalFailureHandler == nil else { return }
-        guard
-            let symbol = try? unsafe Loader.Symbol.lookup(
+        let symbol: UnsafeRawPointer
+        do throws(Loader.Error) {
+            symbol = try unsafe Loader.Symbol.lookup(
                 name: "_swift_tests_bridge_install",
                 in: .default
             )
-        else { return }
+        } catch {
+            return
+        }
         unsafe unsafeBitCast(symbol, to: (@convention(c) () -> Void).self)()
     }()
 
