@@ -10,7 +10,7 @@ public import Column_Primitives
 public import Hash_Indexed_Primitive
 public import Set_Ordered_Primitives
 public import Set_Primitives
-public import Shared_Primitive
+public import Ownership_Shared_Primitive
 
 extension Test.Trait {
     /// Witness key for tag collection.
@@ -18,7 +18,7 @@ extension Test.Trait {
 }
 
 extension Test.Trait.Tag: Witness.Key {
-    public typealias Value = Set<Shared<Swift.String, Hash.Indexed<Column.Heap<Swift.String>>>>.Ordered
+    public typealias Value = __SetOrdered<Ownership.Shared<Swift.String, Hash.Indexed<Column.Heap<Swift.String>>>>
 
     @inlinable
     public static var liveValue: Value { .init() }

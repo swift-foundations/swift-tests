@@ -8,6 +8,7 @@
 import Byte_Primitives_Standard_Library_Integration
 import JSON
 public import Test_Primitives
+internal import Tree_Keyed_Primitives
 
 // MARK: - Structural JSON Diffing
 
@@ -53,7 +54,7 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
 
                 let oldTree = _jsonToKeyedTree(oldValue)
                 let newTree = _jsonToKeyedTree(newValue)
-                let treeDiff = TreeKeyed<RFC_8259.Value, Swift.String>.diff(from: oldTree, to: newTree)
+                let treeDiff = Tree<RFC_8259.Value>.Keyed<Swift.String>.diff(from: oldTree, to: newTree)
 
                 guard !treeDiff.isEmpty else { return nil }
 

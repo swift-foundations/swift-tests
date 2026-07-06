@@ -17,6 +17,6 @@ extension Test {
     /// Used by @Test macro expansion to box registrations for transfer
     /// via C-compatible function signatures.
     ///
-    /// - SeeAlso: `Ownership.Shared` from swift-ownership-primitives
-    public typealias Box<T: Sendable> = Ownership.Shared<T>
+    /// - SeeAlso: `Ownership.Box` from swift-ownership-primitives
+    public typealias Box<T: Sendable> = Ownership.Box<T>
 }

@@ -33,7 +33,7 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-set-ordered-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-hash-table-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-column-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-shared-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-ownership-shared-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-buffer-linear-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-byte-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-tree-keyed-primitives.git", branch: "main"),
@@ -69,7 +69,7 @@ let package = Package(
                 .product(name: "Tree Keyed Primitives", package: "swift-tree-keyed-primitives"),
                 .product(name: "Hash Indexed Primitive", package: "swift-hash-table-primitives"),
                 .product(name: "Column Primitives", package: "swift-column-primitives"),
-                .product(name: "Shared Primitive", package: "swift-shared-primitives"),
+                .product(name: "Ownership Shared Primitive", package: "swift-ownership-shared-primitives"),
                 .product(name: "Buffer Linear Primitive", package: "swift-buffer-linear-primitives"),
             ]
         ),
