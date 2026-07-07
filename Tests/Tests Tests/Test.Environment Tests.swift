@@ -23,9 +23,13 @@ extension TestEnvironmentTests.Capture {
     }
 
     @Test
-    func optimizationIsDebugInTestRunner() {
+    func optimizationMatchesBuildConfiguration() {
         let opt = Test.Environment.Optimization.current
-        #expect(opt == .debug)
+        #if DEBUG
+            #expect(opt == .debug)
+        #else
+            #expect(opt == .release)
+        #endif
     }
 }
 
