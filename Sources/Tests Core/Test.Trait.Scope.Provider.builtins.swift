@@ -37,7 +37,6 @@ extension Test.Trait.Scope.Provider {
         _ operation: @Sendable () async throws(Error) -> Void
     ) async throws(Error) {
         let limit = traits[Test.Trait.TimeLimit.self]!
-        // swiftlint:disable:next workaround_marker_present
         // WORKAROUND: withoutActuallyEscaping uses rethrows which doesn't
         // narrow to typed throws. Catch boundary converts untyped rethrow
         // back to our typed Error.
@@ -87,7 +86,6 @@ extension Test.Trait.Scope.Provider {
         let limit: Duration
     }
 
-    // swiftlint:disable:next workaround_marker_present
     // WORKAROUND: withoutActuallyEscaping needed because @Sendable closure
     // parameters are non-escaping but addTask requires @escaping.
     // WHY: addTask requires `@escaping`; @Sendable closure parameters are
