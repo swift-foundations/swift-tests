@@ -44,45 +44,49 @@ extension Test.Expectation {
     /// // results[1].isFailing == true
     /// ```
     public final class Collector: @unsafe @unchecked Sendable {
-
-        /// Dependency key for expectation collector injection.
-        public enum Key: Dependency.Key {
-            public static var liveValue: Collector? { nil }
-            public static var testValue: Collector? { nil }
-        }
-
-        /// The collector for the current scope, if any.
-        public static var current: Collector? {
-            Dependency.Scope.current[Key.self]
-        }
-
         private let _storage = Mutex<[Test.Expectation]>([])
 
         public init() {}
+    }
+}
 
-        /// Records an expectation.
-        ///
-        /// - Parameter expectation: The expectation to record.
-        public func record(_ expectation: Test.Expectation) {
-            _storage.withLock { $0.append(expectation) }
-        }
+extension Test.Expectation.Collector {
+    /// Dependency key for expectation collector injection.
+    public enum Key: Dependency.Key {
+    }
 
-        /// Drains all recorded expectations, returning them and clearing storage.
-        ///
-        /// - Returns: All expectations recorded since the last drain.
-        public func drain() -> [Test.Expectation] {
-            _storage.withLock {
-                let result = $0
-                $0 = []
-                return result
-            }
-        }
+    /// The collector for the current scope, if any.
+    public static var current: Test.Expectation.Collector? {
+        Dependency.Scope.current[Key.self]
+    }
 
-        /// Whether any recorded expectation is failing.
-        public var hasFailures: Bool {
-            _storage.withLock { $0.contains { $0.isFailing } }
+    /// Records an expectation.
+    ///
+    /// - Parameter expectation: The expectation to record.
+    public func record(_ expectation: Test.Expectation) {
+        _storage.withLock { $0.append(expectation) }
+    }
+
+    /// Drains all recorded expectations, returning them and clearing storage.
+    ///
+    /// - Returns: All expectations recorded since the last drain.
+    public func drain() -> [Test.Expectation] {
+        _storage.withLock {
+            let result = $0
+            $0 = []
+            return result
         }
     }
+
+    /// Whether any recorded expectation is failing.
+    public var hasFailures: Bool {
+        _storage.withLock { $0.contains { $0.isFailing } }
+    }
+}
+
+extension Test.Expectation.Collector.Key {
+    public static var liveValue: Test.Expectation.Collector? { nil }
+    public static var testValue: Test.Expectation.Collector? { nil }
 }
 
 // MARK: - Scoped Collector

@@ -21,25 +21,27 @@ extension Test.Environment {
             self.nonisolatedNonsendingByDefault = nonisolatedNonsendingByDefault
             self.strictMemorySafety = strictMemorySafety
         }
+    }
+}
 
-        /// Detects feature flags for the current compilation unit.
-        public static var current: Self {
-            Self(
-                nonisolatedNonsendingByDefault: {
-                    #if hasFeature(NonisolatedNonsendingByDefault)
-                        return true
-                    #else
-                        return false
-                    #endif
-                }(),
-                strictMemorySafety: {
-                    #if hasFeature(StrictMemorySafety)
-                        return true
-                    #else
-                        return false
-                    #endif
-                }()
-            )
-        }
+extension Test.Environment.Features {
+    /// Detects feature flags for the current compilation unit.
+    public static var current: Self {
+        Self(
+            nonisolatedNonsendingByDefault: {
+                #if hasFeature(NonisolatedNonsendingByDefault)
+                    return true
+                #else
+                    return false
+                #endif
+            }(),
+            strictMemorySafety: {
+                #if hasFeature(StrictMemorySafety)
+                    return true
+                #else
+                    return false
+                #endif
+            }()
+        )
     }
 }

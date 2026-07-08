@@ -69,43 +69,45 @@ extension Test {
             }
             self.tree = tree
         }
+    }
+}
 
-        /// Flattened test entries for backward compatibility.
-        ///
-        /// Performs a pre-order traversal collecting all test nodes (nodes
-        /// with bodies). Suite nodes and structural intermediates are excluded.
-        public var entries: [Entry] {
-            guard let root = tree.root else { return [] }
-            var result: [Entry] = []
-            var stack: [Tree<Node?>.Keyed<String>.Position] = [root]
-            while let pos = stack.popLast() {
-                if let nodeOpt: Node? = tree.peek(at: pos),
-                    let node = nodeOpt,
-                    let body = node.body
-                {
-                    result.append(Entry(id: node.id, modifiers: node.modifiers, body: body))
-                }
-                if let children = tree.children(of: pos) {
-                    for (_, childPos) in children.reversed() {
-                        stack.append(childPos)
-                    }
+extension Test.Plan {
+    /// Flattened test entries for backward compatibility.
+    ///
+    /// Performs a pre-order traversal collecting all test nodes (nodes
+    /// with bodies). Suite nodes and structural intermediates are excluded.
+    public var entries: [Entry] {
+        guard let root = tree.root else { return [] }
+        var result: [Entry] = []
+        var stack: [Tree<Node?>.Keyed<String>.Position] = [root]
+        while let pos = stack.popLast() {
+            if let nodeOpt: Node? = tree.peek(at: pos),
+                let node = nodeOpt,
+                let body = node.body
+            {
+                result.append(Entry(id: node.id, modifiers: node.modifiers, body: body))
+            }
+            if let children = tree.children(of: pos) {
+                for (_, childPos) in children.reversed() {
+                    stack.append(childPos)
                 }
             }
-            return result
         }
+        return result
+    }
 
-        /// Whether this plan has no entries.
-        public var isEmpty: Bool {
-            tree.root == nil
-        }
+    /// Whether this plan has no entries.
+    public var isEmpty: Bool {
+        tree.root == nil
+    }
 
-        /// The number of test entries in this plan.
-        ///
-        /// Only counts test nodes (nodes with bodies), not suites or
-        /// structural intermediates.
-        public var count: Int {
-            entries.count
-        }
+    /// The number of test entries in this plan.
+    ///
+    /// Only counts test nodes (nodes with bodies), not suites or
+    /// structural intermediates.
+    public var count: Int {
+        entries.count
     }
 }
 

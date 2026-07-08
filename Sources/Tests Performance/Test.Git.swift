@@ -28,31 +28,33 @@ extension Test {
         /// Always `nil` — determining dirty status requires `git status`
         /// which needs subprocess spawning. Deferred for now.
         public let dirty: Bool?
+    }
+}
 
-        /// Captures git metadata from the current working directory.
-        ///
-        /// Reads `.git/HEAD` to determine branch and SHA.
-        /// Returns nil fields if not in a git repository.
-        public static func capture() -> Self {
-            guard let head = _read(".git/HEAD") else {
-                return Self(sha: nil, branch: nil, dirty: nil)
-            }
-
-            let refPrefix = "ref: "
-            if head.hasPrefix(refPrefix) {
-                let ref = Swift.String(head.dropFirst(refPrefix.count))
-                let sha = _read(".git/\(ref)")
-                let branchPrefix = "refs/heads/"
-                let branch =
-                    ref.hasPrefix(branchPrefix)
-                    ? Swift.String(ref.dropFirst(branchPrefix.count))
-                    : nil
-                return Self(sha: sha, branch: branch, dirty: nil)
-            }
-
-            // Detached HEAD — head content is the SHA
-            return Self(sha: head, branch: nil, dirty: nil)
+extension Test.Git {
+    /// Captures git metadata from the current working directory.
+    ///
+    /// Reads `.git/HEAD` to determine branch and SHA.
+    /// Returns nil fields if not in a git repository.
+    public static func capture() -> Self {
+        guard let head = _read(".git/HEAD") else {
+            return Self(sha: nil, branch: nil, dirty: nil)
         }
+
+        let refPrefix = "ref: "
+        if head.hasPrefix(refPrefix) {
+            let ref = Swift.String(head.dropFirst(refPrefix.count))
+            let sha = _read(".git/\(ref)")
+            let branchPrefix = "refs/heads/"
+            let branch =
+                ref.hasPrefix(branchPrefix)
+                ? Swift.String(ref.dropFirst(branchPrefix.count))
+                : nil
+            return Self(sha: sha, branch: branch, dirty: nil)
+        }
+
+        // Detached HEAD — head content is the SHA
+        return Self(sha: head, branch: nil, dirty: nil)
     }
 }
 

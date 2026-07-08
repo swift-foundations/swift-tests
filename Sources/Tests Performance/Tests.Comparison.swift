@@ -29,45 +29,47 @@ extension Tests {
             self.baseline = baseline
             self.metric = metric
         }
+    }
+}
 
-        public var currentValue: Duration {
-            metric.extract(from: current)
-        }
+extension Tests.Comparison {
+    public var currentValue: Duration {
+        metric.extract(from: current)
+    }
 
-        public var baselineValue: Duration {
-            metric.extract(from: baseline)
-        }
+    public var baselineValue: Duration {
+        metric.extract(from: baseline)
+    }
 
-        public var change: Double {
-            let comparison = Sample.Comparison(
-                baseline: baseline.batch,
-                current: current.batch,
-                metric: metric,
-                polarity: .lowerIsBetter
-            )
-            return comparison.change(using: .duration) ?? 0.0
-        }
+    public var change: Double {
+        let comparison = Sample.Comparison(
+            baseline: baseline.batch,
+            current: current.batch,
+            metric: metric,
+            polarity: .lowerIsBetter
+        )
+        return comparison.change(using: .duration) ?? 0.0
+    }
 
-        public var isRegression: Bool { change > 0 }
-        public var isImprovement: Bool { change < 0 }
+    public var isRegression: Bool { change > 0 }
+    public var isImprovement: Bool { change < 0 }
 
-        public func formatted() -> Swift.String {
-            let changeSymbol = isRegression ? "↑" : "↓"
-            let changeEmoji = isRegression ? "🔴" : "🟢"
+    public func formatted() -> Swift.String {
+        let changeSymbol = isRegression ? "↑" : "↓"
+        let changeEmoji = isRegression ? "🔴" : "🟢"
 
-            let nameColored = (isRegression ? Console.Style.error : .success)
-                .apply(to: name, capability: Tests.consoleCapability)
+        let nameColored = (isRegression ? Console.Style.error : .success)
+            .apply(to: name, capability: Tests.consoleCapability)
 
-            let changeText = "\(changeSymbol) \(abs(change).formatted(.percent.precision(1)))"
-            let changeColored = (isRegression ? Console.Style.error : .success)
-                .apply(to: changeText, capability: Tests.consoleCapability)
+        let changeText = "\(changeSymbol) \(abs(change).formatted(.percent.precision(1)))"
+        let changeColored = (isRegression ? Console.Style.error : .success)
+            .apply(to: changeText, capability: Tests.consoleCapability)
 
-            return """
-                \(changeEmoji) \(nameColored)
-                    Baseline: \(baselineValue.formatted())
-                    Current:  \(currentValue.formatted())
-                    Change:   \(changeColored)
-                """
-        }
+        return """
+            \(changeEmoji) \(nameColored)
+                Baseline: \(baselineValue.formatted())
+                Current:  \(currentValue.formatted())
+                Change:   \(changeColored)
+            """
     }
 }

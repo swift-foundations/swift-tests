@@ -15,30 +15,32 @@ extension Tests.Diagnostic {
     /// as they complete. After all tests finish, the runner prints
     /// a summary table from the collected diagnostics.
     public final class Collector: Sendable {
-        /// Shared collector for the current test run.
-        public static let shared = Collector()
-
         private let _storage = Mutex<[Tests.Diagnostic]>([])
 
         public init() {}
+    }
+}
 
-        /// Registers a diagnostic from a completed `.timed()` test.
-        public func append(_ diagnostic: Tests.Diagnostic) {
-            _storage.withLock { $0.append(diagnostic) }
-        }
+extension Tests.Diagnostic.Collector {
+    /// Shared collector for the current test run.
+    public static let shared = Tests.Diagnostic.Collector()
 
-        /// Drains all collected diagnostics, resetting the collector.
-        public func drain() -> [Tests.Diagnostic] {
-            _storage.withLock { diagnostics in
-                let result = diagnostics
-                diagnostics.removeAll()
-                return result
-            }
-        }
+    /// Registers a diagnostic from a completed `.timed()` test.
+    public func append(_ diagnostic: Tests.Diagnostic) {
+        _storage.withLock { $0.append(diagnostic) }
+    }
 
-        /// Whether any diagnostics have been collected.
-        public var isEmpty: Bool {
-            _storage.withLock { $0.isEmpty }
+    /// Drains all collected diagnostics, resetting the collector.
+    public func drain() -> [Tests.Diagnostic] {
+        _storage.withLock { diagnostics in
+            let result = diagnostics
+            diagnostics.removeAll()
+            return result
         }
+    }
+
+    /// Whether any diagnostics have been collected.
+    public var isEmpty: Bool {
+        _storage.withLock { $0.isEmpty }
     }
 }

@@ -119,7 +119,7 @@ extension Tests.Complexity.Baseline {
         if let parent = path.parent {
             let dir = File.Directory(parent)
             if !dir.stat.exists {
-                do {
+                do throws(File.System.Create.Directory.Error) {
                     try dir.create.recursive()
                 } catch {
                     throw Tests.Baseline.Storage.Error.directoryCreationFailed(
@@ -131,7 +131,7 @@ extension Tests.Complexity.Baseline {
         }
 
         let content = jsonString(pretty: true)
-        do {
+        do throws(File.System.Write.Atomic.Error) {
             try File(path).write.atomic(content)
         } catch {
             throw Tests.Baseline.Storage.Error.writeFailed(

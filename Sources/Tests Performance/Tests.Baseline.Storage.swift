@@ -140,7 +140,7 @@ extension Tests.Baseline.Storage {
 
         // Serialize and write atomically
         let content = measurement.jsonString(pretty: true)
-        do {
+        do throws(File.System.Write.Atomic.Error) {
             try File(path).write.atomic(content)
         } catch {
             throw Self.Error.writeFailed(
@@ -175,7 +175,7 @@ extension Tests.Baseline.Storage {
         let dir = File.Directory(path)
         if dir.stat.exists { return }
 
-        do {
+        do throws(File.System.Create.Directory.Error) {
             try dir.create.recursive()
         } catch {
             throw Self.Error.directoryCreationFailed(

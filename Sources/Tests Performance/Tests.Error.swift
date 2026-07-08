@@ -33,35 +33,37 @@ extension Tests {
 
         /// Peak memory limit was exceeded during test execution.
         case peakMemoryExceeded(test: Swift.String, limit: Int, actual: Int)
+    }
+}
 
-        public var description: Swift.String {
-            switch self {
-            case .benchmarkFailed(let error):
-                return error.description
+extension Tests.Error {
+    public var description: Swift.String {
+        switch self {
+        case .benchmarkFailed(let error):
+            return error.description
 
-            case .allocationLimitExceeded(let test, let limit, let actual):
-                return """
-                    Memory allocation limit exceeded in '\(test)':
-                    Limit: \(limit.formatted(.bytes(.binary)))
-                    Actual: \(actual.formatted(.bytes(.binary)))
-                    Exceeded by: \((actual - limit).formatted(.bytes(.binary)))
-                    """
+        case .allocationLimitExceeded(let test, let limit, let actual):
+            return """
+                Memory allocation limit exceeded in '\(test)':
+                Limit: \(limit.formatted(.bytes(.binary)))
+                Actual: \(actual.formatted(.bytes(.binary)))
+                Exceeded by: \((actual - limit).formatted(.bytes(.binary)))
+                """
 
-            case .memoryLeakDetected(let test, let netAllocations, let netBytes):
-                return """
-                    Memory leak detected in '\(test)':
-                    Net allocations: \(netAllocations)
-                    Net bytes: \(netBytes.formatted(.bytes(.binary)))
-                    """
+        case .memoryLeakDetected(let test, let netAllocations, let netBytes):
+            return """
+                Memory leak detected in '\(test)':
+                Net allocations: \(netAllocations)
+                Net bytes: \(netBytes.formatted(.bytes(.binary)))
+                """
 
-            case .peakMemoryExceeded(let test, let limit, let actual):
-                return """
-                    Peak memory limit exceeded in '\(test)':
-                    Limit: \(limit.formatted(.bytes(.binary)))
-                    Actual peak: \(actual.formatted(.bytes(.binary)))
-                    Exceeded by: \((actual - limit).formatted(.bytes(.binary)))
-                    """
-            }
+        case .peakMemoryExceeded(let test, let limit, let actual):
+            return """
+                Peak memory limit exceeded in '\(test)':
+                Limit: \(limit.formatted(.bytes(.binary)))
+                Actual peak: \(actual.formatted(.bytes(.binary)))
+                Exceeded by: \((actual - limit).formatted(.bytes(.binary)))
+                """
         }
     }
 }

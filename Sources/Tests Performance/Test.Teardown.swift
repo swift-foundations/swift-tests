@@ -30,17 +30,20 @@ extension Test {
     /// `dispatch_once`-guarded. Concurrent registration from multiple
     /// initializers is safe but not expected in practice.
     public enum Teardown {
-        nonisolated(unsafe) static var actions: [@Sendable () async -> Void] = []
+    }
+}
 
-        /// Registers an action to run after all tests complete.
-        public static func register(_ action: @Sendable @escaping () async -> Void) {
-            unsafe actions.append(action)
-        }
+extension Test.Teardown {
+    nonisolated(unsafe) static var actions: [@Sendable () async -> Void] = []
 
-        /// Executes and removes all registered teardown actions.
-        public static func drain() async {
-            for action in unsafe actions { await action() }
-            unsafe actions.removeAll()
-        }
+    /// Registers an action to run after all tests complete.
+    public static func register(_ action: @Sendable @escaping () async -> Void) {
+        unsafe actions.append(action)
+    }
+
+    /// Executes and removes all registered teardown actions.
+    public static func drain() async {
+        for action in unsafe actions { await action() }
+        unsafe actions.removeAll()
     }
 }

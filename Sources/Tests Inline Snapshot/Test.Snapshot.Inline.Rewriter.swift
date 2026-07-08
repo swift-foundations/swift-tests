@@ -18,22 +18,25 @@ extension Test.Snapshot.Inline {
     /// file, locating the call sites by line/column, and inserting or
     /// replacing trailing closures containing the snapshot value.
     public enum Rewriter {
-        /// Writes all pending inline snapshots to their source files.
-        ///
-        /// For each source file with pending entries:
-        /// 1. Reads the source
-        /// 2. Parses with SwiftParser
-        /// 3. Rewrites call sites using a `SyntaxRewriter`
-        /// 4. Writes the modified source atomically
-        ///
-        /// - Parameter entries: Entries grouped by source file path.
-        /// - Throws: ``Error`` if reading, parsing, or writing fails.
-        public static func writeAll(
-            from entries: [Swift.String: [State.Entry]]
-        ) throws(Error) {
-            for (filePath, fileEntries) in entries {
-                try rewriteFile(at: filePath, entries: fileEntries)
-            }
+    }
+}
+
+extension Test.Snapshot.Inline.Rewriter {
+    /// Writes all pending inline snapshots to their source files.
+    ///
+    /// For each source file with pending entries:
+    /// 1. Reads the source
+    /// 2. Parses with SwiftParser
+    /// 3. Rewrites call sites using a `SyntaxRewriter`
+    /// 4. Writes the modified source atomically
+    ///
+    /// - Parameter entries: Entries grouped by source file path.
+    /// - Throws: ``Error`` if reading, parsing, or writing fails.
+    public static func writeAll(
+        from entries: [Swift.String: [Test.Snapshot.Inline.State.Entry]]
+    ) throws(Error) {
+        for (filePath, fileEntries) in entries {
+            try rewriteFile(at: filePath, entries: fileEntries)
         }
     }
 }
@@ -48,7 +51,7 @@ extension Test.Snapshot.Inline.Rewriter {
     ) throws(Error) {
         // Read source
         let source: Swift.String
-        do {
+        do throws(File.System.Read.Full.Error) {
             source = try File(File.Path(stringLiteral: filePath)).read.full { span in
                 unsafe span.withUnsafeBufferPointer { buffer in
                     unsafe Swift.String(decoding: buffer, as: UTF8.self)
@@ -78,7 +81,7 @@ extension Test.Snapshot.Inline.Rewriter {
 
         // Write result
         let output = rewritten.description
-        do {
+        do throws(File.System.Write.Atomic.Error) {
             try File(File.Path(stringLiteral: filePath)).write.atomic(output)
         } catch {
             throw .writeFailed(path: filePath, underlying: Swift.String(describing: error))

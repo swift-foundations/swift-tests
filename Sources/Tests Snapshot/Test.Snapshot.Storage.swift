@@ -99,7 +99,7 @@ extension Test.Snapshot.Storage {
         let file = File(path)
         guard file.stat.exists else { return nil }
 
-        do {
+        do throws(File.System.Read.Full.Error) {
             return try file.read.full { span in
                 span.withUnsafeBufferPointer { unsafe Array($0) }
             }
@@ -138,7 +138,7 @@ extension Test.Snapshot.Storage {
         }
 
         // Write atomically
-        do {
+        do throws(File.System.Write.Atomic.Error) {
             try File(path).write.atomic(contentsOf: bytes)
         } catch {
             throw Self.Error.writeFailed(
@@ -161,7 +161,7 @@ extension Test.Snapshot.Storage {
         }
 
         // Create recursively (creates parent directories too)
-        do {
+        do throws(File.System.Create.Directory.Error) {
             try dir.create.recursive()
         } catch {
             throw Self.Error.directoryCreationFailed(

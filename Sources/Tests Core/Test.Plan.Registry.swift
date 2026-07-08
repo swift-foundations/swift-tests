@@ -53,106 +53,108 @@ extension Test.Plan {
             self.entries = []
             self.suites = []
         }
+    }
+}
 
-        /// Adds a suite registration to the registry.
-        ///
-        /// Suites group tests and provide trait inheritance. Modifiers
-        /// on a suite are inherited by all descendant tests and suites
-        /// during `finalize()`.
-        ///
-        /// - Parameter suite: The suite registration.
-        public mutating func add(suite: Test.Suite.Registration) {
-            suites.append(suite)
+extension Test.Plan.Registry {
+    /// Adds a suite registration to the registry.
+    ///
+    /// Suites group tests and provide trait inheritance. Modifiers
+    /// on a suite are inherited by all descendant tests and suites
+    /// during `finalize()`.
+    ///
+    /// - Parameter suite: The suite registration.
+    public mutating func add(suite: Test.Suite.Registration) {
+        suites.append(suite)
+    }
+
+    /// Adds a test entry to the registry.
+    ///
+    /// - Parameters:
+    ///   - id: The test identifier.
+    ///   - modifiers: Modifiers for the trait collection.
+    ///   - body: The test body.
+    public mutating func add(
+        id: Test.ID,
+        modifiers: [Test.Trait.Collection.Modifier] = [],
+        body: Test.Body
+    ) {
+        entries.append(Test.Plan.Entry(id: id, modifiers: modifiers, body: body))
+    }
+
+    /// Adds a synchronous test to the registry.
+    ///
+    /// - Parameters:
+    ///   - id: The test identifier.
+    ///   - modifiers: Modifiers for the trait collection.
+    ///   - body: The synchronous test body.
+    public mutating func add<E: Swift.Error>(
+        id: Test.ID,
+        modifiers: [Test.Trait.Collection.Modifier] = [],
+        body: @escaping @Sendable () throws(E) -> Void
+    ) {
+        add(id: id, modifiers: modifiers, body: .sync(body))
+    }
+
+    /// Adds an asynchronous test to the registry.
+    ///
+    /// - Parameters:
+    ///   - id: The test identifier.
+    ///   - modifiers: Modifiers for the trait collection.
+    ///   - body: The asynchronous test body.
+    public mutating func add<E: Swift.Error>(
+        id: Test.ID,
+        modifiers: [Test.Trait.Collection.Modifier] = [],
+        body: @escaping @Sendable () async throws(E) -> Void
+    ) {
+        add(id: id, modifiers: modifiers, body: .async(body))
+    }
+
+    /// Finalizes the registry and produces a hierarchical plan.
+    ///
+    /// This consumes the registry. The finalization process:
+    /// 1. Inserts suites into the tree (as nodes with `body == nil`)
+    /// 2. Inserts tests into the tree (as nodes with `body != nil`)
+    /// 3. Propagates traits from parent suites to descendant nodes
+    ///
+    /// Intermediate nodes not explicitly registered as suites are created
+    /// with `nil` values (structural intermediates) by Tree.Keyed's sparse
+    /// insert.
+    ///
+    /// - Returns: The finalized test plan.
+    public consuming func finalize() -> Test.Plan {
+        var tree = Tree<Test.Plan.Node?>.Keyed<String>()
+
+        // 1. Insert suites
+        for suite in suites {
+            tree[Test.Plan.components(for: suite.id)] = Test.Plan.Node(
+                id: suite.id,
+                modifiers: suite.modifiers,
+                body: nil
+            )
         }
 
-        /// Adds a test entry to the registry.
-        ///
-        /// - Parameters:
-        ///   - id: The test identifier.
-        ///   - modifiers: Modifiers for the trait collection.
-        ///   - body: The test body.
-        public mutating func add(
-            id: Test.ID,
-            modifiers: [Test.Trait.Collection.Modifier] = [],
-            body: Test.Body
-        ) {
-            entries.append(Entry(id: id, modifiers: modifiers, body: body))
+        // 2. Insert tests
+        for entry in entries {
+            tree[Test.Plan.components(for: entry.id)] = Test.Plan.Node(
+                id: entry.id,
+                modifiers: entry.modifiers,
+                body: entry.body,
+                traits: Test.Trait.Collection(modifiers: entry.modifiers)
+            )
         }
 
-        /// Adds a synchronous test to the registry.
-        ///
-        /// - Parameters:
-        ///   - id: The test identifier.
-        ///   - modifiers: Modifiers for the trait collection.
-        ///   - body: The synchronous test body.
-        public mutating func add<E: Swift.Error>(
-            id: Test.ID,
-            modifiers: [Test.Trait.Collection.Modifier] = [],
-            body: @escaping @Sendable () throws(E) -> Void
-        ) {
-            add(id: id, modifiers: modifiers, body: .sync(body))
+        // 3. Propagate traits from parents to children
+        if let root = tree.root {
+            Self.propagate(through: &tree, from: root, inherited: [])
         }
 
-        /// Adds an asynchronous test to the registry.
-        ///
-        /// - Parameters:
-        ///   - id: The test identifier.
-        ///   - modifiers: Modifiers for the trait collection.
-        ///   - body: The asynchronous test body.
-        public mutating func add<E: Swift.Error>(
-            id: Test.ID,
-            modifiers: [Test.Trait.Collection.Modifier] = [],
-            body: @escaping @Sendable () async throws(E) -> Void
-        ) {
-            add(id: id, modifiers: modifiers, body: .async(body))
-        }
+        return Test.Plan(tree: tree)
+    }
 
-        /// Finalizes the registry and produces a hierarchical plan.
-        ///
-        /// This consumes the registry. The finalization process:
-        /// 1. Inserts suites into the tree (as nodes with `body == nil`)
-        /// 2. Inserts tests into the tree (as nodes with `body != nil`)
-        /// 3. Propagates traits from parent suites to descendant nodes
-        ///
-        /// Intermediate nodes not explicitly registered as suites are created
-        /// with `nil` values (structural intermediates) by Tree.Keyed's sparse
-        /// insert.
-        ///
-        /// - Returns: The finalized test plan.
-        public consuming func finalize() -> Test.Plan {
-            var tree = Tree<Node?>.Keyed<String>()
-
-            // 1. Insert suites
-            for suite in suites {
-                tree[Test.Plan.components(for: suite.id)] = Node(
-                    id: suite.id,
-                    modifiers: suite.modifiers,
-                    body: nil
-                )
-            }
-
-            // 2. Insert tests
-            for entry in entries {
-                tree[Test.Plan.components(for: entry.id)] = Node(
-                    id: entry.id,
-                    modifiers: entry.modifiers,
-                    body: entry.body,
-                    traits: Test.Trait.Collection(modifiers: entry.modifiers)
-                )
-            }
-
-            // 3. Propagate traits from parents to children
-            if let root = tree.root {
-                Self.propagate(through: &tree, from: root, inherited: [])
-            }
-
-            return Test.Plan(tree: tree)
-        }
-
-        /// The current number of entries in the registry.
-        public var count: Int {
-            entries.count
-        }
+    /// The current number of entries in the registry.
+    public var count: Int {
+        entries.count
     }
 }
 
@@ -192,7 +194,7 @@ extension Test.Plan.Registry {
 
         case .some(.some(var node)):
             node.traits = Test.Trait.Collection(modifiers: inherited + node.modifiers)
-            do {
+            do throws(Tree<Test.Plan.Node?>.Keyed<String>.Error) {
                 try tree.update(at: position, node)
             } catch {
                 // best-effort: position validated by peek above; update failure is non-fatal

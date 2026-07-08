@@ -47,14 +47,16 @@ extension Test {
         public init(_ makeSink: @escaping @Sendable () -> Sink) {
             self._makeSink = makeSink
         }
+    }
+}
 
-        /// Creates a new sink for receiving events.
-        ///
-        /// Each call creates a fresh sink instance.
-        ///
-        /// - Returns: A new sink ready to receive events.
-        public func sink() -> Sink {
-            _makeSink()
-        }
+extension Test.Reporter {
+    /// Creates a new sink for receiving events.
+    ///
+    /// Each call creates a fresh sink instance.
+    ///
+    /// - Returns: A new sink ready to receive events.
+    public func sink() -> Sink {
+        _makeSink()
     }
 }

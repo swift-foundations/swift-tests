@@ -29,10 +29,12 @@
         public struct Trait: Testing.SuiteTrait, Testing.TestTrait, Sendable {
             /// The recording mode to apply within this scope.
             public let recording: Test_Primitives.Test.Snapshot.Recording
-
-            /// Propagate to all nested tests and suites.
-            public var isRecursive: Bool { true }
         }
+    }
+
+    extension Test_Primitives.Test.Snapshot.Recording.Trait {
+        /// Propagate to all nested tests and suites.
+        public var isRecursive: Bool { true }
     }
 
     // MARK: - Test Scoping

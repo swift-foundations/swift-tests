@@ -40,35 +40,6 @@ extension Test.Snapshot {
 
         /// Creates a new counter.
         public init() {}
-
-        /// Gets the next counter value for a key.
-        ///
-        /// - Parameter key: Unique key (typically `<filePath>/<function>`).
-        /// - Returns: The next sequential number (1, 2, 3, ...).
-        public func next(for key: Swift.String) -> Int {
-            lock.withLock { _ in
-                counts[key, default: 0] += 1
-                return counts[key]!
-            }
-        }
-
-        /// Resets all counters.
-        ///
-        /// Call between test runs to ensure fresh numbering.
-        public func reset() {
-            lock.withLock { _ in
-                counts.removeAll()
-            }
-        }
-
-        /// Resets the counter for a specific key.
-        ///
-        /// - Parameter key: The key to reset.
-        public func reset(for key: Swift.String) {
-            _ = lock.withLock { _ in
-                counts.removeValue(forKey: key)
-            }
-        }
     }
 
     /// Current counter for snapshot numbering.
@@ -79,6 +50,37 @@ extension Test.Snapshot {
     }
 }
 
+extension Test.Snapshot.Counter {
+    /// Gets the next counter value for a key.
+    ///
+    /// - Parameter key: Unique key (typically `<filePath>/<function>`).
+    /// - Returns: The next sequential number (1, 2, 3, ...).
+    public func next(for key: Swift.String) -> Int {
+        lock.withLock { _ in
+            counts[key, default: 0] += 1
+            return counts[key]!
+        }
+    }
+
+    /// Resets all counters.
+    ///
+    /// Call between test runs to ensure fresh numbering.
+    public func reset() {
+        lock.withLock { _ in
+            counts.removeAll()
+        }
+    }
+
+    /// Resets the counter for a specific key.
+    ///
+    /// - Parameter key: The key to reset.
+    public func reset(for key: Swift.String) {
+        _ = lock.withLock { _ in
+            counts.removeValue(forKey: key)
+        }
+    }
+}
+
 // MARK: - Counter Key
 
 extension Test.Snapshot.Counter {
@@ -86,10 +88,13 @@ extension Test.Snapshot.Counter {
     ///
     /// Provides a default counter for each scope.
     public enum Key: Dependency.Key {
-        public typealias Value = Test.Snapshot.Counter
-        public static var liveValue: Value { Value() }
-        public static var testValue: Value { Value() }
     }
+}
+
+extension Test.Snapshot.Counter.Key {
+    public typealias Value = Test.Snapshot.Counter
+    public static var liveValue: Value { Value() }
+    public static var testValue: Value { Value() }
 }
 
 // MARK: - Counter Key Generation

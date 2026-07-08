@@ -59,12 +59,14 @@ extension Test.Trait.Collection {
             self._provideScope = provideScope
         }
         // swiftlint:enable typed_throws_required
+    }
+}
 
-        /// Applies this modifier to the given collection.
-        ///
-        /// - Parameter collection: The collection to mutate.
-        public func apply(to collection: inout Test.Trait.Collection) {
-            _apply(&collection)
-        }
+extension Test.Trait.Collection.Modifier {
+    /// Applies this modifier to the given collection.
+    ///
+    /// - Parameter collection: The collection to mutate.
+    public func apply(to collection: inout Test.Trait.Collection) {
+        _apply(&collection)
     }
 }

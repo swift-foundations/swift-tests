@@ -19,9 +19,6 @@ extension Test.Exclusion {
     /// Uses a keyed semaphore pattern: tests with the same group key
     /// are mutually exclusive.
     public actor Controller {
-        /// Shared singleton instance.
-        public static let shared = Controller()
-
         /// Tracks which groups are currently running.
         private var runningGroups: __SetOrdered<Ownership.Shared<Swift.String, Hash.Indexed<Column.Heap<Swift.String>>>> = .init()
 
@@ -30,55 +27,60 @@ extension Test.Exclusion {
 
         /// Private init for singleton.
         private init() {}
+    }
+}
 
-        /// Executes an operation with exclusive access to the specified group.
-        ///
-        /// If another operation is currently running with the same group,
-        /// this will suspend until that operation completes.
-        ///
-        /// - Parameters:
-        ///   - group: The exclusion group.
-        ///   - operation: The operation to execute.
-        /// - Returns: The result of the operation.
-        /// - Throws: Rethrows any error from the operation.
-        public func withExclusiveAccess<T: Sendable, E: Swift.Error>(
-            group: Swift.String,
-            _ operation: @Sendable () async throws(E) -> T
-        ) async throws(E) -> T {
-            // Wait until we can acquire the lock for this group
-            while runningGroups.contains(group) {
-                await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                    waiters[group, default: []].append(continuation)
-                }
-            }
+extension Test.Exclusion.Controller {
+    /// Shared singleton instance.
+    public static let shared = Test.Exclusion.Controller()
 
-            // Acquire lock
-            runningGroups.insert(group)
-
-            do {
-                let result = try await operation()
-                release(group: group)
-                return result
-            } catch {
-                release(group: group)
-                throw error
+    /// Executes an operation with exclusive access to the specified group.
+    ///
+    /// If another operation is currently running with the same group,
+    /// this will suspend until that operation completes.
+    ///
+    /// - Parameters:
+    ///   - group: The exclusion group.
+    ///   - operation: The operation to execute.
+    /// - Returns: The result of the operation.
+    /// - Throws: Rethrows any error from the operation.
+    public func withExclusiveAccess<T: Sendable, E: Swift.Error>(
+        group: Swift.String,
+        _ operation: @Sendable () async throws(E) -> T
+    ) async throws(E) -> T {
+        // Wait until we can acquire the lock for this group
+        while runningGroups.contains(group) {
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                waiters[group, default: []].append(continuation)
             }
         }
 
-        /// Releases the lock for a group and resumes one waiter.
-        private func release(group: Swift.String) {
-            runningGroups.remove(group)
+        // Acquire lock
+        runningGroups.insert(group)
 
-            // Resume one waiter for this group
-            if var groupWaiters = waiters[group], !groupWaiters.isEmpty {
-                let next = groupWaiters.removeFirst()
-                if groupWaiters.isEmpty {
-                    waiters.removeValue(forKey: group)
-                } else {
-                    waiters[group] = groupWaiters
-                }
-                next.resume()
+        do throws(E) {
+            let result = try await operation()
+            release(group: group)
+            return result
+        } catch {
+            release(group: group)
+            throw error
+        }
+    }
+
+    /// Releases the lock for a group and resumes one waiter.
+    private func release(group: Swift.String) {
+        runningGroups.remove(group)
+
+        // Resume one waiter for this group
+        if var groupWaiters = waiters[group], !groupWaiters.isEmpty {
+            let next = groupWaiters.removeFirst()
+            if groupWaiters.isEmpty {
+                waiters.removeValue(forKey: group)
+            } else {
+                waiters[group] = groupWaiters
             }
+            next.resume()
         }
     }
 }

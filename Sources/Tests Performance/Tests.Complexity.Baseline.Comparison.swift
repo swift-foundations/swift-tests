@@ -28,54 +28,56 @@ extension Tests.Complexity.Baseline {
             self.previous = previous
             self.current = current
         }
+    }
+}
 
-        /// Whether the complexity class worsened.
-        ///
-        /// A regression means the current best class is strictly worse
-        /// (higher growth rate) than the baseline. If either is `nil`
-        /// (inconclusive), this returns `false` — inconclusiveness is
-        /// reported separately.
-        public var classRegressed: Bool {
-            guard let prev = previous.bestClass,
-                let curr = current.bestClass
-            else { return false }
-            return curr > prev
-        }
+extension Tests.Complexity.Baseline.Comparison {
+    /// Whether the complexity class worsened.
+    ///
+    /// A regression means the current best class is strictly worse
+    /// (higher growth rate) than the baseline. If either is `nil`
+    /// (inconclusive), this returns `false` — inconclusiveness is
+    /// reported separately.
+    public var classRegressed: Bool {
+        guard let prev = previous.bestClass,
+            let curr = current.bestClass
+        else { return false }
+        return curr > prev
+    }
 
-        /// Whether the complexity class improved.
-        public var classImproved: Bool {
-            guard let prev = previous.bestClass,
-                let curr = current.bestClass
-            else { return false }
-            return curr < prev
-        }
+    /// Whether the complexity class improved.
+    public var classImproved: Bool {
+        guard let prev = previous.bestClass,
+            let curr = current.bestClass
+        else { return false }
+        return curr < prev
+    }
 
-        /// Whether the complexity class changed at all.
-        public var classChanged: Bool {
-            previous.bestClass != current.bestClass
-        }
+    /// Whether the complexity class changed at all.
+    public var classChanged: Bool {
+        previous.bestClass != current.bestClass
+    }
 
-        /// Absolute change in the continuous exponent (current - previous).
-        public var exponentDrift: Double {
-            current.exponent - previous.exponent
-        }
+    /// Absolute change in the continuous exponent (current - previous).
+    public var exponentDrift: Double {
+        current.exponent - previous.exponent
+    }
 
-        /// Whether the exponent drifted by more than the given tolerance.
-        public func exponentDriftExceeds(_ tolerance: Double) -> Bool {
-            Swift.abs(exponentDrift) > tolerance
-        }
+    /// Whether the exponent drifted by more than the given tolerance.
+    public func exponentDriftExceeds(_ tolerance: Double) -> Bool {
+        Swift.abs(exponentDrift) > tolerance
+    }
 
-        /// Whether the confidence level degraded.
-        public var confidenceDegraded: Bool {
-            current.confidence.order < previous.confidence.order
-        }
+    /// Whether the confidence level degraded.
+    public var confidenceDegraded: Bool {
+        current.confidence.order < previous.confidence.order
+    }
 
-        /// Whether any regression signal is present.
-        ///
-        /// Returns `true` if the class regressed OR the exponent drifted
-        /// upward by more than 0.3 (default tolerance).
-        public var isRegression: Bool {
-            classRegressed || exponentDrift > 0.3
-        }
+    /// Whether any regression signal is present.
+    ///
+    /// Returns `true` if the class regressed OR the exponent drifted
+    /// upward by more than 0.3 (default tolerance).
+    public var isRegression: Bool {
+        classRegressed || exponentDrift > 0.3
     }
 }

@@ -22,23 +22,25 @@
         ///
         /// When the Institute's `Test.Runner` is active, ``Test/Expectation/Collector/current``
         /// is non-nil and the bridge is never invoked.
-        public enum Bridge {
-            /// Installs the failure handler that forwards to `Testing.Issue.record`.
-            ///
-            /// Safe to call multiple times — subsequent calls overwrite with the
-            /// same handler. Must be called before test execution begins.
-            public static func install() {
-                unsafe (Test_Primitives.Test.Expectation.externalFailureHandler) = { message, location in
-                    Testing.Issue.record(
-                        Testing.Comment(rawValue: message),
-                        sourceLocation: Testing.SourceLocation(
-                            fileID: location.fileID,
-                            filePath: location.filePath ?? location.fileID,
-                            line: Swift.Int(location.line.underlying),
-                            column: Swift.Int(location.column.underlying.rawValue)
-                        )
+        public enum Bridge {}
+    }
+
+    extension Test_Primitives.Test.Expectation.Bridge {
+        /// Installs the failure handler that forwards to `Testing.Issue.record`.
+        ///
+        /// Safe to call multiple times — subsequent calls overwrite with the
+        /// same handler. Must be called before test execution begins.
+        public static func install() {
+            unsafe (Test_Primitives.Test.Expectation.externalFailureHandler) = { message, location in
+                Testing.Issue.record(
+                    Testing.Comment(rawValue: message),
+                    sourceLocation: Testing.SourceLocation(
+                        fileID: location.fileID,
+                        filePath: location.filePath ?? location.fileID,
+                        line: Swift.Int(location.line.underlying),
+                        column: Swift.Int(location.column.underlying.rawValue)
                     )
-                }
+                )
             }
         }
     }

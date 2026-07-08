@@ -88,29 +88,31 @@ extension Tests.Complexity {
             self.exponentConsistencyTolerance = exponentConsistencyTolerance
             self.constantCVThreshold = constantCVThreshold
         }
+    }
+}
 
-        /// Default policy with provisional thresholds.
-        ///
-        /// These values are implementation heuristics pending calibration.
-        public static var `default`: Self {
-            Self(
-                candidateClasses: [
-                    .constant,
-                    .logarithmic,
-                    .linear,
-                    .linearithmic,
-                    .quadratic,
-                    .cubic,
-                ],
-                minimumSizePoints: 5,
-                minimumScaleRange: 100.0,
-                logLogRSquaredFloor: 0.80,
-                candidateRSquaredFloor: 0.85,
-                highSeparationThreshold: 0.03,
-                mediumSeparationThreshold: 0.01,
-                exponentConsistencyTolerance: 0.2,
-                constantCVThreshold: 0.10
-            )
-        }
+extension Tests.Complexity.Policy {
+    /// Default policy with provisional thresholds.
+    ///
+    /// These values are implementation heuristics pending calibration.
+    public static var `default`: Self {
+        Self(
+            candidateClasses: [
+                .constant,
+                .logarithmic,
+                .linear,
+                .linearithmic,
+                .quadratic,
+                .cubic,
+            ],
+            minimumSizePoints: 5,
+            minimumScaleRange: 100.0,
+            logLogRSquaredFloor: 0.80,
+            candidateRSquaredFloor: 0.85,
+            highSeparationThreshold: 0.03,
+            mediumSeparationThreshold: 0.01,
+            exponentConsistencyTolerance: 0.2,
+            constantCVThreshold: 0.10
+        )
     }
 }

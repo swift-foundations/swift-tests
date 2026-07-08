@@ -58,11 +58,13 @@ extension Test.Trait {
                 modifier.apply(to: &self)
             }
         }
+    }
+}
 
-        /// Type-safe subscript for any witness key.
-        public subscript<K: Witness.Key>(key: K.Type) -> K.Value where K.Value: Copyable {
-            get { storage[key] }
-            set { storage[key] = newValue }
-        }
+extension Test.Trait.Collection {
+    /// Type-safe subscript for any witness key.
+    public subscript<K: Witness.Key>(key: K.Type) -> K.Value where K.Value: Copyable {
+        get { storage[key] }
+        set { storage[key] = newValue }
     }
 }

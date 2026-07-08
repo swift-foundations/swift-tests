@@ -11,14 +11,16 @@ extension Test.Trait {
         /// The exclusion group name.
         public let group: Swift.String
 
-        /// The default group for global exclusion.
-        public static let globalGroup = "__global__"
-
         /// Creates an exclusive value.
         public init(group: Swift.String) {
             self.group = group
         }
     }
+}
+
+extension Test.Trait.Exclusive {
+    /// The default group for global exclusion.
+    public static let globalGroup = "__global__"
 }
 
 extension Test.Trait.Exclusive: Witness.Key {

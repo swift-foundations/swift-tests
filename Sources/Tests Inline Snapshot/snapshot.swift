@@ -400,7 +400,7 @@ extension Test.Snapshot.Storage {
         let pathString = Swift.String("\(snapshotPath)")
 
         func write() -> Swift.String? {
-            do {
+            do throws(Self.Error) {
                 try Self.write(bytes: actualBytes, to: snapshotPath)
                 return nil
             } catch {

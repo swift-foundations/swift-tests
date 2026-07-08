@@ -31,89 +31,91 @@ extension Test {
         /// The kind of body (sync or async).
         private let kind: Kind
 
-        /// Creates a synchronous test body.
-        ///
-        /// Wraps the user closure, converting any thrown error to ``Error``.
-        ///
-        /// - Parameter body: The synchronous closure to execute.
-        /// - Returns: A test body wrapping the closure.
-        public static func sync<E: Swift.Error>(
-            _ body: @escaping @Sendable () throws(E) -> Void
-        ) -> Self {
-            Self(
-                kind: .sync({ () throws(Error) in
-                    do {
-                        try body()
-                    } catch {
-                        if error is Test.Requirement.Failed {
-                            throw Error.requirementFailed
-                        }
-                        throw Error.caught(
-                            type: Swift.String(describing: type(of: error)),
-                            description: Swift.String(describing: error)
-                        )
-                    }
-                })
-            )
-        }
-
-        /// Creates an asynchronous test body.
-        ///
-        /// Wraps the user closure, converting any thrown error to ``Error``.
-        ///
-        /// - Parameter body: The asynchronous closure to execute.
-        /// - Returns: A test body wrapping the closure.
-        public static func `async`<E: Swift.Error>(
-            _ body: @escaping @Sendable () async throws(E) -> Void
-        ) -> Self {
-            Self(
-                kind: .async({ () async throws(Error) in
-                    do {
-                        try await body()
-                    } catch {
-                        if error is Test.Requirement.Failed {
-                            throw Error.requirementFailed
-                        }
-                        throw Error.caught(
-                            type: Swift.String(describing: type(of: error)),
-                            description: Swift.String(describing: error)
-                        )
-                    }
-                })
-            )
-        }
-
         private init(kind: Kind) {
             self.kind = kind
         }
+    }
+}
 
-        /// Executes the test body.
-        ///
-        /// For synchronous bodies, this executes immediately.
-        /// For asynchronous bodies, this suspends until completion.
-        ///
-        /// - Throws: ``Error`` wrapping any error thrown by the test body.
-        public func run() async throws(Error) {
-            switch kind {
-            case .sync(let body):
-                try body()
+extension Test.Body {
+    /// Creates a synchronous test body.
+    ///
+    /// Wraps the user closure, converting any thrown error to ``Error``.
+    ///
+    /// - Parameter body: The synchronous closure to execute.
+    /// - Returns: A test body wrapping the closure.
+    public static func sync<E: Swift.Error>(
+        _ body: @escaping @Sendable () throws(E) -> Void
+    ) -> Self {
+        Self(
+            kind: .sync({ () throws(Error) in
+                do {
+                    try body()
+                } catch {
+                    if error is Test.Requirement.Failed {
+                        throw Error.requirementFailed
+                    }
+                    throw Error.caught(
+                        type: Swift.String(describing: type(of: error)),
+                        description: Swift.String(describing: error)
+                    )
+                }
+            })
+        )
+    }
 
-            case .async(let body):
-                try await body()
-            }
+    /// Creates an asynchronous test body.
+    ///
+    /// Wraps the user closure, converting any thrown error to ``Error``.
+    ///
+    /// - Parameter body: The asynchronous closure to execute.
+    /// - Returns: A test body wrapping the closure.
+    public static func `async`<E: Swift.Error>(
+        _ body: @escaping @Sendable () async throws(E) -> Void
+    ) -> Self {
+        Self(
+            kind: .async({ () async throws(Error) in
+                do {
+                    try await body()
+                } catch {
+                    if error is Test.Requirement.Failed {
+                        throw Error.requirementFailed
+                    }
+                    throw Error.caught(
+                        type: Swift.String(describing: type(of: error)),
+                        description: Swift.String(describing: error)
+                    )
+                }
+            })
+        )
+    }
+
+    /// Executes the test body.
+    ///
+    /// For synchronous bodies, this executes immediately.
+    /// For asynchronous bodies, this suspends until completion.
+    ///
+    /// - Throws: ``Error`` wrapping any error thrown by the test body.
+    public func run() async throws(Error) {
+        switch kind {
+        case .sync(let body):
+            try body()
+
+        case .async(let body):
+            try await body()
         }
+    }
 
-        /// Whether this is a synchronous body.
-        public var isSync: Bool {
-            if case .sync = kind { return true }
-            return false
-        }
+    /// Whether this is a synchronous body.
+    public var isSync: Bool {
+        if case .sync = kind { return true }
+        return false
+    }
 
-        /// Whether this is an asynchronous body.
-        public var isAsync: Bool {
-            if case .async = kind { return true }
-            return false
-        }
+    /// Whether this is an asynchronous body.
+    public var isAsync: Bool {
+        if case .async = kind { return true }
+        return false
     }
 }
 

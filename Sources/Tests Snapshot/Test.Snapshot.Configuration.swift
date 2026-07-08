@@ -69,27 +69,32 @@ extension Test.Snapshot {
             self.snapshotDirectory = snapshotDirectory
             self.subdirectory = subdirectory
         }
-
-        /// Default configuration.
-        ///
-        /// Uses ``.missing`` recording mode and stores snapshots alongside tests.
-        public static var `default`: Self {
-            Self()
-        }
-
-        /// Dependency key for snapshot configuration.
-        ///
-        /// Provides optional configuration for each scope.
-        public enum Key: Dependency.Key {
-            public static var liveValue: Configuration? { nil }
-            public static var testValue: Configuration? { nil }
-        }
-
-        /// Current configuration for this scope.
-        public static var current: Self? {
-            Dependency.Scope.current[Key.self]
-        }
     }
+}
+
+extension Test.Snapshot.Configuration {
+    /// Default configuration.
+    ///
+    /// Uses ``.missing`` recording mode and stores snapshots alongside tests.
+    public static var `default`: Self {
+        Self()
+    }
+
+    /// Dependency key for snapshot configuration.
+    ///
+    /// Provides optional configuration for each scope.
+    public enum Key: Dependency.Key {
+    }
+
+    /// Current configuration for this scope.
+    public static var current: Self? {
+        Dependency.Scope.current[Key.self]
+    }
+}
+
+extension Test.Snapshot.Configuration.Key {
+    public static var liveValue: Test.Snapshot.Configuration? { nil }
+    public static var testValue: Test.Snapshot.Configuration? { nil }
 }
 
 // MARK: - Configuration Resolution

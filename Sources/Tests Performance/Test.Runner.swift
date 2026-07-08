@@ -60,26 +60,29 @@ extension Test {
         public init(reporter: Reporter) {
             self.reporter = reporter
         }
+    }
+}
 
-        /// Runs a test plan with default concurrency.
-        ///
-        /// - Parameter plan: The plan to execute.
-        /// - Returns: The run result.
-        public func run(_ plan: Plan) async -> Result {
-            await run(plan, concurrency: .automatic)
-        }
+extension Test.Runner {
+    /// Runs a test plan with default concurrency.
+    ///
+    /// - Parameter plan: The plan to execute.
+    /// - Returns: The run result.
+    public func run(_ plan: Test.Plan) async -> Result {
+        await run(plan, concurrency: .automatic)
+    }
 
-        /// Runs a test plan with specified concurrency.
-        ///
-        /// Walks the plan's hierarchical tree, executing tests and suites
-        /// with the given concurrency mode. The `.serialized` trait on a
-        /// suite overrides to `.serial` for that subtree's children.
-        ///
-        /// - Parameters:
-        ///   - plan: The plan to execute.
-        ///   - concurrency: The concurrency mode.
-        /// - Returns: The run result.
-        public func run(_ plan: Plan, concurrency: Concurrency) async -> Result {
+    /// Runs a test plan with specified concurrency.
+    ///
+    /// Walks the plan's hierarchical tree, executing tests and suites
+    /// with the given concurrency mode. The `.serialized` trait on a
+    /// suite overrides to `.serial` for that subtree's children.
+    ///
+    /// - Parameters:
+    ///   - plan: The plan to execute.
+    ///   - concurrency: The concurrency mode.
+    /// - Returns: The run result.
+    public func run(_ plan: Test.Plan, concurrency: Concurrency) async -> Result {
             let sink = reporter.sink()
             let sender = sink.sender
 
@@ -174,13 +177,13 @@ extension Test {
         /// - Suite node (body == nil) → emit suite events, dispatch children
         /// - Test node (body != nil) → execute with scope providers
         private func walk(
-            _ tree: Tree<Plan.Node?>.Keyed<Swift.String>,
-            at position: Tree<Plan.Node?>.Keyed<Swift.String>.Position,
+            _ tree: Tree<Test.Plan.Node?>.Keyed<Swift.String>,
+            at position: Tree<Test.Plan.Node?>.Keyed<Swift.String>.Position,
             concurrency: Concurrency,
-            sender: Reporter.Sink.Sender,
+            sender: Test.Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
         ) async -> Counters {
-            switch tree.peek(at: position) as Plan.Node?? {
+            switch tree.peek(at: position) as Test.Plan.Node?? {
             case nil:
                 return Counters()
 
@@ -259,11 +262,11 @@ extension Test {
         /// If the node has the `.serialized` trait, forces serial execution
         /// regardless of the top-level concurrency setting.
         private func dispatch(
-            _ tree: Tree<Plan.Node?>.Keyed<Swift.String>,
-            childrenOf position: Tree<Plan.Node?>.Keyed<Swift.String>.Position,
+            _ tree: Tree<Test.Plan.Node?>.Keyed<Swift.String>,
+            childrenOf position: Tree<Test.Plan.Node?>.Keyed<Swift.String>.Position,
             concurrency: Concurrency,
             traits: Test.Trait.Collection?,
-            sender: Reporter.Sink.Sender,
+            sender: Test.Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
         ) async -> Counters {
             guard let children = tree.children(of: position), !children.isEmpty else {
@@ -367,9 +370,9 @@ extension Test {
         ///
         /// Named `execute(_:traits:...)` per [API-NAME-002] — single-word verb.
         private func execute(
-            _ node: Plan.Node,
+            _ node: Test.Plan.Node,
             traits: Test.Trait.Collection,
-            sender: Reporter.Sink.Sender,
+            sender: Test.Reporter.Sink.Sender,
             startTime: Clock_Primitives.Clock.Continuous.Instant
         ) async -> Counters {
             await sender.send(
@@ -497,17 +500,17 @@ extension Test {
         /// Named `sourceLocation(of:in:)` per [API-NAME-002] — labels
         /// carry the semantics instead of a compound method name.
         private func sourceLocation(
-            of position: Tree<Plan.Node?>.Keyed<Swift.String>.Position,
-            in tree: Tree<Plan.Node?>.Keyed<Swift.String>
+            of position: Tree<Test.Plan.Node?>.Keyed<Swift.String>.Position,
+            in tree: Tree<Test.Plan.Node?>.Keyed<Swift.String>
         ) -> Source.Location? {
-            switch tree.peek(at: position) as Plan.Node?? {
+            switch tree.peek(at: position) as Test.Plan.Node?? {
             case .some(.some(let node)): node.id.sourceLocation
             default: nil
             }
         }
 
         /// Runs an entry with trait handling via composable scope providers.
-        private func run(_ entry: Plan.Entry, traits: Test.Trait.Collection) async throws(Error) {
+        private func run(_ entry: Test.Plan.Entry, traits: Test.Trait.Collection) async throws(Error) {
             let providers = self.scopeProviders
                 .filter { $0.shouldActivate(traits) }
                 .sorted { $0.priority < $1.priority }
@@ -516,7 +519,7 @@ extension Test {
             // Note: L1 isTestContext is propagated by Witness.Context.with(mode: .test)
             // in Testing.Main.runReturningResult — no explicit L1 push needed here.
             var chain: @Sendable () async throws(Error) -> Void = { () async throws(Error) in
-                do {
+                do throws(Test.Body.Error) {
                     try await entry.body.run()
                 } catch {
                     let bodyError =
@@ -539,7 +542,6 @@ extension Test {
 
             try await chain()
         }
-    }
 }
 
 // MARK: - Structured Records
@@ -658,21 +660,23 @@ extension Test.Runner {
 
         /// Number of tests that were skipped.
         public let skipped: Int
+    }
+}
 
-        /// Total number of tests.
-        public var total: Int {
-            passed + failed + skipped
-        }
+extension Test.Runner.Result {
+    /// Total number of tests.
+    public var total: Int {
+        passed + failed + skipped
+    }
 
-        /// Whether any tests failed.
-        public var hasFailures: Bool {
-            failed > 0
-        }
+    /// Whether any tests failed.
+    public var hasFailures: Bool {
+        failed > 0
+    }
 
-        /// Whether all tests passed.
-        public var allPassed: Bool {
-            failed == 0
-        }
+    /// Whether all tests passed.
+    public var allPassed: Bool {
+        failed == 0
     }
 }
 

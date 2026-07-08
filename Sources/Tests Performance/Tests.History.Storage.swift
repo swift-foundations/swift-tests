@@ -116,7 +116,7 @@ extension Tests.History.Storage {
         let line = Swift.String(decoding: bytes, as: UTF8.self) + "\n"
 
         // Append to file
-        do {
+        do throws(File.System.Write.Append.Error) {
             try File(filePath).write.append(line)
         } catch {
             throw .writeFailed(
@@ -137,7 +137,7 @@ extension Tests.History.Storage {
         let dir = File.Directory(path)
         if dir.stat.exists { return }
 
-        do {
+        do throws(File.System.Create.Directory.Error) {
             try dir.create.recursive()
         } catch {
             throw .directoryCreationFailed(
@@ -204,7 +204,7 @@ extension Tests.History.Storage {
         let file = File(path)
         guard file.stat.exists else { return [] }
 
-        do {
+        do throws(File.System.Read.Full.Error) {
             return try file.read.full { span in
                 let content = unsafe span.withUnsafeBufferPointer {
                     unsafe Swift.String(decoding: $0, as: UTF8.self)

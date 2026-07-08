@@ -41,12 +41,6 @@ extension Test.Plan {
         /// modifiers applied on top (last-write-wins).
         public var traits: Test.Trait.Collection
 
-        /// Whether this node is a suite (has no body).
-        public var isSuite: Bool { body == nil }
-
-        /// Whether this node is a test (has a body).
-        public var isTest: Bool { body != nil }
-
         /// Creates a node.
         ///
         /// - Parameters:
@@ -66,4 +60,12 @@ extension Test.Plan {
             self.traits = traits
         }
     }
+}
+
+extension Test.Plan.Node {
+    /// Whether this node is a suite (has no body).
+    public var isSuite: Bool { body == nil }
+
+    /// Whether this node is a test (has a body).
+    public var isTest: Bool { body != nil }
 }
