@@ -35,19 +35,19 @@ extension TestsDiagnosticTests.Format {
     }
 
     @Test
-    func formattedContainsTestName() {
+    func `formatted Contains Test Name`() {
         let diag = Self.makeDiagnostic()
         #expect(diag.formatted().contains("example test"))
     }
 
     @Test
-    func formattedContainsCV() {
+    func `formatted Contains CV`() {
         let diag = Self.makeDiagnostic()
         #expect(diag.formatted().contains("CV:"))
     }
 
     @Test
-    func formattedContainsEnvironment() {
+    func `formatted Contains Environment`() {
         let diag = Self.makeDiagnostic()
         let output = diag.formatted()
         #expect(output.contains("Architecture:"))
@@ -56,19 +56,19 @@ extension TestsDiagnosticTests.Format {
     }
 
     @Test
-    func formattedContainsTrend() {
+    func `formatted Contains Trend`() {
         let diag = Self.makeDiagnostic()
         #expect(diag.formatted().contains("Mann-Kendall Z:"))
     }
 
     @Test
-    func formattedContainsFactor() {
+    func `formatted Contains Factor`() {
         let diag = Self.makeDiagnostic(exceeded: true)
         #expect(diag.formatted().contains("Factor:"))
     }
 
     @Test
-    func jsonBlockHasDelimiters() {
+    func `json Block Has Delimiters`() {
         let diag = Self.makeDiagnostic()
         let json = diag.jsonBlock()
         #expect(json.contains("<!-- PERFORMANCE_DIAGNOSTIC_BEGIN -->"))
@@ -76,7 +76,7 @@ extension TestsDiagnosticTests.Format {
     }
 
     @Test
-    func jsonBlockContainsEnvironment() {
+    func `json Block Contains Environment`() {
         let diag = Self.makeDiagnostic()
         let json = diag.jsonBlock()
         #expect(json.contains("\"arch\":"))
@@ -84,7 +84,7 @@ extension TestsDiagnosticTests.Format {
     }
 
     @Test
-    func noThresholdShowsPass() {
+    func `no Threshold Shows Pass`() {
         let diag = Self.makeDiagnostic(exceeded: false)
         #expect(diag.formatted().contains("PERFORMANCE MEASUREMENT"))
         #expect(!diag.formatted().contains("Factor:"))

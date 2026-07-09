@@ -12,7 +12,7 @@ struct TestEnvironmentTests {
 
 extension TestEnvironmentTests.Capture {
     @Test
-    func captureReturnsNonZeroValues() {
+    func `capture Returns Non Zero Values`() {
         let env = Test.Environment.capture()
         #expect(!env.architecture.isEmpty)
         #expect(env.physicalCPUCount > 0)
@@ -23,7 +23,7 @@ extension TestEnvironmentTests.Capture {
     }
 
     @Test
-    func optimizationMatchesBuildConfiguration() {
+    func `optimization Matches Build Configuration`() {
         let opt = Test.Environment.Optimization.current
         #if DEBUG
             #expect(opt == .debug)
@@ -37,13 +37,13 @@ extension TestEnvironmentTests.Capture {
 
 extension TestEnvironmentTests.Fingerprint {
     @Test
-    func fingerprintContainsArchitecture() {
+    func `fingerprint Contains Architecture`() {
         let env = Test.Environment.capture()
         #expect(env.fingerprint.contains(env.architecture))
     }
 
     @Test
-    func fingerprintContainsOptimization() {
+    func `fingerprint Contains Optimization`() {
         let env = Test.Environment.capture()
         #expect(env.fingerprint.contains(env.optimization.rawValue))
     }

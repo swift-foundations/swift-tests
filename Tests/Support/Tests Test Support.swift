@@ -46,7 +46,9 @@ public final class SpySink: Tests_Core.Test.Reporter.Sink.Implementation, @unche
     private let _events = Mutex<[Test_Primitives.Test.Event]>([])
 
     public init() {}
+}
 
+extension SpySink {
     public var events: [Test_Primitives.Test.Event] {
         _events.withLock { $0 }
     }
@@ -61,7 +63,9 @@ public final class SpySink: Tests_Core.Test.Reporter.Sink.Implementation, @unche
 // MARK: - Spy Reporter
 
 /// Creates a reporter + spy pair for test assertions.
-public enum SpyReporter {
+public enum SpyReporter {}
+
+extension SpyReporter {
     public static func make() -> (Tests_Core.Test.Reporter, SpySink) {
         let spy = SpySink()
         let reporter = Tests_Core.Test.Reporter {
