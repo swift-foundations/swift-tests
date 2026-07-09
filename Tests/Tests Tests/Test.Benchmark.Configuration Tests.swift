@@ -1,15 +1,17 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Benchmark.Configuration")
-struct BenchmarkConfigurationTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
+extension Test_Primitives.Test.Benchmark.Configuration {
+    @Suite("Test.Benchmark.Configuration")
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+    }
 }
 
 // MARK: - Unit
 
-extension BenchmarkConfigurationTests.Unit {
+extension Test_Primitives.Test.Benchmark.Configuration.Test.Unit {
     @Test
     func `default values match specification`() {
         let config = Test_Primitives.Test.Benchmark.Configuration()
@@ -74,7 +76,7 @@ extension BenchmarkConfigurationTests.Unit {
 
 // MARK: - EdgeCase
 
-extension BenchmarkConfigurationTests.EdgeCase {
+extension Test_Primitives.Test.Benchmark.Configuration.Test.EdgeCase {
     @Test
     func `different configs are not equal`() {
         let a = Test_Primitives.Test.Benchmark.Configuration(

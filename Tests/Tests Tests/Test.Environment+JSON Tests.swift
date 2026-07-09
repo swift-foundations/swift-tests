@@ -2,13 +2,13 @@ import JSON
 import Testing
 import Tests_Test_Support
 
-extension TestEnvironmentTests {
+extension Test_Primitives.Test.Environment.Test {
     @Suite struct JSON {}
 }
 
 // MARK: - JSON
 
-extension TestEnvironmentTests.JSON {
+extension Test_Primitives.Test.Environment.Test.JSON {
     @Test
     func `serialize and deserialize preserves all fields`() throws {
         let original = Test.Environment.capture()

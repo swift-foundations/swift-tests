@@ -10,18 +10,19 @@ import Tests_Test_Support
 
 private typealias SUT = Test_Primitives.Test
 
-@Suite
-struct TestsComplexityTests {
-
-    @Suite struct Classify {}
-    @Suite struct Result {}
-    @Suite struct Sizes {}
-    @Suite struct EdgeCase {}
+extension Tests.Complexity {
+    @Suite
+    struct Test {
+        @Suite struct Classify {}
+        @Suite struct Result {}
+        @Suite struct Sizes {}
+        @Suite struct EdgeCase {}
+    }
 }
 
 // MARK: - Helpers
 
-extension TestsComplexityTests {
+extension Tests.Complexity.Test {
     /// Default sizes spanning 5 orders of magnitude (10 points).
     /// Mann-Kendall needs ≥10 points for z-score significance.
     static let defaultSizes = [
@@ -76,11 +77,11 @@ extension TestsComplexityTests {
 
 // MARK: - Classify
 
-extension TestsComplexityTests.Classify {
+extension Tests.Complexity.Test.Classify {
 
     @Test
     func `linear data classified as linear`() {
-        let evidence = TestsComplexityTests.linearEvidence()
+        let evidence = Tests.Complexity.Test.linearEvidence()
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .linear)
@@ -92,7 +93,7 @@ extension TestsComplexityTests.Classify {
 
     @Test
     func `quadratic data classified as quadratic`() {
-        let evidence = TestsComplexityTests.quadraticEvidence()
+        let evidence = Tests.Complexity.Test.quadraticEvidence()
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .quadratic)
@@ -101,7 +102,7 @@ extension TestsComplexityTests.Classify {
 
     @Test
     func `cubic data classified as cubic`() {
-        let evidence = TestsComplexityTests.cubicEvidence()
+        let evidence = Tests.Complexity.Test.cubicEvidence()
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .cubic)
@@ -110,7 +111,7 @@ extension TestsComplexityTests.Classify {
 
     @Test
     func `insufficient data points yields inconclusive`() {
-        let evidence = TestsComplexityTests.linearEvidence(sizes: [100, 1_000])
+        let evidence = Tests.Complexity.Test.linearEvidence(sizes: [100, 1_000])
         var policy = Tests.Complexity.Policy.default
         policy.minimumSizePoints = 4
 
@@ -122,7 +123,7 @@ extension TestsComplexityTests.Classify {
 
     @Test
     func `insufficient scale range yields inconclusive`() {
-        let evidence = TestsComplexityTests.linearEvidence(
+        let evidence = Tests.Complexity.Test.linearEvidence(
             sizes: [100, 110, 120, 130, 140]
         )
 
@@ -136,7 +137,7 @@ extension TestsComplexityTests.Classify {
     func `minimum size points succeeds with clean data`() {
         // Exactly 5 points (the default minimum) with clear quadratic data.
         let sizes = [100, 1_000, 10_000, 100_000, 1_000_000]
-        let evidence = TestsComplexityTests.quadraticEvidence(sizes: sizes)
+        let evidence = Tests.Complexity.Test.quadraticEvidence(sizes: sizes)
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .quadratic)
@@ -146,11 +147,11 @@ extension TestsComplexityTests.Classify {
 
 // MARK: - Result assertions
 
-extension TestsComplexityTests.Result {
+extension Tests.Complexity.Test.Result {
 
     @Test
     func `isNoWorseThan accepts lower complexity`() {
-        let evidence = TestsComplexityTests.linearEvidence()
+        let evidence = Tests.Complexity.Test.linearEvidence()
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.isNoWorseThan(.quadratic))
@@ -161,7 +162,7 @@ extension TestsComplexityTests.Result {
 
     @Test
     func `isNoWorseThan rejects higher complexity`() {
-        let evidence = TestsComplexityTests.quadraticEvidence()
+        let evidence = Tests.Complexity.Test.quadraticEvidence()
         let result = Tests.Complexity.classify(evidence)
 
         #expect(!result.isNoWorseThan(.linear))
@@ -169,7 +170,7 @@ extension TestsComplexityTests.Result {
 
     @Test
     func `inconclusive result fails isNoWorseThan`() {
-        let evidence = TestsComplexityTests.linearEvidence(sizes: [100, 1_000])
+        let evidence = Tests.Complexity.Test.linearEvidence(sizes: [100, 1_000])
         var policy = Tests.Complexity.Policy.default
         policy.minimumSizePoints = 4
 
@@ -180,7 +181,7 @@ extension TestsComplexityTests.Result {
 
     @Test
     func `isCompatible returns false for wrong class`() {
-        let evidence = TestsComplexityTests.quadraticEvidence()
+        let evidence = Tests.Complexity.Test.quadraticEvidence()
         let result = Tests.Complexity.classify(evidence)
 
         #expect(!result.isCompatible(with: .logarithmic))
@@ -190,7 +191,7 @@ extension TestsComplexityTests.Result {
 
 // MARK: - Sizes helper
 
-extension TestsComplexityTests.Sizes {
+extension Tests.Complexity.Test.Sizes {
 
     @Test
     func `default factor of 10`() {
@@ -219,7 +220,7 @@ extension TestsComplexityTests.Sizes {
 
 // MARK: - Edge Case
 
-extension TestsComplexityTests.EdgeCase {
+extension Tests.Complexity.Test.EdgeCase {
 
     @Test
     func `constant data classified as constant`() {

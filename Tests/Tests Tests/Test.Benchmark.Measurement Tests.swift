@@ -2,15 +2,13 @@ import Testing
 import Tests_Test_Support
 import Time_Primitives
 
-@Suite("Test.Benchmark.Measurement")
-struct BenchmarkMeasurementTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
-}
+// NOTE: Test.Benchmark.Measurement already carries a Test suite (see
+// "Tests.Measurement Tests.swift"). Per [SWIFT-TEST-002] collision rule
+// (no leftover tokens from "BenchmarkMeasurementTests"), these members are
+// merged directly into the existing Test.Unit / Test.EdgeCase categories
+// rather than declaring a second Test suite for the same type.
 
-// MARK: - Unit
-
-extension BenchmarkMeasurementTests.Unit {
+extension Test_Primitives.Test.Benchmark.Measurement.Test.Unit {
     @Test
     func `min max median mean compute correctly`() {
         let measurement = Test_Primitives.Test.Benchmark.Measurement(durations: [
@@ -47,7 +45,7 @@ extension BenchmarkMeasurementTests.Unit {
 
 // MARK: - EdgeCase
 
-extension BenchmarkMeasurementTests.EdgeCase {
+extension Test_Primitives.Test.Benchmark.Measurement.Test.EdgeCase {
     @Test
     func `empty durations returns zero`() {
         let measurement = Test_Primitives.Test.Benchmark.Measurement(durations: [])

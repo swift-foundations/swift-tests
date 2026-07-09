@@ -2,15 +2,17 @@ import Paths
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Snapshot.Storage")
-struct SnapshotStorageTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
+extension Test_Primitives.Test.Snapshot.Storage {
+    @Suite("Test.Snapshot.Storage")
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+    }
 }
 
 // MARK: - Unit
 
-extension SnapshotStorageTests.Unit {
+extension Test_Primitives.Test.Snapshot.Storage.Test.Unit {
     @Test
     func `path is flat under .snapshots by default`() {
         let path = Test_Primitives.Test.Snapshot.Storage.path(
@@ -82,7 +84,7 @@ extension SnapshotStorageTests.Unit {
 
 // MARK: - EdgeCase
 
-extension SnapshotStorageTests.EdgeCase {
+extension Test_Primitives.Test.Snapshot.Storage.Test.EdgeCase {
     @Test
     func `subdirectory combined with custom snapshot directory`() throws {
         let sub = try File.Path.Component("MyType")

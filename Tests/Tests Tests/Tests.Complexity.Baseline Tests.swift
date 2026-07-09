@@ -12,17 +12,18 @@ import Tests_Test_Support
 
 private typealias SUT = Test_Primitives.Test
 
-@Suite
-struct ComplexityBaselineTests {
-
-    @Suite struct Construction {}
-    @Suite struct Comparison {}
-    @Suite struct JSONRoundTrip {}
+extension Tests.Complexity.Baseline {
+    @Suite
+    struct Test {
+        @Suite struct Construction {}
+        @Suite struct Comparison {}
+        @Suite struct JSONRoundTrip {}
+    }
 }
 
 // MARK: - Helpers
 
-extension ComplexityBaselineTests {
+extension Tests.Complexity.Baseline.Test {
     static let defaultSizes = [
         100, 300, 1_000, 3_000, 10_000,
         30_000, 100_000, 300_000, 1_000_000, 3_000_000,
@@ -52,11 +53,11 @@ extension ComplexityBaselineTests {
 
 // MARK: - Construction
 
-extension ComplexityBaselineTests.Construction {
+extension Tests.Complexity.Baseline.Test.Construction {
 
     @Test
     func `from linear result captures class and exponent`() {
-        let evidence = ComplexityBaselineTests.linearEvidence()
+        let evidence = Tests.Complexity.Baseline.Test.linearEvidence()
         let result = Tests.Complexity.classify(evidence)
         let baseline = Tests.Complexity.Baseline(result: result)
 
@@ -69,7 +70,7 @@ extension ComplexityBaselineTests.Construction {
 
     @Test
     func `from inconclusive result has nil class`() {
-        let evidence = ComplexityBaselineTests.linearEvidence()
+        let evidence = Tests.Complexity.Baseline.Test.linearEvidence()
         var policy = Tests.Complexity.Policy.default
         policy.minimumSizePoints = 100
 
@@ -83,7 +84,7 @@ extension ComplexityBaselineTests.Construction {
 
     @Test
     func `from quadratic result captures quadratic class`() {
-        let evidence = ComplexityBaselineTests.quadraticEvidence()
+        let evidence = Tests.Complexity.Baseline.Test.quadraticEvidence()
         let result = Tests.Complexity.classify(evidence)
         let baseline = Tests.Complexity.Baseline(result: result)
 
@@ -94,7 +95,7 @@ extension ComplexityBaselineTests.Construction {
 
 // MARK: - Comparison
 
-extension ComplexityBaselineTests.Comparison {
+extension Tests.Complexity.Baseline.Test.Comparison {
 
     @Test
     func `class regression detected when class worsens`() {
@@ -253,7 +254,7 @@ extension ComplexityBaselineTests.Comparison {
 
 // MARK: - JSON Round Trip
 
-extension ComplexityBaselineTests.JSONRoundTrip {
+extension Tests.Complexity.Baseline.Test.JSONRoundTrip {
 
     @Test
     func `linear baseline survives round trip`() throws {

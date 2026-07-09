@@ -1,14 +1,16 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Plan.Registry")
-struct TestPlanRegistryTests {
-    @Suite struct Unit {}
+extension Test_Primitives.Test.Plan.Registry {
+    @Suite("Test.Plan.Registry")
+    struct Test {
+        @Suite struct Unit {}
+    }
 }
 
 // MARK: - Unit
 
-extension TestPlanRegistryTests.Unit {
+extension Test_Primitives.Test.Plan.Registry.Test.Unit {
     @Test
     func `init creates empty registry`() {
         let registry = Test_Primitives.Test.Plan.Registry()

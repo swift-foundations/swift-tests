@@ -18,17 +18,22 @@ private typealias SUT = Test_Primitives.Test
 /// class and verifies that the default policy classifies it correctly.
 /// These tests validate the provisional threshold values and catch
 /// regressions if thresholds are tuned.
-@Suite
-struct ComplexityCalibrationTests {
-
-    @Suite struct PowerLaw {}
-    @Suite struct NonPowerLaw {}
-    @Suite struct Ambiguity {}
+// NOTE: Tests.Complexity already carries a Test suite (see "Tests.Complexity
+// Tests.swift"). Per [SWIFT-TEST-002] collision rule, "Calibration" is the
+// leftover token from the original suite name "ComplexityCalibrationTests"
+// and does not collide with any existing category under Tests.Complexity.Test,
+// so it nests there.
+extension Tests.Complexity.Test {
+    @Suite struct Calibration {
+        @Suite struct PowerLaw {}
+        @Suite struct NonPowerLaw {}
+        @Suite struct Ambiguity {}
+    }
 }
 
 // MARK: - Sizes
 
-extension ComplexityCalibrationTests {
+extension Tests.Complexity.Test.Calibration {
     /// 10 points spanning 4.5 orders of magnitude.
     static let sizes = [
         100, 300, 1_000, 3_000, 10_000,
@@ -52,11 +57,11 @@ extension ComplexityCalibrationTests {
 
 // MARK: - Power Law Classes
 
-extension ComplexityCalibrationTests.PowerLaw {
+extension Tests.Complexity.Test.Calibration.PowerLaw {
 
     @Test
     func `O(1) constant`() {
-        let evidence = ComplexityCalibrationTests.evidence { _ in 0.005 }
+        let evidence = Tests.Complexity.Test.Calibration.evidence { _ in 0.005 }
         let result = Tests.Complexity.classify(evidence)
 
         // Constant data detected via CV-based pathway (metricCV ≈ 0).
@@ -66,7 +71,7 @@ extension ComplexityCalibrationTests.PowerLaw {
 
     @Test
     func `O(sqrt n) square root with default policy flags inconsistency`() {
-        let evidence = ComplexityCalibrationTests.evidence { n in 1e-6 * n.squareRoot() }
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in 1e-6 * n.squareRoot() }
         let result = Tests.Complexity.classify(evidence)
 
         // Exponent ≈ 0.5 but best discrete candidate is logarithmic or linear.
@@ -83,8 +88,8 @@ extension ComplexityCalibrationTests.PowerLaw {
     @Test
     func `O(sqrt n) with squareRoot in candidates classifies correctly`() {
         // Evidence must be constructed with squareRoot in the candidate set.
-        let classesWithSqrt = ComplexityCalibrationTests.classes + [.squareRoot]
-        let points: [(size: Int, metric: Duration)] = ComplexityCalibrationTests.sizes.map { n in
+        let classesWithSqrt = Tests.Complexity.Test.Calibration.classes + [.squareRoot]
+        let points: [(size: Int, metric: Duration)] = Tests.Complexity.Test.Calibration.sizes.map { n in
             (size: n, metric: Duration.seconds(1e-6 * Double(n).squareRoot()))
         }
         let evidence = SUT.Benchmark.Complexity.evidence(
@@ -104,7 +109,7 @@ extension ComplexityCalibrationTests.PowerLaw {
 
     @Test
     func `O(n) linear`() {
-        let evidence = ComplexityCalibrationTests.evidence { n in 1e-8 * n }
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in 1e-8 * n }
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .linear)
@@ -114,7 +119,7 @@ extension ComplexityCalibrationTests.PowerLaw {
 
     @Test
     func `O(n squared) quadratic`() {
-        let evidence = ComplexityCalibrationTests.evidence { n in 1e-12 * n * n }
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in 1e-12 * n * n }
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .quadratic)
@@ -124,7 +129,7 @@ extension ComplexityCalibrationTests.PowerLaw {
 
     @Test
     func `O(n cubed) cubic`() {
-        let evidence = ComplexityCalibrationTests.evidence { n in 1e-17 * n * n * n }
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in 1e-17 * n * n * n }
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .cubic)
@@ -135,11 +140,11 @@ extension ComplexityCalibrationTests.PowerLaw {
 
 // MARK: - Non-Power-Law Classes
 
-extension ComplexityCalibrationTests.NonPowerLaw {
+extension Tests.Complexity.Test.Calibration.NonPowerLaw {
 
     @Test
     func `O(log n) logarithmic`() {
-        let evidence = ComplexityCalibrationTests.evidence { n in
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in
             1e-4 * Double.math.log2(n)
         }
         let result = Tests.Complexity.classify(evidence)
@@ -150,7 +155,7 @@ extension ComplexityCalibrationTests.NonPowerLaw {
 
     @Test
     func `O(n log n) linearithmic`() {
-        let evidence = ComplexityCalibrationTests.evidence { n in
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in
             1e-9 * n * Double.math.log2(n)
         }
         let result = Tests.Complexity.classify(evidence)
@@ -168,13 +173,13 @@ extension ComplexityCalibrationTests.NonPowerLaw {
 
 // MARK: - Ambiguity Cases
 
-extension ComplexityCalibrationTests.Ambiguity {
+extension Tests.Complexity.Test.Calibration.Ambiguity {
 
     @Test
     func `linear vs linearithmic ambiguity is reported`() {
         // Pure linear data — linearithmic should appear as ambiguous
         // since log factor grows slowly.
-        let evidence = ComplexityCalibrationTests.evidence { n in 1e-8 * n }
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in 1e-8 * n }
         let result = Tests.Complexity.classify(evidence)
 
         #expect(result.best?.complexity == .linear)
@@ -186,7 +191,7 @@ extension ComplexityCalibrationTests.Ambiguity {
     func `noisy data with 5 percent jitter still classifies`() {
         // Quadratic with deterministic pseudo-noise.
         var seed: UInt64 = 42
-        let evidence = ComplexityCalibrationTests.evidence { n in
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in
             // Simple LCG for deterministic "noise".
             seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
             let noise = 1.0 + 0.05 * (Double(seed >> 33) / Double(UInt32.max) - 0.5)
@@ -204,7 +209,7 @@ extension ComplexityCalibrationTests.Ambiguity {
         // The discrete best candidate will be one of them, but the
         // continuous exponent (1.5) won't match either's effective
         // exponent, triggering inconsistentSignals.
-        let evidence = ComplexityCalibrationTests.evidence { n in
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in
             1e-10 * n * n.squareRoot()
         }
         let result = Tests.Complexity.classify(evidence)
@@ -223,7 +228,7 @@ extension ComplexityCalibrationTests.Ambiguity {
         // Quadratic data with increasing noise levels.
         // Uses deterministic LCG noise for reproducibility.
         var seed: UInt64 = 42
-        let evidence = ComplexityCalibrationTests.evidence { n in
+        let evidence = Tests.Complexity.Test.Calibration.evidence { n in
             seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
             let jitter = 1.0 + noiseLevel * (Double(seed >> 33) / Double(UInt32.max) - 0.5)
             return 1e-12 * n * n * jitter

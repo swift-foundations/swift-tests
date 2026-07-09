@@ -1,15 +1,17 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Plan")
-struct TestPlanTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
+extension Test_Primitives.Test.Plan {
+    @Suite("Test.Plan")
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+    }
 }
 
 // MARK: - Unit
 
-extension TestPlanTests.Unit {
+extension Test_Primitives.Test.Plan.Test.Unit {
     @Test
     func `empty plan has isEmpty true and count zero`() {
         let registry = Test_Primitives.Test.Plan.Registry()
@@ -90,7 +92,7 @@ extension TestPlanTests.Unit {
 
 // MARK: - EdgeCase
 
-extension TestPlanTests.EdgeCase {
+extension Test_Primitives.Test.Plan.Test.EdgeCase {
     @Test
     func `filter returns empty when nothing matches`() {
         var registry = Test_Primitives.Test.Plan.Registry()

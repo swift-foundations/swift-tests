@@ -1,14 +1,16 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Requirement.Failed")
-struct TestRequirementFailedTests {
-    @Suite struct Unit {}
+extension Test_Primitives.Test.Requirement.Failed {
+    @Suite("Test.Requirement.Failed")
+    struct Test {
+        @Suite struct Unit {}
+    }
 }
 
 // MARK: - Unit
 
-extension TestRequirementFailedTests.Unit {
+extension Test_Primitives.Test.Requirement.Failed.Test.Unit {
     @Test
     func `init stores message and sourceLocation`() {
         let location = Source.Location(

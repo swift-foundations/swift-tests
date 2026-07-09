@@ -1,15 +1,17 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Snapshot.Configuration")
-struct SnapshotConfigurationTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
+extension Test_Primitives.Test.Snapshot.Configuration {
+    @Suite("Test.Snapshot.Configuration")
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+    }
 }
 
 // MARK: - Unit
 
-extension SnapshotConfigurationTests.Unit {
+extension Test_Primitives.Test.Snapshot.Configuration.Test.Unit {
     @Test
     func `default uses missing recording mode`() {
         let config = Test_Primitives.Test.Snapshot.Configuration.default
@@ -38,7 +40,7 @@ extension SnapshotConfigurationTests.Unit {
 
 // MARK: - EdgeCase
 
-extension SnapshotConfigurationTests.EdgeCase {
+extension Test_Primitives.Test.Snapshot.Configuration.Test.EdgeCase {
     @Test
     func `snapshotDirectory defaults to nil`() {
         let config = Test_Primitives.Test.Snapshot.Configuration.default

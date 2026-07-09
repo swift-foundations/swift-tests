@@ -1,13 +1,16 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Snapshot.Diffing+Structural")
-struct TestSnapshotDiffingStructuralTests {
+// NOTE: Test.Snapshot.Diffing<Format> is generic — the [SWIFT-TEST-002]
+// extension pattern is a hard compiler error here, so [SWIFT-TEST-003]'s
+// backticked top-level parallel namespace applies instead.
+@Suite
+struct `Test.Snapshot.Diffing+Structural Tests` {
     @Suite struct Unit {}
     @Suite struct Integration {}
 }
 
-extension TestSnapshotDiffingStructuralTests.Unit {
+extension `Test.Snapshot.Diffing+Structural Tests`.Unit {
 
     @Test func `identical JSON returns nil diff`() {
         let diffing = Test_Primitives.Test.Snapshot.Diffing<Swift.String>.structuralJSON
@@ -128,7 +131,7 @@ extension TestSnapshotDiffingStructuralTests.Unit {
     }
 }
 
-extension TestSnapshotDiffingStructuralTests.Integration {
+extension `Test.Snapshot.Diffing+Structural Tests`.Integration {
 
     @Test func `structuralJSON strategy has json extension`() {
         let strategy = Test_Primitives.Test.Snapshot.Strategy<Swift.String, Swift.String>.structuralJSON

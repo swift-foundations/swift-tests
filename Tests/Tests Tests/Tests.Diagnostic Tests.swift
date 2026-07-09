@@ -1,15 +1,16 @@
 import Testing
 import Tests_Test_Support
 
-@Suite
-struct TestsDiagnosticTests {
-
-    @Suite struct Format {}
+extension Tests.Diagnostic {
+    @Suite
+    struct Test {
+        @Suite struct Format {}
+    }
 }
 
 // MARK: - Format
 
-extension TestsDiagnosticTests.Format {
+extension Tests.Diagnostic.Test.Format {
 
     private static func makeDiagnostic(
         exceeded: Bool = true

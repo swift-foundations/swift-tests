@@ -1,16 +1,17 @@
 import Testing
 import Tests_Test_Support
 
-@Suite
-struct TestEnvironmentTests {
-
-    @Suite struct Capture {}
-    @Suite struct Fingerprint {}
+extension Test_Primitives.Test.Environment {
+    @Suite
+    struct Test {
+        @Suite struct Capture {}
+        @Suite struct Fingerprint {}
+    }
 }
 
 // MARK: - Capture
 
-extension TestEnvironmentTests.Capture {
+extension Test_Primitives.Test.Environment.Test.Capture {
     @Test
     func `capture Returns Non Zero Values`() {
         let env = Test.Environment.capture()
@@ -35,7 +36,7 @@ extension TestEnvironmentTests.Capture {
 
 // MARK: - Fingerprint
 
-extension TestEnvironmentTests.Fingerprint {
+extension Test_Primitives.Test.Environment.Test.Fingerprint {
     @Test
     func `fingerprint Contains Architecture`() {
         let env = Test.Environment.capture()

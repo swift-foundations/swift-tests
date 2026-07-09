@@ -1,14 +1,13 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Benchmark.Metric")
-struct BenchmarkMetricTests {
-    @Suite struct Unit {}
-}
+// NOTE: Test.Benchmark.Metric already carries a Test suite (see
+// "Tests.Metric Tests.swift"). Per [SWIFT-TEST-002] collision rule (no
+// leftover tokens from "BenchmarkMetricTests"), these members are merged
+// directly into the existing Test.Unit category rather than declaring a
+// second Test suite for the same type.
 
-// MARK: - Unit
-
-extension BenchmarkMetricTests.Unit {
+extension Test_Primitives.Test.Benchmark.Metric.Test.Unit {
     @Test
     func `each case extracts correct field`() {
         let measurement = Test_Primitives.Test.Benchmark.Measurement(durations: [

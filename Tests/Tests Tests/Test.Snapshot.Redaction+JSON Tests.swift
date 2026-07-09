@@ -1,12 +1,15 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Snapshot.Redaction+JSON")
-struct TestSnapshotRedactionJSONTests {
+// NOTE: Test.Snapshot.Redaction<Format> is generic — the [SWIFT-TEST-002]
+// extension pattern is a hard compiler error here, so [SWIFT-TEST-003]'s
+// backticked top-level parallel namespace applies instead.
+@Suite
+struct `Test.Snapshot.Redaction+JSON Tests` {
     @Suite struct Unit {}
 }
 
-extension TestSnapshotRedactionJSONTests.Unit {
+extension `Test.Snapshot.Redaction+JSON Tests`.Unit {
 
     @Test func `json path replaces simple key`() {
         let redaction = Test_Primitives.Test.Snapshot.Redaction<Swift.String>.json(

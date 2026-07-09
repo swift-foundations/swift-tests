@@ -1,15 +1,17 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Snapshot.Counter")
-struct SnapshotCounterTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
+extension Test_Primitives.Test.Snapshot.Counter {
+    @Suite("Test.Snapshot.Counter")
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+    }
 }
 
 // MARK: - Unit
 
-extension SnapshotCounterTests.Unit {
+extension Test_Primitives.Test.Snapshot.Counter.Test.Unit {
     @Test
     func `next returns sequential values for same key`() {
         let counter = Test_Primitives.Test.Snapshot.Counter()
@@ -59,7 +61,7 @@ extension SnapshotCounterTests.Unit {
 
 // MARK: - EdgeCase
 
-extension SnapshotCounterTests.EdgeCase {
+extension Test_Primitives.Test.Snapshot.Counter.Test.EdgeCase {
     @Test
     func `fresh counter returns 1 for first call`() {
         let counter = Test_Primitives.Test.Snapshot.Counter()

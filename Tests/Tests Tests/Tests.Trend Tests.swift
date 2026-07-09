@@ -1,15 +1,19 @@
 import Testing
 import Tests_Test_Support
 
-@Suite
-struct TestsTrendTests {
-
-    @Suite struct MannKendall {}
+// NOTE: filename says "Tests.Trend" but the tested type is Test.Benchmark.Trend
+// (grep-resolved per [SWIFT-TEST-002] STEP-2 ladder step 2 — "Tests.Trend" does
+// not exist as a type in this repo or its dependencies).
+extension Test_Primitives.Test.Benchmark.Trend {
+    @Suite
+    struct Test {
+        @Suite struct MannKendall {}
+    }
 }
 
 // MARK: - Mann-Kendall
 
-extension TestsTrendTests.MannKendall {
+extension Test_Primitives.Test.Benchmark.Trend.Test.MannKendall {
     @Test
     func `empty Sequence`() {
         let trend = Test.Benchmark.Trend.mannKendall([])

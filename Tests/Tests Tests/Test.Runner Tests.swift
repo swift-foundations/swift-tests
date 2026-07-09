@@ -1,15 +1,17 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Runner")
-struct TestRunnerTests {
-    @Suite struct Expectations {}
-    @Suite struct Events {}
+extension Test_Primitives.Test.Runner {
+    @Suite("Test.Runner")
+    struct Test {
+        @Suite struct Expectations {}
+        @Suite struct Events {}
+    }
 }
 
 // MARK: - Expectations
 
-extension TestRunnerTests.Expectations {
+extension Test_Primitives.Test.Runner.Test.Expectations {
 
     @Test
     func `failing expect causes test failure`() async {
@@ -83,7 +85,7 @@ extension TestRunnerTests.Expectations {
 
 // MARK: - Events
 
-extension TestRunnerTests.Events {
+extension Test_Primitives.Test.Runner.Test.Events {
 
     @Test
     func `expectationChecked events are emitted`() async {

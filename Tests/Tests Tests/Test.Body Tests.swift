@@ -1,15 +1,17 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.Body")
-struct TestBodyTests {
-    @Suite struct Unit {}
-    @Suite struct EdgeCase {}
+extension Test_Primitives.Test.Body {
+    @Suite("Test.Body")
+    struct Test {
+        @Suite struct Unit {}
+        @Suite struct EdgeCase {}
+    }
 }
 
 // MARK: - Unit
 
-extension TestBodyTests.Unit {
+extension Test_Primitives.Test.Body.Test.Unit {
     @Test
     func `sync factory creates synchronous body`() {
         let body = Test_Primitives.Test.Body.sync {}
@@ -87,7 +89,7 @@ extension TestBodyTests.Unit {
 
 // MARK: - EdgeCase
 
-extension TestBodyTests.EdgeCase {
+extension Test_Primitives.Test.Body.Test.EdgeCase {
     @Test
     func `caught error stores type and description`() async {
         struct SpecificError: Swift.Error, Swift.CustomStringConvertible {
