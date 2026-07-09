@@ -2,14 +2,16 @@ import Testing
 import Tests_Inline_Snapshot
 import Tests_Test_Support
 
-@Suite("snapshot (inline)")
-struct TestSnapshotInlineTests {
-    @Suite struct Unit {}
+extension Test_Primitives.Test.Snapshot.Inline {
+    @Suite("snapshot (inline)")
+    struct Test {
+        @Suite struct Unit {}
+    }
 }
 
 // MARK: - Unit
 
-extension TestSnapshotInlineTests.Unit {
+extension Test_Primitives.Test.Snapshot.Inline.Test.Unit {
 
     @Test
     func `snapshot registers passing expectation with collector`() {
