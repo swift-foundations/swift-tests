@@ -12,17 +12,17 @@ import Tests_Test_Support
 
 private typealias SUT = Test_Primitives.Test
 
+// NOTE: Tests.Complexity already carries a Test suite (see "Tests.Complexity
+// Tests.swift"). Per [SWIFT-TEST-002] collision rule, "Calibration" is the
+// leftover token from the original suite name "ComplexityCalibrationTests"
+// and does not collide with any existing category under Tests.Complexity.Test,
+// so it nests there.
 /// Calibration suite for complexity classification thresholds.
 ///
 /// Each test constructs synthetic timing data for a known complexity
 /// class and verifies that the default policy classifies it correctly.
 /// These tests validate the provisional threshold values and catch
 /// regressions if thresholds are tuned.
-// NOTE: Tests.Complexity already carries a Test suite (see "Tests.Complexity
-// Tests.swift"). Per [SWIFT-TEST-002] collision rule, "Calibration" is the
-// leftover token from the original suite name "ComplexityCalibrationTests"
-// and does not collide with any existing category under Tests.Complexity.Test,
-// so it nests there.
 extension Tests.Complexity.Test {
     @Suite struct Calibration {
         @Suite struct PowerLaw {}
