@@ -3,10 +3,10 @@ import Testing
 import Tests_Test_Support
 
 extension Test_Primitives.Test.Snapshot.Storage {
-    @Suite("Test.Snapshot.Storage")
+    @Suite
     struct Test {
         @Suite struct Unit {}
-        @Suite struct EdgeCase {}
+        @Suite struct `Edge Case` {}
     }
 }
 

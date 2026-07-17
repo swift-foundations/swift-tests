@@ -13,11 +13,11 @@ import Tests_Test_Support
 private typealias SUT = Test_Primitives.Test
 
 @Suite
-struct ComplexityClassifyTests {
+struct `Complexity Classify Tests` {
 
     @Suite struct ConfidenceLevels {}
-    @Suite struct InconclusiveReasons {}
-    @Suite struct CustomPolicy {}
+    @Suite struct `Inconclusive Reasons` {}
+    @Suite struct `Custom Policy` {}
 }
 
 // MARK: - Helpers

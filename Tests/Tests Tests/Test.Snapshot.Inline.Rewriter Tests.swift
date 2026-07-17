@@ -3,7 +3,7 @@ import Testing
 @testable import Tests_Inline_Snapshot
 
 extension Test_Primitives.Test.Snapshot.Inline.Rewriter {
-    @Suite("Test.Snapshot.Inline.Rewriter")
+    @Suite
     struct Test {
         @Suite struct HashCount {}
     }

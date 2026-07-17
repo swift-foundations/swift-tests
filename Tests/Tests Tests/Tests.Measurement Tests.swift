@@ -5,7 +5,7 @@ extension Test_Primitives.Test.Benchmark.Measurement {
     @Suite
     struct Test {
         @Suite struct Unit {}
-        @Suite struct EdgeCase {}
+        @Suite struct `Edge Case` {}
     }
 }
 

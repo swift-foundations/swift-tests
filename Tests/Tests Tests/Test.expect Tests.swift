@@ -1,8 +1,8 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.expect")
-struct TestExpectTests {
+@Suite
+struct Test {
     @Suite struct Unit {}
 }
 

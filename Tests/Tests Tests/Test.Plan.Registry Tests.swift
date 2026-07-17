@@ -2,7 +2,7 @@ import Testing
 import Tests_Test_Support
 
 extension Test_Primitives.Test.Plan.Registry {
-    @Suite("Test.Plan.Registry")
+    @Suite
     struct Test {
         @Suite struct Unit {}
     }

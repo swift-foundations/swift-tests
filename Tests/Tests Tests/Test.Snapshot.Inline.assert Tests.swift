@@ -3,7 +3,7 @@ import Tests_Inline_Snapshot
 import Tests_Test_Support
 
 extension Test_Primitives.Test.Snapshot.Inline {
-    @Suite("snapshot (inline)")
+    @Suite
     struct Test {
         @Suite struct Unit {}
     }

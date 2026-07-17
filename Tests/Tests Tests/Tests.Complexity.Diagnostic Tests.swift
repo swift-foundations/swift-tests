@@ -14,7 +14,7 @@ extension Tests.Complexity.Diagnostic {
     @Suite
     struct Test {
         @Suite struct Formatted {}
-        @Suite struct JSON {}
+        @Suite struct `JSON` {}
     }
 }
 

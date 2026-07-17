@@ -5,7 +5,7 @@ extension Test_Primitives.Test.Environment {
     @Suite
     struct Test {
         @Suite struct Capture {}
-        @Suite struct Fingerprint {}
+        @Suite struct `Fingerprint` {}
     }
 }
 

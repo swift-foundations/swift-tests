@@ -14,9 +14,9 @@ extension Tests.Complexity {
     @Suite
     struct Test {
         @Suite struct Classify {}
-        @Suite struct Result {}
-        @Suite struct Sizes {}
-        @Suite struct EdgeCase {}
+        @Suite struct `Result` {}
+        @Suite struct `Sizes` {}
+        @Suite struct `Edge Case` {}
     }
 }
 

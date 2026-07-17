@@ -16,8 +16,8 @@ extension Tests.Complexity.Baseline {
     @Suite
     struct Test {
         @Suite struct Construction {}
-        @Suite struct Comparison {}
-        @Suite struct JSONRoundTrip {}
+        @Suite struct `Comparison` {}
+        @Suite struct `JSONRound Trip` {}
     }
 }
 

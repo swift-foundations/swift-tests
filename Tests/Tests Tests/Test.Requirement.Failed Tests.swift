@@ -2,7 +2,7 @@ import Testing
 import Tests_Test_Support
 
 extension Test_Primitives.Test.Requirement.Failed {
-    @Suite("Test.Requirement.Failed")
+    @Suite
     struct Test {
         @Suite struct Unit {}
     }

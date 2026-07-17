@@ -1,8 +1,8 @@
 import Testing
 import Tests_Test_Support
 
-@Suite("Test.require")
-struct TestRequireTests {
+@Suite
+struct Test {
     @Suite struct Runner {}
     @Suite struct Unit {}
 }

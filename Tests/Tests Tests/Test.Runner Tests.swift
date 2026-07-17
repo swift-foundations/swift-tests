@@ -2,10 +2,10 @@ import Testing
 import Tests_Test_Support
 
 extension Test_Primitives.Test.Runner {
-    @Suite("Test.Runner")
+    @Suite
     struct Test {
         @Suite struct Expectations {}
-        @Suite struct Events {}
+        @Suite struct `Events` {}
     }
 }
 

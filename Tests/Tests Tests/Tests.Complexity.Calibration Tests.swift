@@ -25,9 +25,9 @@ private typealias SUT = Test_Primitives.Test
 /// regressions if thresholds are tuned.
 extension Tests.Complexity.Test {
     @Suite struct Calibration {
-        @Suite struct PowerLaw {}
-        @Suite struct NonPowerLaw {}
-        @Suite struct Ambiguity {}
+        @Suite struct `Power Law` {}
+        @Suite struct `Non Power Law` {}
+        @Suite struct `Ambiguity` {}
     }
 }
 
