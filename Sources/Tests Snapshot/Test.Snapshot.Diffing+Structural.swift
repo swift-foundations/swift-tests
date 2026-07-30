@@ -55,8 +55,16 @@ extension Test.Snapshot.Diffing where Format == Swift.String {
                     return Self.lines.diff(old, new)
                 }
 
-                let oldTree = _jsonToKeyedTree(oldValue)
-                let newTree = _jsonToKeyedTree(newValue)
+                let oldTree: Tree<RFC_8259.Value>.Keyed<Swift.String>
+                let newTree: Tree<RFC_8259.Value>.Keyed<Swift.String>
+                do throws(Tree<RFC_8259.Value>.Keyed<Swift.String>.Error) {
+                    oldTree = try _jsonToKeyedTree(oldValue)
+                    newTree = try _jsonToKeyedTree(newValue)
+                } catch {
+                    // Duplicate object member names make the structural mapping
+                    // ill-defined — fall back to line diff, like invalid JSON.
+                    return Self.lines.diff(old, new)
+                }
                 let treeDiff = Tree<RFC_8259.Value>.Keyed<Swift.String>.diff(from: oldTree, to: newTree)
 
                 guard !treeDiff.isEmpty else { return nil }

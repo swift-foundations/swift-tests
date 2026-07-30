@@ -108,6 +108,22 @@ extension `Test.Snapshot.Diffing+Structural Tests`.Unit {
         }
     }
 
+    @Test func `duplicate object member names fall back to line diff`() {
+        // RFC_8259.Object preserves every member, including duplicates, so the
+        // structural mapping's insertion into a keyed tree fails with
+        // `.keyOccupied` on the second occurrence. The diffing strategy must
+        // catch that typed failure and fall back to a line diff instead of
+        // terminating, matching the invalid-JSON fallback below.
+        let diffing = Test_Primitives.Test.Snapshot.Diffing<Swift.String>.structuralJSON
+        let result = diffing.diff(
+            #"{"name":"Alice","name":"Alicia"}"#,
+            #"{"name":"Bob","name":"Bobby"}"#
+        )
+        #expect(result != nil)
+        #expect(result?.structuralOperations == nil)
+        #expect(!result!.summary.isEmpty)
+    }
+
     @Test func `invalid JSON falls back to line diff`() {
         let diffing = Test_Primitives.Test.Snapshot.Diffing<Swift.String>.structuralJSON
         let result = diffing.diff(

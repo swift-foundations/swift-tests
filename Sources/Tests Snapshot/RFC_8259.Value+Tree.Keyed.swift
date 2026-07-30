@@ -18,16 +18,22 @@ internal import Tree_Keyed_Primitives
 ///
 /// Object keys map to tree child keys directly. Array elements use
 /// their string index ("0", "1", ...) as the child key.
-func _jsonToKeyedTree(_ value: RFC_8259.Value) -> Tree<RFC_8259.Value>.Keyed<Swift.String> {
+///
+/// - Throws: The keyed tree's insertion error. Reachable for parsed JSON whose
+///   objects carry duplicate member names — `RFC_8259.Object` preserves every
+///   member, so a duplicate key maps to `.keyOccupied` at its parent node.
+func _jsonToKeyedTree(
+    _ value: RFC_8259.Value
+) throws(Tree<RFC_8259.Value>.Keyed<Swift.String>.Error) -> Tree<RFC_8259.Value>.Keyed<Swift.String> {
     var tree = Tree<RFC_8259.Value>.Keyed<Swift.String>()
 
-    let rootPos = try! tree.insert(_jsonLocalValue(value), at: Tree<RFC_8259.Value>.Keyed<Swift.String>.Insert.Position.root)
+    let rootPos = try tree.insert(_jsonLocalValue(value), at: Tree<RFC_8259.Value>.Keyed<Swift.String>.Insert.Position.root)
 
     var pending: [(parent: Tree<RFC_8259.Value>.Keyed<Swift.String>.Position, key: Swift.String, value: RFC_8259.Value)] = []
     _jsonAppendChildren(of: value, parent: rootPos, to: &pending)
 
     while let (parent, key, childValue) = pending.popLast() {
-        let childPos = try! tree.insert(
+        let childPos = try tree.insert(
             _jsonLocalValue(childValue),
             at: .child(of: parent, key: key)
         )

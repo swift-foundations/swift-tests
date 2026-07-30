@@ -8,7 +8,7 @@ let package = Package(
         .macOS(.v26)
     ],
     dependencies: [
-        .package(path: "../.."),
+        .package(path: ".."),
         .package(url: "https://github.com/swift-foundations/swift-testing.git", branch: "main"),
     ],
     targets: [
@@ -17,7 +17,8 @@ let package = Package(
             dependencies: [
                 .product(name: "Tests", package: "swift-tests"),
                 .product(name: "Testing", package: "swift-testing"),
-            ]
+            ],
+            path: "Tests Complexity Smoke Tests"
         )
     ],
     swiftLanguageModes: [.v6]

@@ -189,7 +189,10 @@ let package = Package(
                 "Tests",
                 "Tests Inline Snapshot",
                 "Tests Test Support",
-            ]
+            ],
+            // Explicit path: the nested test manifest at Tests/Package.swift makes
+            // SwiftPM skip automatic target discovery under Tests/.
+            path: "Tests/Tests Tests"
         ),
     ],
     swiftLanguageModes: [.v6]
