@@ -51,7 +51,7 @@ extension Test.Snapshot.Inline.Rewriter {
     ) throws(Error) {
         // Read source
         let source: Swift.String
-        do throws(File.System.Read.Full.Error) {
+        do throws(Either<File.System.Read.Full.Error, Never>) {
             source = try File(File.Path(stringLiteral: filePath)).read.full { span in
                 unsafe span.withUnsafeBufferPointer { buffer in
                     unsafe Swift.String(decoding: buffer, as: UTF8.self)

@@ -204,7 +204,7 @@ extension Tests.History.Storage {
         let file = File(path)
         guard file.stat.exists else { return [] }
 
-        do throws(File.System.Read.Full.Error) {
+        do throws(Either<File.System.Read.Full.Error, Never>) {
             return try file.read.full { span in
                 let content = unsafe span.withUnsafeBufferPointer {
                     unsafe Swift.String(decoding: $0, as: UTF8.self)

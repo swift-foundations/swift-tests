@@ -99,7 +99,7 @@ extension Test.Snapshot.Storage {
         let file = File(path)
         guard file.stat.exists else { return nil }
 
-        do throws(File.System.Read.Full.Error) {
+        do throws(Either<File.System.Read.Full.Error, Never>) {
             return try file.read.full { span in
                 span.withUnsafeBufferPointer { unsafe Array($0) }
             }
