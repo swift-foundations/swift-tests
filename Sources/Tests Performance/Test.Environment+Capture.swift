@@ -3,8 +3,7 @@ import Kernel
 extension Test.Environment {
     /// Captures the current runtime and compile-time environment.
     public static func capture() -> Self {
-        let name = System.name
-        let osVersion = "\(name.system) \(name.release)"
+        let osVersion = System.name.map { "\($0.system) \($0.release)" } ?? "unknown"
         let physical = System.Processor.Physical.count
         let logical = System.Processor.count
         let memory = System.Memory.total
