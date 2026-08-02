@@ -7,7 +7,7 @@
 
 public import Test_Primitives
 
-extension Test.Snapshot.Inline.State {
+extension Test_Primitives.Test.Snapshot.Inline.State {
     /// A pending inline snapshot entry awaiting source file write-back.
     ///
     /// Captures all information needed to locate the call site in source

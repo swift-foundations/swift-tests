@@ -14,7 +14,7 @@ public import Test_Primitives
     import Glibc
 #endif
 
-extension Test.Snapshot.Inline {
+extension Test_Primitives.Test.Snapshot.Inline {
     /// Thread-safe accumulator for pending inline snapshot writes during a test run.
     ///
     /// Entries are registered during test execution and drained after all tests
@@ -45,14 +45,14 @@ extension Test.Snapshot.Inline {
     }
 }
 
-extension Test.Snapshot.Inline.State {
+extension Test_Primitives.Test.Snapshot.Inline.State {
     /// One-time `atexit` registration, triggered lazily on first `register()`.
     private static let _installExitHandler: Void = {
         atexit {
-            let state = Test.Snapshot.Inline.state
+            let state = Test_Primitives.Test.Snapshot.Inline.state
             guard !state.isEmpty else { return }
-            do throws(Test.Snapshot.Inline.Rewriter.Error) {
-                try Test.Snapshot.Inline.Rewriter.writeAll(from: state.drain())
+            do throws(Test_Primitives.Test.Snapshot.Inline.Rewriter.Error) {
+                try Test_Primitives.Test.Snapshot.Inline.Rewriter.writeAll(from: state.drain())
             } catch {
                 // Non-fatal: match the existing behavior in Testing.Main
                 // where write failures print a warning but do not change

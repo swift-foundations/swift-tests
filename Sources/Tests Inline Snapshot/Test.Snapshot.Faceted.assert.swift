@@ -50,16 +50,16 @@ public import Test_Primitives
 @discardableResult
 public func assertFacetedSnapshot<Value: Sendable>(
     of value: Value,
-    as faceted: Test.Snapshot.Faceted<Value>,
+    as faceted: Test_Primitives.Test.Snapshot.Faceted<Value>,
     named name: Swift.String? = nil,
-    record recording: Test.Snapshot.Recording? = nil,
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
     matches: [Swift.String: () -> Swift.String] = [:],
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
-) -> Test.Expectation {
+) -> Test_Primitives.Test.Expectation {
     let location = Source.Location(fileID: fileID, filePath: filePath, line: line, column: column)
 
     if let failure = verifyFacetedSnapshot(
@@ -105,16 +105,16 @@ public func assertFacetedSnapshot<Value: Sendable>(
 @discardableResult
 public func assertFacetedSnapshot<Value: Sendable>(
     of value: Value,
-    as faceted: Test.Snapshot.Faceted<Value>,
+    as faceted: Test_Primitives.Test.Snapshot.Faceted<Value>,
     named name: Swift.String? = nil,
-    record recording: Test.Snapshot.Recording? = nil,
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
     matches: [Swift.String: () -> Swift.String] = [:],
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
-) async -> Test.Expectation {
+) async -> Test_Primitives.Test.Expectation {
     let location = Source.Location(fileID: fileID, filePath: filePath, line: line, column: column)
 
     if let failure = await verifyFacetedSnapshot(

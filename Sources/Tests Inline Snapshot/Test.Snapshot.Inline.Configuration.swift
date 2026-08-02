@@ -7,7 +7,7 @@
 
 public import Test_Primitives
 
-extension Test.Snapshot.Inline {
+extension Test_Primitives.Test.Snapshot.Inline {
     /// Global state accumulator for the current test run.
     ///
     /// Entries are registered during test execution via ``assertInlineSnapshot``
