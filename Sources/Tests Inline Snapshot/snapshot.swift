@@ -57,10 +57,10 @@ public import Test_Primitives
 /// - Returns: The snapshot expectation result.
 @discardableResult
 public func snapshot<Value>(
-    as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
+    as strategy: Test_Primitives.Test.Snapshot.Strategy<Value, Swift.String>,
     named name: Swift.String? = nil,
-    record recording: Test.Snapshot.Recording? = nil,
-    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test_Primitives.Test.Snapshot.Redaction<Swift.String>] = [],
     _ value: () -> Value,
     matches expected: (() -> Swift.String)? = nil,
     fileID: Swift.String = #fileID,
@@ -68,7 +68,7 @@ public func snapshot<Value>(
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
-) -> Test.Expectation {
+) -> Test_Primitives.Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
         fileID: fileID,
@@ -94,12 +94,12 @@ public func snapshot<Value>(
     }
 
     let actual = syncSnapshot(value())
-    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
-    let config = Test.Snapshot.Configuration.current
+    let mode = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: recording)
+    let config = Test_Primitives.Test.Snapshot.Configuration.current
 
     let failure: Swift.String?
     if let name {
-        failure = Test.Snapshot.Storage.resolve(
+        failure = Test_Primitives.Test.Snapshot.Storage.resolve(
             actual: actual,
             strategy: effective,
             name: name,
@@ -110,7 +110,7 @@ public func snapshot<Value>(
             subdirectory: config?.subdirectory
         )
     } else {
-        failure = Test.Snapshot.Inline.resolve(
+        failure = Test_Primitives.Test.Snapshot.Inline.resolve(
             actual: actual,
             strategy: effective,
             expected: expected,
@@ -133,10 +133,10 @@ public func snapshot<Value>(
 /// Asserts that a value matches its snapshot (async variant).
 @discardableResult
 public func snapshot<Value>(
-    as strategy: Test.Snapshot.Strategy<Value, Swift.String>,
+    as strategy: Test_Primitives.Test.Snapshot.Strategy<Value, Swift.String>,
     named name: Swift.String? = nil,
-    record recording: Test.Snapshot.Recording? = nil,
-    redacting redactions: [Test.Snapshot.Redaction<Swift.String>] = [],
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test_Primitives.Test.Snapshot.Redaction<Swift.String>] = [],
     _ value: () -> Value,
     matches expected: (() -> Swift.String)? = nil,
     fileID: Swift.String = #fileID,
@@ -144,7 +144,7 @@ public func snapshot<Value>(
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
-) async -> Test.Expectation {
+) async -> Test_Primitives.Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
         fileID: fileID,
@@ -162,12 +162,12 @@ public func snapshot<Value>(
     }
 
     let actual = await effective.capture(value())
-    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
-    let config = Test.Snapshot.Configuration.current
+    let mode = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: recording)
+    let config = Test_Primitives.Test.Snapshot.Configuration.current
 
     let failure: Swift.String?
     if let name {
-        failure = Test.Snapshot.Storage.resolve(
+        failure = Test_Primitives.Test.Snapshot.Storage.resolve(
             actual: actual,
             strategy: effective,
             name: name,
@@ -178,7 +178,7 @@ public func snapshot<Value>(
             subdirectory: config?.subdirectory
         )
     } else {
-        failure = Test.Snapshot.Inline.resolve(
+        failure = Test_Primitives.Test.Snapshot.Inline.resolve(
             actual: actual,
             strategy: effective,
             expected: expected,
@@ -203,17 +203,17 @@ public func snapshot<Value>(
 /// Use this overload for non-String formats (binary, image, etc.).
 @discardableResult
 public func snapshot<Value, Format: Sendable>(
-    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    as strategy: Test_Primitives.Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String,
-    record recording: Test.Snapshot.Recording? = nil,
-    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test_Primitives.Test.Snapshot.Redaction<Format>] = [],
     _ value: () -> Value,
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
-) -> Test.Expectation {
+) -> Test_Primitives.Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
         fileID: fileID,
@@ -231,10 +231,10 @@ public func snapshot<Value, Format: Sendable>(
     }
 
     let actual = syncSnapshot(value())
-    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
-    let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
+    let mode = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: recording)
+    let snapshotDir = Test_Primitives.Test.Snapshot.Configuration.current?.snapshotDirectory
 
-    let failure = Test.Snapshot.Storage.resolve(
+    let failure = Test_Primitives.Test.Snapshot.Storage.resolve(
         actual: actual,
         strategy: effective,
         name: name,
@@ -259,17 +259,17 @@ public func snapshot<Value, Format: Sendable>(
 /// Asserts that a value matches its file-backed snapshot (async variant).
 @discardableResult
 public func snapshot<Value, Format: Sendable>(
-    as strategy: Test.Snapshot.Strategy<Value, Format>,
+    as strategy: Test_Primitives.Test.Snapshot.Strategy<Value, Format>,
     named name: Swift.String,
-    record recording: Test.Snapshot.Recording? = nil,
-    redacting redactions: [Test.Snapshot.Redaction<Format>] = [],
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
+    redacting redactions: [Test_Primitives.Test.Snapshot.Redaction<Format>] = [],
     _ value: () -> Value,
     fileID: Swift.String = #fileID,
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
-) async -> Test.Expectation {
+) async -> Test_Primitives.Test.Expectation {
     let effective = redactions.isEmpty ? strategy : strategy.redacting(redactions)
     let location = Source.Location(
         fileID: fileID,
@@ -279,10 +279,10 @@ public func snapshot<Value, Format: Sendable>(
     )
 
     let actual = await effective.capture(value())
-    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
-    let snapshotDir = Test.Snapshot.Configuration.current?.snapshotDirectory
+    let mode = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: recording)
+    let snapshotDir = Test_Primitives.Test.Snapshot.Configuration.current?.snapshotDirectory
 
-    let failure = Test.Snapshot.Storage.resolve(
+    let failure = Test_Primitives.Test.Snapshot.Storage.resolve(
         actual: actual,
         strategy: effective,
         name: name,
@@ -304,15 +304,15 @@ public func snapshot<Value, Format: Sendable>(
 
 // MARK: - Inline Resolution
 
-extension Test.Snapshot.Inline {
+extension Test_Primitives.Test.Snapshot.Inline {
     /// Resolves an inline snapshot against the closure-provided expected value.
     ///
     /// Returns a failure message, or `nil` when the snapshot matches.
     static func resolve<Value>(
         actual: Swift.String,
-        strategy: Test.Snapshot.Strategy<Value, Swift.String>,
+        strategy: Test_Primitives.Test.Snapshot.Strategy<Value, Swift.String>,
         expected: (() -> Swift.String)?,
-        mode: Test.Snapshot.Recording,
+        mode: Test_Primitives.Test.Snapshot.Recording,
         filePath: Swift.String,
         line: Int,
         column: Int,
@@ -372,15 +372,15 @@ extension Test.Snapshot.Inline {
 
 // MARK: - File Resolution
 
-extension Test.Snapshot.Storage {
+extension Test_Primitives.Test.Snapshot.Storage {
     /// Resolves a file-backed snapshot against the filesystem reference.
     ///
     /// Returns a failure message, or `nil` when the snapshot matches.
     static func resolve<Value, Format: Sendable>(
         actual: Format,
-        strategy: Test.Snapshot.Strategy<Value, Format>,
+        strategy: Test_Primitives.Test.Snapshot.Strategy<Value, Format>,
         name: Swift.String,
-        mode: Test.Snapshot.Recording,
+        mode: Test_Primitives.Test.Snapshot.Recording,
         filePath: Swift.String,
         function: Swift.String,
         snapshotDirectory: File.Path? = nil,
@@ -416,13 +416,13 @@ extension Test.Snapshot.Storage {
             }
 
             if let diff = strategy.diffing.diff(referenceFormat, actual) {
-                Test.Attachment.collector.record(
+                Test_Primitives.Test.Attachment.collector.record(
                     .init(
                         name: "actual.\(strategy.pathExtension ?? "bin")",
                         bytes: actualBytes
                     )
                 )
-                Test.Attachment.collector.record(
+                Test_Primitives.Test.Attachment.collector.record(
                     .init(name: "snapshot-diff.txt", string: diff.description)
                 )
                 return diff.message(
@@ -458,7 +458,7 @@ extension Test.Snapshot.Storage {
 
 // MARK: - Diff Formatting
 
-extension Test.Snapshot.Diff.Result {
+extension Test_Primitives.Test.Snapshot.Diff.Result {
     /// Formats this diff result with a prefix message.
     fileprivate func message(prefix: Swift.String) -> Swift.String {
         var result = prefix + "\n" + summary

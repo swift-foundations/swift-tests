@@ -30,16 +30,16 @@ public import Test_Primitives
 /// - Returns: `nil` if all facets match, or an error message describing the first failure.
 public func verifyFacetedSnapshot<Value: Sendable>(
     of value: Value,
-    as faceted: Test.Snapshot.Faceted<Value>,
+    as faceted: Test_Primitives.Test.Snapshot.Faceted<Value>,
     named name: Swift.String? = nil,
-    record recording: Test.Snapshot.Recording? = nil,
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
     matches: [Swift.String: () -> Swift.String] = [:],
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
 ) -> Swift.String? {
-    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+    let mode = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: recording)
 
     // Verify primary strategy against file-based reference.
     guard let syncSnapshot = faceted.primary.syncSnapshot else {
@@ -48,7 +48,7 @@ public func verifyFacetedSnapshot<Value: Sendable>(
     let primaryActual = syncSnapshot(value)
     let primaryName = name ?? "primary"
 
-    if let failure = Test.Snapshot.Storage.resolve(
+    if let failure = Test_Primitives.Test.Snapshot.Storage.resolve(
         actual: primaryActual,
         strategy: faceted.primary,
         name: primaryName,
@@ -68,7 +68,7 @@ public func verifyFacetedSnapshot<Value: Sendable>(
 
         if let expectedClosure = matches[facetName] {
             // Inline verification for this facet.
-            if let failure = Test.Snapshot.Inline.resolve(
+            if let failure = Test_Primitives.Test.Snapshot.Inline.resolve(
                 actual: facetActual,
                 strategy: facetStrategy,
                 expected: expectedClosure,
@@ -83,7 +83,7 @@ public func verifyFacetedSnapshot<Value: Sendable>(
         } else {
             // File-based verification with facet name suffix.
             let facetFullName = name.map { "\($0).\(facetName)" } ?? facetName
-            if let failure = Test.Snapshot.Storage.resolve(
+            if let failure = Test_Primitives.Test.Snapshot.Storage.resolve(
                 actual: facetActual,
                 strategy: facetStrategy,
                 name: facetFullName,
@@ -116,22 +116,22 @@ public func verifyFacetedSnapshot<Value: Sendable>(
 /// - Returns: `nil` if all facets match, or an error message describing the first failure.
 public func verifyFacetedSnapshot<Value: Sendable>(
     of value: Value,
-    as faceted: Test.Snapshot.Faceted<Value>,
+    as faceted: Test_Primitives.Test.Snapshot.Faceted<Value>,
     named name: Swift.String? = nil,
-    record recording: Test.Snapshot.Recording? = nil,
+    record recording: Test_Primitives.Test.Snapshot.Recording? = nil,
     matches: [Swift.String: () -> Swift.String] = [:],
     filePath: Swift.String = #filePath,
     line: Int = #line,
     column: Int = #column,
     function: Swift.String = #function
 ) async -> Swift.String? {
-    let mode = Test.Snapshot.Configuration.resolve(recording: recording)
+    let mode = Test_Primitives.Test.Snapshot.Configuration.resolve(recording: recording)
 
     // Verify primary strategy against file-based reference.
     let primaryActual = await faceted.primary.capture(value)
     let primaryName = name ?? "primary"
 
-    if let failure = Test.Snapshot.Storage.resolve(
+    if let failure = Test_Primitives.Test.Snapshot.Storage.resolve(
         actual: primaryActual,
         strategy: faceted.primary,
         name: primaryName,
@@ -148,7 +148,7 @@ public func verifyFacetedSnapshot<Value: Sendable>(
 
         if let expectedClosure = matches[facetName] {
             // Inline verification for this facet.
-            if let failure = Test.Snapshot.Inline.resolve(
+            if let failure = Test_Primitives.Test.Snapshot.Inline.resolve(
                 actual: facetActual,
                 strategy: facetStrategy,
                 expected: expectedClosure,
@@ -163,7 +163,7 @@ public func verifyFacetedSnapshot<Value: Sendable>(
         } else {
             // File-based verification with facet name suffix.
             let facetFullName = name.map { "\($0).\(facetName)" } ?? facetName
-            if let failure = Test.Snapshot.Storage.resolve(
+            if let failure = Test_Primitives.Test.Snapshot.Storage.resolve(
                 actual: facetActual,
                 strategy: facetStrategy,
                 name: facetFullName,

@@ -11,7 +11,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 public import Test_Primitives
 
-extension Test.Snapshot.Inline {
+extension Test_Primitives.Test.Snapshot.Inline {
     /// SwiftSyntax-based source file rewriter for inline snapshots.
     ///
     /// Processes accumulated ``State/Entry`` values by parsing each source
@@ -21,7 +21,7 @@ extension Test.Snapshot.Inline {
     }
 }
 
-extension Test.Snapshot.Inline.Rewriter {
+extension Test_Primitives.Test.Snapshot.Inline.Rewriter {
     /// Writes all pending inline snapshots to their source files.
     ///
     /// For each source file with pending entries:
@@ -33,7 +33,7 @@ extension Test.Snapshot.Inline.Rewriter {
     /// - Parameter entries: Entries grouped by source file path.
     /// - Throws: ``Error`` if reading, parsing, or writing fails.
     public static func writeAll(
-        from entries: [Swift.String: [Test.Snapshot.Inline.State.Entry]]
+        from entries: [Swift.String: [Test_Primitives.Test.Snapshot.Inline.State.Entry]]
     ) throws(Error) {
         for (filePath, fileEntries) in entries {
             try rewriteFile(at: filePath, entries: fileEntries)
@@ -43,11 +43,11 @@ extension Test.Snapshot.Inline.Rewriter {
 
 // MARK: - File Rewriting
 
-extension Test.Snapshot.Inline.Rewriter {
+extension Test_Primitives.Test.Snapshot.Inline.Rewriter {
     /// Rewrites a single source file with the given entries.
     private static func rewriteFile(
         at filePath: Swift.String,
-        entries: [Test.Snapshot.Inline.State.Entry]
+        entries: [Test_Primitives.Test.Snapshot.Inline.State.Entry]
     ) throws(Error) {
         // Read source
         let source: Swift.String
@@ -91,16 +91,16 @@ extension Test.Snapshot.Inline.Rewriter {
 
 // MARK: - Syntax Rewriter
 
-extension Test.Snapshot.Inline.Rewriter {
+extension Test_Primitives.Test.Snapshot.Inline.Rewriter {
     /// Visits call sites and rewrites matching snapshot calls with the
     /// recorded expected value.
     private final class Syntax: SyntaxRewriter {
-        let entries: [Test.Snapshot.Inline.State.Entry]
+        let entries: [Test_Primitives.Test.Snapshot.Inline.State.Entry]
         let locationConverter: SourceLocationConverter
         private var entryIndex = 0
 
         init(
-            entries: [Test.Snapshot.Inline.State.Entry],
+            entries: [Test_Primitives.Test.Snapshot.Inline.State.Entry],
             locationConverter: SourceLocationConverter
         ) {
             self.entries = entries

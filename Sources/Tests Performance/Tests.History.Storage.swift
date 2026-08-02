@@ -261,7 +261,7 @@ extension Tests.History.Storage {
         at path: File.Path
     ) async throws(Kernel.Thread.Pool.Error) -> [Tests.History.Record] {
         let path = path
-        return try await Kernel.Thread.Pool.shared.run { () -> [Tests.History.Record] in
+        return try await Kernel.Thread.Pool.shared.run(timeout: nil) { () -> [Tests.History.Record] in
             load(at: path)
         }
     }
@@ -281,7 +281,7 @@ extension Tests.History.Storage {
         fingerprint: Swift.String
     ) async throws(Kernel.Thread.Pool.Error) -> [Tests.History.Record] {
         let filePath = path(root: root, testID: testID, fingerprint: fingerprint)
-        return try await Kernel.Thread.Pool.shared.run { () -> [Tests.History.Record] in
+        return try await Kernel.Thread.Pool.shared.run(timeout: nil) { () -> [Tests.History.Record] in
             load(at: filePath)
         }
     }
