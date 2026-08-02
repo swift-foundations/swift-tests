@@ -14,6 +14,32 @@ extension Test_Primitives.Test.Snapshot {
 extension Test_Primitives.Test.Snapshot.Test.Unit {
 
     @Test
+    func `HTML strategy renders a document through snapshot`() {
+        let collector = Test_Primitives.Test.Expectation.Collector()
+        Test_Primitives.Test.Expectation.Collector.with(collector) {
+            snapshot(as: .html, record: .never, {
+                HTML.Document { "Hello" }
+            }, matches: {
+                """
+                <!doctype html>
+                <html>
+                  <head>
+                  </head>
+                  <body>
+                    Hello
+                  </body>
+                </html>
+                """
+            })
+        }
+        let expectations = collector.drain()
+        #expect(expectations.count == 1)
+        if expectations.count == 1 {
+            #expect(expectations[0].isPassing)
+        }
+    }
+
+    @Test
     func `snapshot registers passing expectation with collector`() {
         let collector = Test_Primitives.Test.Expectation.Collector()
         Test_Primitives.Test.Expectation.Collector.with(collector) {

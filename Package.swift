@@ -48,6 +48,7 @@ let package = Package(
         .package(url: "https://github.com/swift-foundations/swift-clocks.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-environment.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-witnesses.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-html-render.git", branch: "main"),
         .package(url: "https://github.com/swift-iec/swift-iec-80000-13.git", branch: "main"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"603.0.0"),
     ],
@@ -95,6 +96,7 @@ let package = Package(
             dependencies: [
                 "Tests Snapshot",
                 "Tests Apple Testing Bridge",
+                .product(name: "HTML Snapshot Test Support", package: "swift-html-render"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
