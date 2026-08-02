@@ -372,7 +372,7 @@ extension Test.Snapshot.Inline {
 
 // MARK: - File Resolution
 
-extension Test.Snapshot.Storage {
+extension Test_Primitives.Test.Snapshot.Storage {
     /// Resolves a file-backed snapshot against the filesystem reference.
     ///
     /// Returns a failure message, or `nil` when the snapshot matches.
@@ -458,7 +458,7 @@ extension Test.Snapshot.Storage {
 
 // MARK: - Diff Formatting
 
-extension Test.Snapshot.Diff.Result {
+extension Test_Primitives.Test.Snapshot.Diff.Result {
     /// Formats this diff result with a prefix message.
     fileprivate func message(prefix: Swift.String) -> Swift.String {
         var result = prefix + "\n" + summary
